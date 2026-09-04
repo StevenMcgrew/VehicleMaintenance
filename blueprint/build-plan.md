@@ -44,29 +44,34 @@ then wire up data, auth, and integrations. Add deployment readiness only when
 the app is worth shipping or a provider config change is part of the work. Adapt
 it to your project.
 
-## Format
+## MVP
 
-Use checkboxes. Each item should be a feature-sized outcome, not a loose task or
-a whole product area.
+- [ ] 1. **Vehicle list and details** - add, edit, and delete vehicles with
+  nickname, year, make, model, and engine, persisted to the local JSON file with
+  atomic writes and a schema version
+- [ ] 2. **Maintenance items** - add, edit, and delete maintenance items on a
+  vehicle with mileage interval, recurrence, and reminder interval, including
+  optional last-done seeding
+- [ ] 3. **Log a completed service** - mark a maintenance item done with date,
+  odometer, and cost, resetting its clocks
+- [ ] 4. **Log an ad-hoc repair** - record work that is not a tracked maintenance
+  item, with description, date, odometer, and cost
+- [ ] 5. **Service history** - per-vehicle list of everything logged, newest first
+- [ ] 6. **Due and overdue status** - compute and display next reminder, due date,
+  and overdue state for every item, including the mileage check that runs when a
+  new odometer reading is captured
+- [ ] 7. **Reminders and notifications** - daily background check that notifies
+  when an item is due, repeating every two weeks until it is logged, with runtime
+  permission handling
+- [ ] 8. **Cost totals** - per-vehicle spend, all time and by year
+- [ ] 9. **Export and import** - write all data to a JSON file the user chooses
+  and restore from one, with schema version handling
+- [ ] 10. **Play Store readiness** - app icon, signed release build, data safety
+  declaration, and privacy policy
 
-Good:
+## Post-MVP
 
-- [ ] 1. **Skill submission** - upload a skill package and save its metadata
-- [ ] 2. **Validation result** - run checks and show pass/fail status for a skill
-- [ ] 3. **Directory listing** - browse and filter published skills
-- [ ] 4. **Deployment readiness** - configure Render or Vercel and verify the
-  production build
-
-Avoid:
-
-- Upload stuff
-- Database
-- Make it look nice
-- Auth, billing, dashboard, validation, and deploy
-
-If your first pass is just rough bullets, that is okay. Run `/overview` after
-filling both planning docs; it will flag plan-shape problems and can propose a
-cleaned-up checkbox version before generating the project overview.
-
-- [ ] 1. **Feature one** - description
-- [ ] 2. **Feature two** - description
+- [ ] 11. **Receipt and vehicle photos** - attach images to log entries and
+  vehicles
+- [ ] 12. **Cloud backup** - paid upgrade pairing photo storage with off-device
+  backup
