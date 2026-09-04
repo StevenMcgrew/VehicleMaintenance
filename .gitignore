@@ -13,3 +13,12 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Kotlin build session state
+.kotlin/
+
+# Android release output and signing material
+*.apk
+*.aab
+*.keystore
+*.jks
