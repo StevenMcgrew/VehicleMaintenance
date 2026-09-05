@@ -1,3 +1,37 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">VehicleMaintenance</string>
+
+    <string name="vehicles_title">Vehicles</string>
+    <string name="vehicles_empty_title">No vehicles yet</string>
+    <string name="vehicles_empty_body">Add the first vehicle you want to track.</string>
+    <string name="vehicles_load_error">Your saved vehicle data could not be read, so nothing can be changed right now. Your file has been left untouched.</string>
+    <string name="retry">Retry</string>
+
+    <string name="add_vehicle">Add vehicle</string>
+    <string name="edit_vehicle">Edit vehicle</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+
+    <string name="delete_vehicle_title">Delete %1$s?</string>
+    <string name="delete_vehicle_message">This also removes every maintenance item and service record for it. This cannot be undone.</string>
+    <string name="delete_vehicle_action">Delete %1$s</string>
+    <string name="delete_vehicle_failed">That vehicle could not be deleted.</string>
+
+    <string name="vehicle_summary">%1$d %2$s %3$s</string>
+
+    <string name="vehicle_nickname">Nickname (optional)</string>
+    <string name="vehicle_year">Year</string>
+    <string name="vehicle_make">Make</string>
+    <string name="vehicle_model">Model</string>
+    <string name="vehicle_engine">Engine</string>
+
+    <string name="error_required">Required</string>
+    <string name="error_year_not_a_number">Enter a year as digits, such as 2014</string>
+    <!-- The two numbers are a year range, not a quantity, so this is not a plural. -->
+    <string name="error_year_out_of_range" tools:ignore="PluralsCandidate">Enter a year between %1$d and %2$d</string>
+
+    <string name="vehicle_not_found">That vehicle no longer exists.</string>
+    <string name="vehicle_save_failed">Your changes could not be saved.</string>
+    <string name="back">Back</string>
 </resources>
