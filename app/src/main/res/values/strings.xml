@@ -57,6 +57,13 @@
     <string name="item_clear_date">Clear the last done date</string>
     <string name="item_confirm_date">OK</string>
 
+    <string name="item_name_placeholder">Oil change</string>
+    <string name="item_mileage_interval_placeholder">5000</string>
+    <string name="item_recurrence_value_placeholder">5</string>
+    <string name="item_reminder_value_placeholder">5</string>
+    <string name="item_unit_placeholder">Months</string>
+    <string name="item_last_done_mileage_placeholder">42000</string>
+
     <string name="error_positive_number">Enter a whole number of 1 or more</string>
     <string name="error_non_negative_number">Enter a whole number of 0 or more</string>
     <string name="error_value_required">Enter a value or clear the unit</string>
