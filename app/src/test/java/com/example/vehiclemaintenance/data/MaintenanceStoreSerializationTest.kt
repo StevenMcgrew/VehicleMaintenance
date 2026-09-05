@@ -78,17 +78,19 @@ class MaintenanceStoreSerializationTest {
     }
 
     @Test
-    fun `unrecognized maintenance and log entries survive a round trip`() {
+    fun `unrecognized log entries survive a round trip`() {
+        // Maintenance items are typed as of feature 2; service log entries stay raw until
+        // features 3 and 4 define them, so writes must still preserve them verbatim.
         val json = """
-            {"schemaVersion":1,"vehicles":[],
-             "maintenanceItems":[{"id":"m-1","vehicleId":"v-1","name":"Oil change"}],
-             "serviceLogEntries":[{"id":"s-1","vehicleId":"v-1","odometer":42000}]}
+            {"schemaVersion":1,"vehicles":[],"maintenanceItems":[],
+             "serviceLogEntries":[{"id":"s-1","vehicleId":"v-1","odometer":42000,
+              "notes":"shop said belts look fine"}]}
         """.trimIndent()
 
         val decoded = storeJson.decodeFromString<MaintenanceStore>(json)
         val reEncoded = storeJson.encodeToString(decoded)
 
-        assertTrue(reEncoded.contains("\"name\":\"Oil change\""))
         assertTrue(reEncoded.contains("\"odometer\":42000"))
+        assertTrue(reEncoded.contains("\"notes\":\"shop said belts look fine\""))
     }
 }

@@ -49,7 +49,7 @@ it to your project.
 - [x] 1. **Vehicle list and details** - add, edit, and delete vehicles with
   year, make, model, and engine, persisted to the local JSON file with atomic
   writes and a schema version
-- [ ] 2. **Maintenance items** - add, edit, and delete maintenance items on a
+- [x] 2. **Maintenance items** - add, edit, and delete maintenance items on a
   vehicle with mileage interval, recurrence, and reminder interval, including
   optional last-done seeding
 - [ ] 3. **Log a completed service** - mark a maintenance item done with date,

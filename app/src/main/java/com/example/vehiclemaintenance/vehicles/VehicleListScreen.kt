@@ -45,7 +45,7 @@ import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 @Composable
 fun VehicleListScreen(
     onAddVehicle: () -> Unit,
-    onEditVehicle: (String) -> Unit,
+    onOpenVehicle: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: VehicleListViewModel = viewModel(factory = VehicleListViewModel.Factory),
 ) {
@@ -54,7 +54,7 @@ fun VehicleListScreen(
     VehicleListContent(
         uiState = uiState,
         onAddVehicle = onAddVehicle,
-        onEditVehicle = onEditVehicle,
+        onOpenVehicle = onOpenVehicle,
         onDeleteVehicle = viewModel::deleteVehicle,
         onRetry = viewModel::refresh,
         onDeleteErrorShown = viewModel::dismissDeleteError,
@@ -67,7 +67,7 @@ fun VehicleListScreen(
 fun VehicleListContent(
     uiState: VehicleListUiState,
     onAddVehicle: () -> Unit,
-    onEditVehicle: (String) -> Unit,
+    onOpenVehicle: (String) -> Unit,
     onDeleteVehicle: (String) -> Unit,
     onRetry: () -> Unit,
     onDeleteErrorShown: () -> Unit,
@@ -129,7 +129,7 @@ fun VehicleListContent(
                 items(uiState.vehicles, key = { it.id }) { vehicle ->
                     VehicleRow(
                         vehicle = vehicle,
-                        onEdit = { onEditVehicle(vehicle.id) },
+                        onOpen = { onOpenVehicle(vehicle.id) },
                         onDelete = { pendingDeletionId = vehicle.id },
                     )
                     HorizontalDivider()
@@ -154,14 +154,14 @@ fun VehicleListContent(
 @Composable
 private fun VehicleRow(
     vehicle: Vehicle,
-    onEdit: () -> Unit,
+    onOpen: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val label = vehicle.primaryLabel()
     val deleteLabel = stringResource(R.string.delete_vehicle_action, label)
     ListItem(
-        modifier = modifier.clickable(onClick = onEdit),
+        modifier = modifier.clickable(onClick = onOpen),
         headlineContent = {
             Text(text = label, maxLines = 1, overflow = TextOverflow.Ellipsis)
         },
@@ -229,7 +229,7 @@ private fun VehicleListEmptyPreview() {
         VehicleListContent(
             uiState = VehicleListUiState(isLoading = false),
             onAddVehicle = {},
-            onEditVehicle = {},
+            onOpenVehicle = {},
             onDeleteVehicle = {},
             onRetry = {},
             onDeleteErrorShown = {},
@@ -250,7 +250,7 @@ private fun VehicleListPreview() {
                 ),
             ),
             onAddVehicle = {},
-            onEditVehicle = {},
+            onOpenVehicle = {},
             onDeleteVehicle = {},
             onRetry = {},
             onDeleteErrorShown = {},

@@ -16,6 +16,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.vehiclemaintenance.R
 import com.example.vehiclemaintenance.data.JsonFileStore
+import com.example.vehiclemaintenance.data.MaintenanceStoreHolder
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 import org.junit.After
 import org.junit.Before
@@ -42,7 +43,7 @@ class VehicleListScreenTest {
     @Before
     fun setUp() {
         storeFile = File(context.cacheDir, "vehicle-list-test-${System.nanoTime()}.json")
-        repository = JsonVehicleRepository(JsonFileStore(storeFile))
+        repository = JsonVehicleRepository(MaintenanceStoreHolder(JsonFileStore(storeFile)))
     }
 
     @After
@@ -106,7 +107,7 @@ class VehicleListScreenTest {
             val listViewModel = remember { VehicleListViewModel(repository) }
             VehicleListScreen(
                 onAddVehicle = { showForm = true },
-                onEditVehicle = {},
+                onOpenVehicle = {},
                 viewModel = listViewModel,
             )
         }

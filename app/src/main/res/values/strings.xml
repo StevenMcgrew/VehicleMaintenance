@@ -33,4 +33,63 @@
     <string name="vehicle_not_found">That vehicle no longer exists.</string>
     <string name="vehicle_save_failed">Your changes could not be saved.</string>
     <string name="back">Back</string>
+    <string name="maintenance_title">Maintenance</string>
+    <string name="maintenance_empty_title">No maintenance items yet</string>
+    <string name="maintenance_empty_body">Add the first service you want to track for this vehicle.</string>
+    <string name="add_maintenance_item">Add item</string>
+    <string name="edit_maintenance_item">Edit item</string>
+
+    <string name="delete_item_title">Delete %1$s?</string>
+    <string name="delete_item_message">Any service you already logged against it is kept. This cannot be undone.</string>
+    <string name="delete_item_action">Delete %1$s</string>
+    <string name="delete_item_failed">That item could not be deleted.</string>
+    <string name="item_save_failed">Your changes could not be saved.</string>
+    <string name="item_not_found">That maintenance item no longer exists.</string>
+
+    <string name="item_name">Name</string>
+    <string name="item_mileage_interval">Miles between services (optional)</string>
+    <string name="item_recurrence_value">Due every (optional)</string>
+    <string name="item_reminder_value">Remind me every</string>
+    <string name="item_unit">Unit</string>
+    <string name="item_last_done_date">Last done (optional)</string>
+    <string name="item_last_done_mileage">Odometer at last done (optional)</string>
+    <string name="item_date_not_set">Not set</string>
+    <string name="item_clear_date">Clear the last done date</string>
+    <string name="item_confirm_date">OK</string>
+
+    <string name="error_positive_number">Enter a whole number of 1 or more</string>
+    <string name="error_non_negative_number">Enter a whole number of 0 or more</string>
+    <string name="error_value_required">Enter a value or clear the unit</string>
+    <string name="error_unit_required">Choose a unit</string>
+    <string name="error_date_in_future">Choose today or an earlier date</string>
+
+    <string name="unit_days">Days</string>
+    <string name="unit_weeks">Weeks</string>
+    <string name="unit_months">Months</string>
+    <string name="unit_years">Years</string>
+
+    <string name="item_every_interval">every %1$s</string>
+    <string name="item_remind_after">remind %1$s after</string>
+
+    <plurals name="item_miles">
+        <item quantity="one">%1$d mile</item>
+        <item quantity="other">%1$d miles</item>
+    </plurals>
+    <plurals name="duration_days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <plurals name="duration_weeks">
+        <item quantity="one">%1$d week</item>
+        <item quantity="other">%1$d weeks</item>
+    </plurals>
+    <plurals name="duration_months">
+        <item quantity="one">%1$d month</item>
+        <item quantity="other">%1$d months</item>
+    </plurals>
+    <plurals name="duration_years">
+        <item quantity="one">%1$d year</item>
+        <item quantity="other">%1$d years</item>
+    </plurals>
+    <string name="item_summary_separator">, </string>
 </resources>

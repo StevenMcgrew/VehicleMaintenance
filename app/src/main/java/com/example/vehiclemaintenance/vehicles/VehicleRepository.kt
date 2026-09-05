@@ -1,13 +1,10 @@
 package com.example.vehiclemaintenance.vehicles
 
-import com.example.vehiclemaintenance.data.JsonFileStore
-import com.example.vehiclemaintenance.data.MaintenanceStore
+import com.example.vehiclemaintenance.data.MaintenanceStoreHolder
 import com.example.vehiclemaintenance.data.StoreResult
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.example.vehiclemaintenance.data.StoreUpdate
+import com.example.vehiclemaintenance.data.mapState
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import java.util.UUID
@@ -18,11 +15,6 @@ data class VehicleDraft(
     val make: String,
     val model: String,
     val engine: String,
-)
-
-/** Raised when the store could not be read, so writing would overwrite data we failed to parse. */
-class StoreUnavailableException : IllegalStateException(
-    "The maintenance store could not be read, so changes cannot be saved.",
 )
 
 interface VehicleRepository {
@@ -38,34 +30,15 @@ interface VehicleRepository {
 }
 
 class JsonVehicleRepository(
-    private val store: JsonFileStore,
+    private val holder: MaintenanceStoreHolder,
     private val newId: () -> String = { UUID.randomUUID().toString() },
 ) : VehicleRepository {
 
-    private val mutex = Mutex()
-    private val _vehicles = MutableStateFlow<List<Vehicle>>(emptyList())
-    override val vehicles: StateFlow<List<Vehicle>> = _vehicles.asStateFlow()
+    override val vehicles: StateFlow<List<Vehicle>> = holder.state.mapState { it.vehicles }
 
-    private var cached: MaintenanceStore? = null
+    override suspend fun load(): StoreResult<Unit> = holder.load()
 
-    override suspend fun load(): StoreResult<Unit> = mutex.withLock {
-        when (val result = store.load()) {
-            is StoreResult.Success -> {
-                cached = result.value
-                _vehicles.value = result.value.vehicles
-                StoreResult.Success(Unit)
-            }
-
-            is StoreResult.Failure -> {
-                cached = null
-                _vehicles.value = emptyList()
-                result
-            }
-        }
-    }
-
-    override suspend fun add(draft: VehicleDraft): StoreResult<Vehicle> = mutex.withLock {
-        val current = cached ?: return@withLock StoreResult.Failure(StoreUnavailableException())
+    override suspend fun add(draft: VehicleDraft): StoreResult<Vehicle> = holder.update { store ->
         val vehicle = Vehicle(
             id = newId(),
             year = draft.year,
@@ -73,44 +46,28 @@ class JsonVehicleRepository(
             model = draft.model,
             engine = draft.engine,
         )
-        when (val saved = persist(current.copy(vehicles = current.vehicles + vehicle))) {
-            is StoreResult.Success -> StoreResult.Success(vehicle)
-            is StoreResult.Failure -> saved
+        StoreUpdate.Write(store.copy(vehicles = store.vehicles + vehicle), vehicle)
+    }
+
+    override suspend fun update(vehicle: Vehicle): StoreResult<Unit> = holder.update { store ->
+        if (store.vehicles.none { it.id == vehicle.id }) {
+            StoreUpdate.Reject(IllegalArgumentException("No vehicle with id ${vehicle.id}"))
+        } else {
+            val updated = store.vehicles.map { if (it.id == vehicle.id) vehicle else it }
+            StoreUpdate.Write(store.copy(vehicles = updated), Unit)
         }
     }
 
-    override suspend fun update(vehicle: Vehicle): StoreResult<Unit> = mutex.withLock {
-        val current = cached ?: return@withLock StoreResult.Failure(StoreUnavailableException())
-        if (current.vehicles.none { it.id == vehicle.id }) {
-            return@withLock StoreResult.Failure(
-                IllegalArgumentException("No vehicle with id ${vehicle.id}"),
-            )
-        }
-        val updated = current.vehicles.map { if (it.id == vehicle.id) vehicle else it }
-        persist(current.copy(vehicles = updated))
-    }
-
-    override suspend fun delete(vehicleId: String): StoreResult<Unit> = mutex.withLock {
-        val current = cached ?: return@withLock StoreResult.Failure(StoreUnavailableException())
-        persist(
-            current.copy(
-                vehicles = current.vehicles.filterNot { it.id == vehicleId },
-                maintenanceItems = current.maintenanceItems.filterNot { it.belongsTo(vehicleId) },
-                serviceLogEntries = current.serviceLogEntries.filterNot { it.belongsTo(vehicleId) },
+    override suspend fun delete(vehicleId: String): StoreResult<Unit> = holder.update { store ->
+        StoreUpdate.Write(
+            store.copy(
+                vehicles = store.vehicles.filterNot { it.id == vehicleId },
+                maintenanceItems = store.maintenanceItems.filterNot { it.vehicleId == vehicleId },
+                serviceLogEntries = store.serviceLogEntries.filterNot { it.belongsTo(vehicleId) },
             ),
+            Unit,
         )
     }
-
-    private suspend fun persist(next: MaintenanceStore): StoreResult<Unit> =
-        when (val result = store.save(next)) {
-            is StoreResult.Success -> {
-                cached = next
-                _vehicles.value = next.vehicles
-                StoreResult.Success(Unit)
-            }
-
-            is StoreResult.Failure -> result
-        }
 }
 
 private fun JsonObject.belongsTo(vehicleId: String): Boolean =

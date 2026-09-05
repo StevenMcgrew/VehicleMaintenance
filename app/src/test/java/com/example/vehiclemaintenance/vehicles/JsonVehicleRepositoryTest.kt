@@ -3,8 +3,13 @@ package com.example.vehiclemaintenance.vehicles
 import com.example.vehiclemaintenance.data.CURRENT_SCHEMA_VERSION
 import com.example.vehiclemaintenance.data.JsonFileStore
 import com.example.vehiclemaintenance.data.MaintenanceStore
+import com.example.vehiclemaintenance.data.MaintenanceStoreHolder
 import com.example.vehiclemaintenance.data.StoreResult
+import com.example.vehiclemaintenance.data.StoreUnavailableException
 import com.example.vehiclemaintenance.data.storeJson
+import com.example.vehiclemaintenance.maintenance.Interval
+import com.example.vehiclemaintenance.maintenance.IntervalUnit
+import com.example.vehiclemaintenance.maintenance.MaintenanceItem
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -36,15 +41,30 @@ class JsonVehicleRepositoryTest {
         file = File(folder.root, "vehicle-maintenance.json")
     }
 
-    private fun repository(vararg ids: String): JsonVehicleRepository {
+    private fun holder() = MaintenanceStoreHolder(JsonFileStore(file))
+
+    private fun repository(vararg ids: String): JsonVehicleRepository =
+        repositoryOver(holder(), *ids)
+
+    private fun repositoryOver(
+        holder: MaintenanceStoreHolder,
+        vararg ids: String,
+    ): JsonVehicleRepository {
         val queue = ids.toMutableList()
-        return JsonVehicleRepository(JsonFileStore(file)) { queue.removeAt(0) }
+        return JsonVehicleRepository(holder) { queue.removeAt(0) }
     }
 
     private fun entry(id: String, vehicleId: String): JsonObject = buildJsonObject {
         put("id", id)
         put("vehicleId", vehicleId)
     }
+
+    private fun item(id: String, vehicleId: String) = MaintenanceItem(
+        id = id,
+        vehicleId = vehicleId,
+        name = "Oil change",
+        reminder = Interval(5, IntervalUnit.MONTHS),
+    )
 
     private fun seed(store: MaintenanceStore) {
         file.writeText(storeJson.encodeToString(store))
@@ -67,7 +87,7 @@ class JsonVehicleRepositoryTest {
     fun `add leaves existing entries untouched`() = runBlocking {
         seed(
             MaintenanceStore(
-                maintenanceItems = listOf(entry("m-1", "other")),
+                maintenanceItems = listOf(item("m-1", "other")),
                 serviceLogEntries = listOf(entry("s-1", "other")),
             ),
         )
@@ -77,7 +97,7 @@ class JsonVehicleRepositoryTest {
         repository.add(draft)
 
         val onDisk = storeJson.decodeFromString<MaintenanceStore>(file.readText())
-        assertEquals(listOf(entry("m-1", "other")), onDisk.maintenanceItems)
+        assertEquals(listOf(item("m-1", "other")), onDisk.maintenanceItems)
         assertEquals(listOf(entry("s-1", "other")), onDisk.serviceLogEntries)
         assertEquals(CURRENT_SCHEMA_VERSION, onDisk.schemaVersion)
     }
@@ -106,7 +126,7 @@ class JsonVehicleRepositoryTest {
                     Vehicle("keep", 2020, "Honda", "Civic", "2.0L"),
                     Vehicle("drop", 2014, "Toyota", "Tacoma", "4.0L V6"),
                 ),
-                maintenanceItems = listOf(entry("m-keep", "keep"), entry("m-drop", "drop")),
+                maintenanceItems = listOf(item("m-keep", "keep"), item("m-drop", "drop")),
                 serviceLogEntries = listOf(entry("s-keep", "keep"), entry("s-drop", "drop")),
             ),
         )
@@ -118,7 +138,7 @@ class JsonVehicleRepositoryTest {
         assertTrue(result is StoreResult.Success)
         val onDisk = storeJson.decodeFromString<MaintenanceStore>(file.readText())
         assertEquals(listOf("keep"), onDisk.vehicles.map { it.id })
-        assertEquals(listOf(entry("m-keep", "keep")), onDisk.maintenanceItems)
+        assertEquals(listOf(item("m-keep", "keep")), onDisk.maintenanceItems)
         assertEquals(listOf(entry("s-keep", "keep")), onDisk.serviceLogEntries)
     }
 

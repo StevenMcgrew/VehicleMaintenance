@@ -1,5 +1,6 @@
 package com.example.vehiclemaintenance.data
 
+import com.example.vehiclemaintenance.maintenance.MaintenanceItem
 import com.example.vehiclemaintenance.vehicles.Vehicle
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -10,15 +11,14 @@ const val CURRENT_SCHEMA_VERSION = 1
 /**
  * The whole on-disk store, which is also the export format.
  *
- * Maintenance items and service log entries stay as raw [JsonObject] until the features that own
- * them land, so this feature can preserve entries it does not understand without inventing their
- * contract.
+ * Service log entries stay as raw [JsonObject] until features 3 and 4 land, so writes preserve
+ * entries this code cannot yet interpret instead of inventing their contract.
  */
 @Serializable
 data class MaintenanceStore(
     val schemaVersion: Int = CURRENT_SCHEMA_VERSION,
     val vehicles: List<Vehicle> = emptyList(),
-    val maintenanceItems: List<JsonObject> = emptyList(),
+    val maintenanceItems: List<MaintenanceItem> = emptyList(),
     val serviceLogEntries: List<JsonObject> = emptyList(),
 )
 
