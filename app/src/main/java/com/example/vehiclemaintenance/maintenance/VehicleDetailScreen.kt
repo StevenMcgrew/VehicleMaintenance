@@ -52,6 +52,7 @@ fun VehicleDetailScreen(
     onAddItem: () -> Unit,
     onEditItem: (String) -> Unit,
     onLogService: (String) -> Unit,
+    onLogRepair: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: VehicleDetailViewModel = viewModel(
@@ -67,6 +68,7 @@ fun VehicleDetailScreen(
         onAddItem = onAddItem,
         onEditItem = onEditItem,
         onLogService = onLogService,
+        onLogRepair = onLogRepair,
         onDeleteItem = viewModel::deleteItem,
         onDeleteErrorShown = viewModel::dismissDeleteError,
         onRetry = viewModel::refresh,
@@ -83,6 +85,7 @@ fun VehicleDetailContent(
     onAddItem: () -> Unit,
     onEditItem: (String) -> Unit,
     onLogService: (String) -> Unit,
+    onLogRepair: () -> Unit,
     onDeleteItem: (String) -> Unit,
     onDeleteErrorShown: () -> Unit,
     onRetry: () -> Unit,
@@ -118,6 +121,9 @@ fun VehicleDetailContent(
                 },
                 actions = {
                     if (vehicle != null) {
+                        TextButton(onClick = onLogRepair) {
+                            Text(stringResource(R.string.log_repair))
+                        }
                         TextButton(onClick = onEditVehicle) {
                             Text(stringResource(R.string.edit_vehicle))
                         }
@@ -387,6 +393,7 @@ private fun VehicleDetailEmptyPreview() {
             onAddItem = {},
             onEditItem = {},
             onLogService = {},
+            onLogRepair = {},
             onDeleteItem = {},
             onDeleteErrorShown = {},
             onRetry = {},
@@ -432,6 +439,7 @@ private fun VehicleDetailPreview() {
             onAddItem = {},
             onEditItem = {},
             onLogService = {},
+            onLogRepair = {},
             onDeleteItem = {},
             onDeleteErrorShown = {},
             onRetry = {},

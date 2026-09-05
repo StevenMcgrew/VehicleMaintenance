@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.vehiclemaintenance.VehicleMaintenanceApplication
 import com.example.vehiclemaintenance.data.StoreResult
 import com.example.vehiclemaintenance.maintenance.MaintenanceItemRepository
+import com.example.vehiclemaintenance.vehicles.VehicleRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,14 +24,17 @@ data class ServiceLogFormUiState(
     val savedSuccessfully: Boolean = false,
     val saveFailed: Boolean = false,
     val itemNotFound: Boolean = false,
+    val vehicleNotFound: Boolean = false,
     val today: LocalDate = LocalDate.now(),
 )
 
 class ServiceLogFormViewModel(
     private val items: MaintenanceItemRepository,
+    private val vehicles: VehicleRepository,
     private val serviceLog: ServiceLogRepository,
     private val vehicleId: String,
-    private val itemId: String,
+    /** Null logs an ad-hoc repair that was never tracked as a maintenance item. */
+    private val itemId: String?,
     private val today: () -> LocalDate = { LocalDate.now() },
 ) : ViewModel() {
 
@@ -41,19 +45,33 @@ class ServiceLogFormViewModel(
 
     init {
         viewModelScope.launch {
-            val item = items.itemsFor(vehicleId).value.firstOrNull { it.id == itemId }
-            _uiState.update {
-                if (item == null) {
-                    it.copy(isLoading = false, itemNotFound = true)
-                } else {
-                    // The description starts as the item's name and stays editable, so the entry
-                    // still reads correctly if the item is later deleted and the link is cleared.
-                    it.copy(
-                        isLoading = false,
-                        fields = it.fields.copy(description = item.name, date = today()),
-                    )
-                }
+            _uiState.update { state ->
+                if (itemId == null) startAdHocRepair(state) else startCompletionOf(itemId, state)
             }
+        }
+    }
+
+    private fun startAdHocRepair(state: ServiceLogFormUiState): ServiceLogFormUiState =
+        if (vehicles.vehicles.value.none { it.id == vehicleId }) {
+            state.copy(isLoading = false, vehicleNotFound = true)
+        } else {
+            state.copy(isLoading = false, fields = state.fields.copy(date = today()))
+        }
+
+    private fun startCompletionOf(
+        itemId: String,
+        state: ServiceLogFormUiState,
+    ): ServiceLogFormUiState {
+        val item = items.itemsFor(vehicleId).value.firstOrNull { it.id == itemId }
+        return if (item == null) {
+            state.copy(isLoading = false, itemNotFound = true)
+        } else {
+            // The description starts as the item's name and stays editable, so the entry
+            // still reads correctly if the item is later deleted and the link is cleared.
+            state.copy(
+                isLoading = false,
+                fields = state.fields.copy(description = item.name, date = today()),
+            )
         }
     }
 
@@ -120,13 +138,14 @@ class ServiceLogFormViewModel(
     }
 
     companion object {
-        fun factory(vehicleId: String, itemId: String): ViewModelProvider.Factory =
+        fun factory(vehicleId: String, itemId: String?): ViewModelProvider.Factory =
             viewModelFactory {
                 initializer {
                     val application = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]
                             as VehicleMaintenanceApplication
                     ServiceLogFormViewModel(
                         application.container.maintenanceItemRepository,
+                        application.container.vehicleRepository,
                         application.container.serviceLogRepository,
                         vehicleId,
                         itemId,

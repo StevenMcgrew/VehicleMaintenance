@@ -69,6 +69,8 @@
     <string name="item_last_done_mileage_placeholder">42000</string>
 
     <string name="log_service_title">Log service</string>
+    <string name="log_repair">Log repair</string>
+    <string name="log_repair_title">Log repair</string>
     <string name="log_description">What was done</string>
     <string name="log_date">Date</string>
     <string name="log_odometer">Odometer</string>
@@ -78,6 +80,7 @@
     <string name="log_save_failed">Your service could not be saved.</string>
 
     <string name="log_description_placeholder">Oil and filter</string>
+    <string name="log_repair_description_placeholder">Replaced the alternator</string>
     <string name="log_odometer_placeholder">48000</string>
     <string name="log_cost_placeholder">64.99</string>
     <string name="log_notes_placeholder">Shop said the belts look fine</string>

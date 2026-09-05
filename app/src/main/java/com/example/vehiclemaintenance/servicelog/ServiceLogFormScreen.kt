@@ -54,11 +54,12 @@ import java.time.ZoneOffset
 @Composable
 fun ServiceLogFormScreen(
     vehicleId: String,
-    itemId: String,
+    /** Null logs an ad-hoc repair instead of completing a tracked item. */
+    itemId: String?,
     onDone: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ServiceLogFormViewModel = viewModel(
-        key = "log-$itemId",
+        key = "log-${itemId ?: "repair"}",
         factory = ServiceLogFormViewModel.factory(vehicleId, itemId),
     ),
 ) {
@@ -70,6 +71,7 @@ fun ServiceLogFormScreen(
 
     ServiceLogFormContent(
         uiState = uiState,
+        isAdHocRepair = itemId == null,
         onDescriptionChange = viewModel::onDescriptionChange,
         onDateChange = viewModel::onDateChange,
         onOdometerChange = viewModel::onOdometerChange,
@@ -86,6 +88,7 @@ fun ServiceLogFormScreen(
 @Composable
 fun ServiceLogFormContent(
     uiState: ServiceLogFormUiState,
+    isAdHocRepair: Boolean,
     onDescriptionChange: (String) -> Unit,
     onDateChange: (LocalDate?) -> Unit,
     onOdometerChange: (String) -> Unit,
@@ -106,14 +109,22 @@ fun ServiceLogFormContent(
         }
     }
 
-    val actionsEnabled = !uiState.isLoading && !uiState.isSaving && !uiState.itemNotFound
+    val actionsEnabled = !uiState.isLoading && !uiState.isSaving &&
+        !uiState.itemNotFound && !uiState.vehicleNotFound
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.log_service_title)) },
+                title = {
+                    Text(
+                        stringResource(
+                            if (isAdHocRepair) R.string.log_repair_title
+                            else R.string.log_service_title,
+                        ),
+                    )
+                },
                 navigationIcon = {
                     TextButton(onClick = onCancel) { Text(stringResource(R.string.cancel)) }
                 },
@@ -134,12 +145,17 @@ fun ServiceLogFormContent(
                 CircularProgressIndicator()
             }
 
-            uiState.itemNotFound -> Column(
+            uiState.itemNotFound || uiState.vehicleNotFound -> Column(
                 modifier = Modifier.fillMaxSize().padding(innerPadding).padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(stringResource(R.string.item_not_found))
+                Text(
+                    stringResource(
+                        if (uiState.vehicleNotFound) R.string.vehicle_not_found
+                        else R.string.item_not_found,
+                    ),
+                )
                 TextButton(onClick = onCancel) { Text(stringResource(R.string.back)) }
             }
 
@@ -155,7 +171,10 @@ fun ServiceLogFormContent(
                     value = uiState.fields.description,
                     onValueChange = onDescriptionChange,
                     label = stringResource(R.string.log_description),
-                    placeholder = stringResource(R.string.log_description_placeholder),
+                    placeholder = stringResource(
+                        if (isAdHocRepair) R.string.log_repair_description_placeholder
+                        else R.string.log_description_placeholder,
+                    ),
                     error = uiState.errors.description?.message(),
                 )
                 LogDateField(
@@ -330,6 +349,7 @@ private fun ServiceLogFormPreview() {
                     notes = "Shop said the belts look fine",
                 ),
             ),
+            isAdHocRepair = false,
             onDescriptionChange = {},
             onDateChange = {},
             onOdometerChange = {},
@@ -362,6 +382,29 @@ private fun ServiceLogFormErrorsPreview() {
                     cost = LogFieldError.NOT_A_VALID_AMOUNT,
                 ),
             ),
+            isAdHocRepair = false,
+            onDescriptionChange = {},
+            onDateChange = {},
+            onOdometerChange = {},
+            onCostChange = {},
+            onNotesChange = {},
+            onSave = {},
+            onCancel = {},
+            onSaveErrorShown = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ServiceLogRepairPreview() {
+    VehicleMaintenanceTheme {
+        ServiceLogFormContent(
+            uiState = ServiceLogFormUiState(
+                isLoading = false,
+                fields = ServiceLogFormFields(date = LocalDate.of(2026, 9, 5)),
+            ),
+            isAdHocRepair = true,
             onDescriptionChange = {},
             onDateChange = {},
             onOdometerChange = {},

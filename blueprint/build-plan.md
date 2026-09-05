@@ -54,7 +54,7 @@ it to your project.
   optional last-done seeding
 - [x] 3. **Log a completed service** - mark a maintenance item done with date,
   odometer, and cost, resetting its clocks
-- [ ] 4. **Log an ad-hoc repair** - record work that is not a tracked maintenance
+- [x] 4. **Log an ad-hoc repair** - record work that is not a tracked maintenance
   item, with description, date, odometer, and cost
 - [ ] 5. **Service history** - per-vehicle list of everything logged, newest first
 - [ ] 6. **Due and overdue status** - compute and display next reminder, due date,

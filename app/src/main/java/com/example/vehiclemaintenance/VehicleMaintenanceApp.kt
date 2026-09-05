@@ -25,6 +25,7 @@ object Routes {
     const val NEW_ITEM = "vehicles/{$VEHICLE_ID_ARG}/items/new"
     const val EDIT_ITEM = "vehicles/{$VEHICLE_ID_ARG}/items/{$ITEM_ID_ARG}/edit"
     const val LOG_SERVICE = "vehicles/{$VEHICLE_ID_ARG}/items/{$ITEM_ID_ARG}/log"
+    const val LOG_REPAIR = "vehicles/{$VEHICLE_ID_ARG}/repairs/new"
 
     fun editVehicle(vehicleId: String): String = "vehicles/$vehicleId/edit"
 
@@ -37,6 +38,8 @@ object Routes {
 
     fun logService(vehicleId: String, itemId: String): String =
         "vehicles/$vehicleId/items/$itemId/log"
+
+    fun logRepair(vehicleId: String): String = "vehicles/$vehicleId/repairs/new"
 }
 
 @Composable
@@ -81,6 +84,7 @@ fun VehicleMaintenanceApp(
                 onAddItem = { navController.navigate(Routes.newItem(vehicleId)) },
                 onEditItem = { navController.navigate(Routes.editItem(vehicleId, it)) },
                 onLogService = { navController.navigate(Routes.logService(vehicleId, it)) },
+                onLogRepair = { navController.navigate(Routes.logRepair(vehicleId)) },
                 onBack = { navController.popBackStack() },
             )
         }
@@ -89,6 +93,16 @@ fun VehicleMaintenanceApp(
             arguments = listOf(navArgument(VEHICLE_ID_ARG) { type = NavType.StringType }),
         ) { backStackEntry ->
             MaintenanceItemFormScreen(
+                vehicleId = backStackEntry.requireVehicleId(),
+                itemId = null,
+                onDone = { navController.popBackStack() },
+            )
+        }
+        composable(
+            route = Routes.LOG_REPAIR,
+            arguments = listOf(navArgument(VEHICLE_ID_ARG) { type = NavType.StringType }),
+        ) { backStackEntry ->
+            ServiceLogFormScreen(
                 vehicleId = backStackEntry.requireVehicleId(),
                 itemId = null,
                 onDone = { navController.popBackStack() },

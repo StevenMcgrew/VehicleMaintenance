@@ -150,4 +150,54 @@ class ServiceLogFormValidatorTest {
 
         assertNull((validation as ServiceLogFormValidation.Valid).draft.maintenanceItemId)
     }
+
+    @Test
+    fun `an unlinked draft still carries every entered field`() {
+        val validation = ServiceLogFormValidator.validate(
+            ServiceLogFormFields(
+                description = "Replaced the alternator",
+                date = today,
+                odometer = "51000",
+                cost = "320.50",
+                notes = "Warranty part",
+            ),
+            "v-1",
+            null,
+            today,
+        )
+
+        assertEquals(
+            ServiceLogDraft(
+                vehicleId = "v-1",
+                maintenanceItemId = null,
+                description = "Replaced the alternator",
+                date = today,
+                odometer = 51000,
+                cost = 32050,
+                notes = "Warranty part",
+            ),
+            (validation as ServiceLogFormValidation.Valid).draft,
+        )
+    }
+
+    @Test
+    fun `an unlinked form is held to the same field rules`() {
+        val validation = ServiceLogFormValidator.validate(
+            ServiceLogFormFields(
+                description = "   ",
+                date = today.plusDays(1),
+                odometer = "-1",
+                cost = "45.555",
+            ),
+            "v-1",
+            null,
+            today,
+        )
+
+        val errors = (validation as ServiceLogFormValidation.Invalid).errors
+        assertEquals(LogFieldError.REQUIRED, errors.description)
+        assertEquals(LogFieldError.DATE_IN_FUTURE, errors.date)
+        assertEquals(LogFieldError.NOT_A_NON_NEGATIVE_NUMBER, errors.odometer)
+        assertEquals(LogFieldError.NOT_A_VALID_AMOUNT, errors.cost)
+    }
 }

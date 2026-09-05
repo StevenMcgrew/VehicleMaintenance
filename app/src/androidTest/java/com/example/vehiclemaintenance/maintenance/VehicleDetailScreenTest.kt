@@ -257,6 +257,7 @@ class VehicleDetailScreenTest {
                     showForm = true
                 },
                 onLogService = {},
+                onLogRepair = {},
                 onBack = {},
                 viewModel = detailViewModel,
             )
