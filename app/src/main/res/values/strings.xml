@@ -19,6 +19,7 @@
     <string name="delete_vehicle_failed">That vehicle could not be deleted.</string>
 
     <string name="vehicle_summary">%1$d %2$s %3$s</string>
+    <string name="vehicle_summary_with_engine">%1$d %2$s %3$s %4$s</string>
 
     <string name="vehicle_year">Year</string>
     <string name="vehicle_make">Make</string>

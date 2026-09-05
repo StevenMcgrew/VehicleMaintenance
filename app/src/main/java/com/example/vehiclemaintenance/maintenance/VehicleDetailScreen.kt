@@ -98,7 +98,7 @@ fun VehicleDetailContent(
 
     val vehicle = uiState.vehicle
     val title = vehicle?.let {
-        stringResource(R.string.vehicle_summary, it.year, it.make, it.model)
+        stringResource(R.string.vehicle_summary_with_engine, it.year, it.make, it.model, it.engine)
     } ?: stringResource(R.string.maintenance_title)
 
     Scaffold(

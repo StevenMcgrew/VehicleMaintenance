@@ -78,7 +78,13 @@ class VehicleDetailScreenTest {
     fun detailShowsTheVehicleItBelongsTo() {
         setContent()
 
-        val summary = context.getString(R.string.vehicle_summary, 2014, "Toyota", "Tacoma")
+        val summary = context.getString(
+            R.string.vehicle_summary_with_engine,
+            2014,
+            "Toyota",
+            "Tacoma",
+            "4.0L V6",
+        )
         waitForText(summary)
         composeRule.onNodeWithText(summary).assertIsDisplayed()
     }
