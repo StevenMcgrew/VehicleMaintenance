@@ -42,7 +42,6 @@
 
     <string name="delete_item_title">Delete %1$s?</string>
     <string name="delete_item_message">Any service you already logged against it is kept. This cannot be undone.</string>
-    <string name="delete_item_action">Delete %1$s</string>
     <string name="delete_item_failed">That item could not be deleted.</string>
     <string name="item_save_failed">Your changes could not be saved.</string>
     <string name="item_not_found">That maintenance item no longer exists.</string>
@@ -69,28 +68,15 @@
     <string name="unit_months">Months</string>
     <string name="unit_years">Years</string>
 
-    <string name="item_every_interval">every %1$s</string>
-    <string name="item_remind_after">remind %1$s after</string>
+    <string name="column_service">Service</string>
+    <string name="column_miles">Miles</string>
+    <string name="column_time">Time</string>
+    <string name="column_remind">Remind</string>
+    <string name="value_not_set">-</string>
 
-    <plurals name="item_miles">
-        <item quantity="one">%1$d mile</item>
-        <item quantity="other">%1$d miles</item>
-    </plurals>
-    <plurals name="duration_days">
-        <item quantity="one">%1$d day</item>
-        <item quantity="other">%1$d days</item>
-    </plurals>
-    <plurals name="duration_weeks">
-        <item quantity="one">%1$d week</item>
-        <item quantity="other">%1$d weeks</item>
-    </plurals>
-    <plurals name="duration_months">
-        <item quantity="one">%1$d month</item>
-        <item quantity="other">%1$d months</item>
-    </plurals>
-    <plurals name="duration_years">
-        <item quantity="one">%1$d year</item>
-        <item quantity="other">%1$d years</item>
-    </plurals>
-    <string name="item_summary_separator">, </string>
+    <!-- Abbreviated so a whole interval fits one line in a narrow table column. -->
+    <string name="interval_short_days" tools:ignore="PluralsCandidate">%1$d d</string>
+    <string name="interval_short_weeks" tools:ignore="PluralsCandidate">%1$d wk</string>
+    <string name="interval_short_months" tools:ignore="PluralsCandidate">%1$d mo</string>
+    <string name="interval_short_years" tools:ignore="PluralsCandidate">%1$d yr</string>
 </resources>

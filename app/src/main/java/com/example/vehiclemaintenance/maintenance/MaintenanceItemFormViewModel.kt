@@ -22,6 +22,9 @@ data class MaintenanceItemFormUiState(
     val isSaving: Boolean = false,
     val savedSuccessfully: Boolean = false,
     val saveFailed: Boolean = false,
+    val isDeleting: Boolean = false,
+    val deletedSuccessfully: Boolean = false,
+    val deleteFailed: Boolean = false,
     val itemNotFound: Boolean = false,
     val today: LocalDate = LocalDate.now(),
 )
@@ -109,8 +112,27 @@ class MaintenanceItemFormViewModel(
         }
     }
 
+    fun delete() {
+        val id = itemId ?: return
+        _uiState.update { it.copy(isDeleting = true, deleteFailed = false) }
+        viewModelScope.launch {
+            val result = repository.delete(id)
+            _uiState.update {
+                it.copy(
+                    isDeleting = false,
+                    deletedSuccessfully = result is StoreResult.Success,
+                    deleteFailed = result is StoreResult.Failure,
+                )
+            }
+        }
+    }
+
     fun dismissSaveError() {
         _uiState.update { it.copy(saveFailed = false) }
+    }
+
+    fun dismissDeleteError() {
+        _uiState.update { it.copy(deleteFailed = false) }
     }
 
     private fun validate(fields: MaintenanceItemFormFields) =

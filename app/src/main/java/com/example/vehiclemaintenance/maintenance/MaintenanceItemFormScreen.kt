@@ -30,6 +30,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,8 +61,8 @@ fun MaintenanceItemFormScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(uiState.savedSuccessfully) {
-        if (uiState.savedSuccessfully) onDone()
+    LaunchedEffect(uiState.savedSuccessfully, uiState.deletedSuccessfully) {
+        if (uiState.savedSuccessfully || uiState.deletedSuccessfully) onDone()
     }
 
     MaintenanceItemFormContent(
@@ -75,8 +76,10 @@ fun MaintenanceItemFormScreen(
         onLastDoneDateChange = viewModel::onLastDoneDateChange,
         onLastDoneMileageChange = viewModel::onLastDoneMileageChange,
         onSave = viewModel::save,
+        onDelete = viewModel::delete,
         onCancel = onDone,
         onSaveErrorShown = viewModel::dismissSaveError,
+        onDeleteErrorShown = viewModel::dismissDeleteError,
         modifier = modifier,
     )
 }
@@ -94,12 +97,16 @@ fun MaintenanceItemFormContent(
     onLastDoneDateChange: (LocalDate?) -> Unit,
     onLastDoneMileageChange: (String) -> Unit,
     onSave: () -> Unit,
+    onDelete: () -> Unit,
     onCancel: () -> Unit,
     onSaveErrorShown: () -> Unit,
+    onDeleteErrorShown: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var confirmingDeletion by rememberSaveable { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val saveFailedMessage = stringResource(R.string.item_save_failed)
+    val deleteFailedMessage = stringResource(R.string.delete_item_failed)
 
     LaunchedEffect(uiState.saveFailed) {
         if (uiState.saveFailed) {
@@ -107,6 +114,18 @@ fun MaintenanceItemFormContent(
             onSaveErrorShown()
         }
     }
+
+    LaunchedEffect(uiState.deleteFailed) {
+        if (uiState.deleteFailed) {
+            snackbarHostState.showSnackbar(deleteFailedMessage)
+            onDeleteErrorShown()
+        }
+    }
+
+    val actionsEnabled = !uiState.isLoading &&
+        !uiState.isSaving &&
+        !uiState.isDeleting &&
+        !uiState.itemNotFound
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -128,12 +147,15 @@ fun MaintenanceItemFormContent(
                     TextButton(onClick = onCancel) { Text(stringResource(R.string.cancel)) }
                 },
                 actions = {
-                    TextButton(
-                        onClick = onSave,
-                        enabled = !uiState.isLoading &&
-                            !uiState.isSaving &&
-                            !uiState.itemNotFound,
-                    ) {
+                    if (uiState.isEditing && !uiState.itemNotFound) {
+                        TextButton(
+                            onClick = { confirmingDeletion = true },
+                            enabled = actionsEnabled,
+                        ) {
+                            Text(stringResource(R.string.delete))
+                        }
+                    }
+                    TextButton(onClick = onSave, enabled = actionsEnabled) {
                         Text(stringResource(R.string.save))
                     }
                 },
@@ -214,6 +236,17 @@ fun MaintenanceItemFormContent(
                 )
             }
         }
+    }
+
+    if (confirmingDeletion) {
+        DeleteItemDialog(
+            itemName = uiState.fields.name,
+            onConfirm = {
+                confirmingDeletion = false
+                onDelete()
+            },
+            onDismiss = { confirmingDeletion = false },
+        )
     }
 }
 
@@ -434,8 +467,10 @@ private fun MaintenanceItemFormPreview() {
             onLastDoneDateChange = {},
             onLastDoneMileageChange = {},
             onSave = {},
+            onDelete = {},
             onCancel = {},
             onSaveErrorShown = {},
+            onDeleteErrorShown = {},
         )
     }
 }
@@ -461,8 +496,10 @@ private fun MaintenanceItemFormErrorsPreview() {
             onLastDoneDateChange = {},
             onLastDoneMileageChange = {},
             onSave = {},
+            onDelete = {},
             onCancel = {},
             onSaveErrorShown = {},
+            onDeleteErrorShown = {},
         )
     }
 }

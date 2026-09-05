@@ -6,7 +6,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
@@ -132,6 +135,55 @@ class VehicleDetailScreenTest {
         assert(item.lastDoneDate != null) { "creation should backfill the last done date" }
     }
 
+    @Test
+    fun theTableLabelsEveryColumnAndShowsTheReminderInterval() {
+        addOilChange()
+
+        composeRule.onNodeWithText(string(R.string.column_service)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.column_miles)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.column_time)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.column_remind)).assertIsDisplayed()
+
+        val remind = context.getString(R.string.interval_short_months, 5)
+        composeRule.onNodeWithText(remind).assertIsDisplayed()
+    }
+
+    @Test
+    fun deletingFromTheItemFormRemovesTheRowAndTheStoredItem() {
+        addOilChange()
+
+        composeRule.onNodeWithText("Oil change").performClick()
+        waitForText(string(R.string.save))
+
+        composeRule.onNodeWithText(string(R.string.delete)).performClick()
+        waitForText(context.getString(R.string.delete_item_title, "Oil change"))
+        composeRule
+            .onNode(hasText(string(R.string.delete)) and hasAnyAncestor(isDialog()))
+            .performClick()
+
+        waitForText(string(R.string.maintenance_empty_title))
+
+        val onDisk = storeJson.decodeFromString<MaintenanceStore>(storeFile.readText())
+        assert(onDisk.maintenanceItems.isEmpty()) {
+            "expected no stored items, got ${onDisk.maintenanceItems}"
+        }
+    }
+
+    /** Creates one item through the real form so the detail screen renders persisted data. */
+    private fun addOilChange() {
+        setContent()
+        waitForText(string(R.string.maintenance_empty_title))
+
+        composeRule.onNodeWithText(string(R.string.add_maintenance_item)).performClick()
+        waitForText(string(R.string.save))
+        val fields = composeRule.onAllNodes(hasSetTextAction())
+        fields[0].performTextInput("Oil change")
+        fields[3].performTextInput("5")
+        composeRule.onNodeWithText(string(R.string.save)).performClick()
+
+        waitForText("Oil change")
+    }
+
     private fun setContent() {
         composeRule.setContent {
             VehicleMaintenanceTheme {
@@ -143,13 +195,14 @@ class VehicleDetailScreenTest {
     @Composable
     private fun Harness() {
         var showForm by remember { mutableStateOf(false) }
+        var editingItemId by remember { mutableStateOf<String?>(null) }
         if (showForm) {
-            val formViewModel = remember {
-                MaintenanceItemFormViewModel(items, "v-1", null)
+            val formViewModel = remember(editingItemId) {
+                MaintenanceItemFormViewModel(items, "v-1", editingItemId)
             }
             MaintenanceItemFormScreen(
                 vehicleId = "v-1",
-                itemId = null,
+                itemId = editingItemId,
                 onDone = { showForm = false },
                 viewModel = formViewModel,
             )
@@ -158,8 +211,14 @@ class VehicleDetailScreenTest {
             VehicleDetailScreen(
                 vehicleId = "v-1",
                 onEditVehicle = {},
-                onAddItem = { showForm = true },
-                onEditItem = {},
+                onAddItem = {
+                    editingItemId = null
+                    showForm = true
+                },
+                onEditItem = {
+                    editingItemId = it
+                    showForm = true
+                },
                 onBack = {},
                 viewModel = detailViewModel,
             )

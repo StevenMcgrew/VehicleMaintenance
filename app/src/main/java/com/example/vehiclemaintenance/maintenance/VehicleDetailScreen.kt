@@ -3,38 +3,30 @@ package com.example.vehiclemaintenance.maintenance
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -64,9 +56,7 @@ fun VehicleDetailScreen(
         onEditVehicle = onEditVehicle,
         onAddItem = onAddItem,
         onEditItem = onEditItem,
-        onDeleteItem = viewModel::deleteItem,
         onRetry = viewModel::refresh,
-        onDeleteErrorShown = viewModel::dismissDeleteError,
         onBack = onBack,
         modifier = modifier,
     )
@@ -79,23 +69,10 @@ fun VehicleDetailContent(
     onEditVehicle: () -> Unit,
     onAddItem: () -> Unit,
     onEditItem: (String) -> Unit,
-    onDeleteItem: (String) -> Unit,
     onRetry: () -> Unit,
-    onDeleteErrorShown: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var pendingDeletionId by rememberSaveable { mutableStateOf<String?>(null) }
-    val snackbarHostState = remember { SnackbarHostState() }
-    val deleteFailedMessage = stringResource(R.string.delete_item_failed)
-
-    LaunchedEffect(uiState.deleteFailed) {
-        if (uiState.deleteFailed) {
-            snackbarHostState.showSnackbar(deleteFailedMessage)
-            onDeleteErrorShown()
-        }
-    }
-
     val vehicle = uiState.vehicle
     val title = vehicle?.let {
         stringResource(R.string.vehicle_summary_with_engine, it.year, it.make, it.model, it.engine)
@@ -118,7 +95,6 @@ fun VehicleDetailContent(
                 },
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             if (!uiState.loadFailed && !uiState.vehicleNotFound && vehicle != null) {
                 ExtendedFloatingActionButton(onClick = onAddItem) {
@@ -160,84 +136,117 @@ fun VehicleDetailContent(
                 )
             }
 
-            else -> LazyColumn(modifier = Modifier.padding(innerPadding)) {
-                items(uiState.items, key = { it.id }) { item ->
-                    MaintenanceItemRow(
-                        item = item,
-                        onEdit = { onEditItem(item.id) },
-                        onDelete = { pendingDeletionId = item.id },
-                    )
-                    HorizontalDivider()
-                }
+            else -> MaintenanceItemTable(
+                items = uiState.items,
+                onEditItem = onEditItem,
+                modifier = Modifier.padding(innerPadding),
+            )
+        }
+    }
+}
+
+@Composable
+private fun MaintenanceItemTable(
+    items: List<MaintenanceItem>,
+    onEditItem: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        MaintenanceItemHeader()
+        HorizontalDivider()
+        LazyColumn {
+            items(items, key = { it.id }) { item ->
+                MaintenanceItemRow(item = item, onEdit = { onEditItem(item.id) })
+                HorizontalDivider()
             }
         }
     }
+}
 
-    val pendingItem = uiState.items.firstOrNull { it.id == pendingDeletionId }
-    if (pendingItem != null) {
-        DeleteItemDialog(
-            itemName = pendingItem.name,
-            onConfirm = {
-                onDeleteItem(pendingItem.id)
-                pendingDeletionId = null
-            },
-            onDismiss = { pendingDeletionId = null },
-        )
+@Composable
+private fun MaintenanceItemHeader(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = HORIZONTAL_PADDING, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(COLUMN_SPACING),
+    ) {
+        HeaderCell(stringResource(R.string.column_service), SERVICE_WEIGHT, TextAlign.Start)
+        HeaderCell(stringResource(R.string.column_miles), VALUE_WEIGHT, TextAlign.End)
+        HeaderCell(stringResource(R.string.column_time), VALUE_WEIGHT, TextAlign.End)
+        HeaderCell(stringResource(R.string.column_remind), VALUE_WEIGHT, TextAlign.End)
     }
+}
+
+@Composable
+private fun RowScope.HeaderCell(text: String, weight: Float, textAlign: TextAlign) {
+    Text(
+        text = text,
+        modifier = Modifier.weight(weight),
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = textAlign,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
 }
 
 @Composable
 private fun MaintenanceItemRow(
     item: MaintenanceItem,
     onEdit: () -> Unit,
-    onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val deleteLabel = stringResource(R.string.delete_item_action, item.name)
-    ListItem(
-        modifier = modifier.clickable(onClick = onEdit),
-        headlineContent = {
-            Text(text = item.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        },
-        supportingContent = {
-            Text(text = item.scheduleSummary(), maxLines = 2, overflow = TextOverflow.Ellipsis)
-        },
-        trailingContent = {
-            TextButton(
-                onClick = onDelete,
-                modifier = Modifier.clearAndSetSemantics { contentDescription = deleteLabel },
-            ) {
-                Text(stringResource(R.string.delete))
-            }
-        },
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onEdit)
+            .heightIn(min = 48.dp)
+            .padding(horizontal = HORIZONTAL_PADDING, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(COLUMN_SPACING),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = item.name,
+            modifier = Modifier.weight(SERVICE_WEIGHT),
+            style = MaterialTheme.typography.bodyMedium,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+        ValueCell(item.mileageInterval?.let { formatMileage(it) })
+        ValueCell(item.recurrence?.shortLabel())
+        ValueCell(item.reminder.shortLabel())
+    }
+}
+
+@Composable
+private fun RowScope.ValueCell(value: String?) {
+    Text(
+        text = value ?: stringResource(R.string.value_not_set),
+        modifier = Modifier.weight(VALUE_WEIGHT),
+        style = MaterialTheme.typography.bodyMedium,
+        textAlign = TextAlign.End,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
     )
 }
 
-/** Only what the user actually set, in a fixed order. Due status arrives with feature 6. */
+/** "5 mo", short enough to stay on one line in a table column. */
 @Composable
-private fun MaintenanceItem.scheduleSummary(): String {
-    val parts = buildList {
-        mileageInterval?.let {
-            add(stringResource(R.string.item_every_interval, pluralStringResource(R.plurals.item_miles, it, it)))
-        }
-        recurrence?.let { add(stringResource(R.string.item_every_interval, it.spelled())) }
-        add(stringResource(R.string.item_remind_after, reminder.spelled()))
-    }
-    return parts.joinToString(stringResource(R.string.item_summary_separator))
-}
-
-/** "5 months", pluralized, so a value of 1 does not read as "1 months". */
-@Composable
-private fun Interval.spelled(): String = pluralStringResource(
+private fun Interval.shortLabel(): String = stringResource(
     when (unit) {
-        IntervalUnit.DAYS -> R.plurals.duration_days
-        IntervalUnit.WEEKS -> R.plurals.duration_weeks
-        IntervalUnit.MONTHS -> R.plurals.duration_months
-        IntervalUnit.YEARS -> R.plurals.duration_years
+        IntervalUnit.DAYS -> R.string.interval_short_days
+        IntervalUnit.WEEKS -> R.string.interval_short_weeks
+        IntervalUnit.MONTHS -> R.string.interval_short_months
+        IntervalUnit.YEARS -> R.string.interval_short_years
     },
     value,
-    value,
 )
+
+private val HORIZONTAL_PADDING = 16.dp
+private val COLUMN_SPACING = 8.dp
+private const val SERVICE_WEIGHT = 4f
+private const val VALUE_WEIGHT = 2f
 
 @Composable
 fun unitLabel(unit: IntervalUnit): String = stringResource(
@@ -248,25 +257,6 @@ fun unitLabel(unit: IntervalUnit): String = stringResource(
         IntervalUnit.YEARS -> R.string.unit_years
     },
 )
-
-@Composable
-private fun DeleteItemDialog(
-    itemName: String,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.delete_item_title, itemName)) },
-        text = { Text(stringResource(R.string.delete_item_message)) },
-        confirmButton = {
-            TextButton(onClick = onConfirm) { Text(stringResource(R.string.delete)) }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
-        },
-    )
-}
 
 @Composable
 private fun CenteredColumn(
@@ -293,9 +283,7 @@ private fun VehicleDetailEmptyPreview() {
             onEditVehicle = {},
             onAddItem = {},
             onEditItem = {},
-            onDeleteItem = {},
             onRetry = {},
-            onDeleteErrorShown = {},
             onBack = {},
         )
     }
@@ -325,14 +313,19 @@ private fun VehicleDetailPreview() {
                         mileageInterval = 7500,
                         reminder = Interval(90, IntervalUnit.DAYS),
                     ),
+                    MaintenanceItem(
+                        id = "m-3",
+                        vehicleId = "v-1",
+                        name = "Brake fluid flush",
+                        recurrence = Interval(2, IntervalUnit.YEARS),
+                        reminder = Interval(22, IntervalUnit.MONTHS),
+                    ),
                 ),
             ),
             onEditVehicle = {},
             onAddItem = {},
             onEditItem = {},
-            onDeleteItem = {},
             onRetry = {},
-            onDeleteErrorShown = {},
             onBack = {},
         )
     }
