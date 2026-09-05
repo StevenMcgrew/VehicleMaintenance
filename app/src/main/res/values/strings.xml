@@ -46,12 +46,12 @@
     <string name="item_save_failed">Your changes could not be saved.</string>
     <string name="item_not_found">That maintenance item no longer exists.</string>
 
-    <string name="item_name">Name</string>
+    <string name="item_name">Name of service</string>
     <string name="item_mileage_interval">Miles between services (optional)</string>
-    <string name="item_recurrence_value">Due every (optional)</string>
+    <string name="item_recurrence_value">Time between services (optional)</string>
     <string name="item_reminder_value">Remind me every</string>
     <string name="item_unit">Unit</string>
-    <string name="item_last_done_date">Last done (optional)</string>
+    <string name="item_last_done_date">Date last done (optional)</string>
     <string name="item_last_done_mileage">Odometer at last done (optional)</string>
     <string name="item_date_not_set">Not set</string>
     <string name="item_clear_date">Clear the last done date</string>
