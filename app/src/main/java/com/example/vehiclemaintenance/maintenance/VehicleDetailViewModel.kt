@@ -21,6 +21,8 @@ data class VehicleDetailUiState(
     val items: List<MaintenanceItem> = emptyList(),
     val loadFailed: Boolean = false,
     val vehicleNotFound: Boolean = false,
+    val isDeleting: Boolean = false,
+    val deleteFailed: Boolean = false,
 )
 
 class VehicleDetailViewModel(
@@ -59,6 +61,20 @@ class VehicleDetailViewModel(
                 )
             }
         }
+    }
+
+    fun deleteItem(itemId: String) {
+        _uiState.update { it.copy(isDeleting = true, deleteFailed = false) }
+        viewModelScope.launch {
+            val result = items.delete(itemId)
+            _uiState.update {
+                it.copy(isDeleting = false, deleteFailed = result is StoreResult.Failure)
+            }
+        }
+    }
+
+    fun dismissDeleteError() {
+        _uiState.update { it.copy(deleteFailed = false) }
     }
 
     companion object {

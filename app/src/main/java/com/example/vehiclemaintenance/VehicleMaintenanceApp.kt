@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.vehiclemaintenance.maintenance.MaintenanceItemFormScreen
 import com.example.vehiclemaintenance.maintenance.VehicleDetailScreen
+import com.example.vehiclemaintenance.servicelog.ServiceLogFormScreen
 import com.example.vehiclemaintenance.vehicles.VehicleFormScreen
 import com.example.vehiclemaintenance.vehicles.VehicleListScreen
 
@@ -23,6 +24,7 @@ object Routes {
     const val VEHICLE_DETAIL = "vehicles/{$VEHICLE_ID_ARG}"
     const val NEW_ITEM = "vehicles/{$VEHICLE_ID_ARG}/items/new"
     const val EDIT_ITEM = "vehicles/{$VEHICLE_ID_ARG}/items/{$ITEM_ID_ARG}/edit"
+    const val LOG_SERVICE = "vehicles/{$VEHICLE_ID_ARG}/items/{$ITEM_ID_ARG}/log"
 
     fun editVehicle(vehicleId: String): String = "vehicles/$vehicleId/edit"
 
@@ -32,6 +34,9 @@ object Routes {
 
     fun editItem(vehicleId: String, itemId: String): String =
         "vehicles/$vehicleId/items/$itemId/edit"
+
+    fun logService(vehicleId: String, itemId: String): String =
+        "vehicles/$vehicleId/items/$itemId/log"
 }
 
 @Composable
@@ -75,6 +80,7 @@ fun VehicleMaintenanceApp(
                 onEditVehicle = { navController.navigate(Routes.editVehicle(vehicleId)) },
                 onAddItem = { navController.navigate(Routes.newItem(vehicleId)) },
                 onEditItem = { navController.navigate(Routes.editItem(vehicleId, it)) },
+                onLogService = { navController.navigate(Routes.logService(vehicleId, it)) },
                 onBack = { navController.popBackStack() },
             )
         }
@@ -85,6 +91,19 @@ fun VehicleMaintenanceApp(
             MaintenanceItemFormScreen(
                 vehicleId = backStackEntry.requireVehicleId(),
                 itemId = null,
+                onDone = { navController.popBackStack() },
+            )
+        }
+        composable(
+            route = Routes.LOG_SERVICE,
+            arguments = listOf(
+                navArgument(VEHICLE_ID_ARG) { type = NavType.StringType },
+                navArgument(ITEM_ID_ARG) { type = NavType.StringType },
+            ),
+        ) { backStackEntry ->
+            ServiceLogFormScreen(
+                vehicleId = backStackEntry.requireVehicleId(),
+                itemId = backStackEntry.requireItemId(),
                 onDone = { navController.popBackStack() },
             )
         }
@@ -106,3 +125,6 @@ fun VehicleMaintenanceApp(
 
 private fun androidx.navigation.NavBackStackEntry.requireVehicleId(): String =
     checkNotNull(arguments?.getString(VEHICLE_ID_ARG)) { "vehicleId is a required route argument" }
+
+private fun androidx.navigation.NavBackStackEntry.requireItemId(): String =
+    checkNotNull(arguments?.getString(ITEM_ID_ARG)) { "itemId is a required route argument" }

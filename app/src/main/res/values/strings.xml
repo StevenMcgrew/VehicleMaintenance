@@ -40,6 +40,10 @@
     <string name="add_maintenance_item">Add item</string>
     <string name="edit_maintenance_item">Edit item</string>
 
+    <string name="item_action_log_service">Log a completed service</string>
+    <string name="delete_maintenance_item">Delete item</string>
+    <string name="item_actions_title">%1$s</string>
+
     <string name="delete_item_title">Delete %1$s?</string>
     <string name="delete_item_message">Any service you already logged against it is kept. This cannot be undone.</string>
     <string name="delete_item_failed">That item could not be deleted.</string>
@@ -64,11 +68,26 @@
     <string name="item_unit_placeholder">Months</string>
     <string name="item_last_done_mileage_placeholder">42000</string>
 
+    <string name="log_service_title">Log service</string>
+    <string name="log_description">What was done</string>
+    <string name="log_date">Date</string>
+    <string name="log_odometer">Odometer</string>
+    <string name="log_cost">Cost (optional)</string>
+    <string name="log_notes">Notes (optional)</string>
+    <string name="log_choose_date">Choose the date</string>
+    <string name="log_save_failed">Your service could not be saved.</string>
+
+    <string name="log_description_placeholder">Oil and filter</string>
+    <string name="log_odometer_placeholder">48000</string>
+    <string name="log_cost_placeholder">64.99</string>
+    <string name="log_notes_placeholder">Shop said the belts look fine</string>
+
     <string name="error_positive_number">Enter a whole number of 1 or more</string>
     <string name="error_non_negative_number">Enter a whole number of 0 or more</string>
     <string name="error_value_required">Enter a value or clear the unit</string>
     <string name="error_unit_required">Choose a unit</string>
     <string name="error_date_in_future">Choose today or an earlier date</string>
+    <string name="error_valid_amount">Enter an amount such as 64.99</string>
 
     <string name="unit_days">Days</string>
     <string name="unit_weeks">Weeks</string>

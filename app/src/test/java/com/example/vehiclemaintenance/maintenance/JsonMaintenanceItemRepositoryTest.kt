@@ -5,12 +5,10 @@ import com.example.vehiclemaintenance.data.MaintenanceStore
 import com.example.vehiclemaintenance.data.MaintenanceStoreHolder
 import com.example.vehiclemaintenance.data.StoreResult
 import com.example.vehiclemaintenance.data.storeJson
+import com.example.vehiclemaintenance.servicelog.ServiceLogEntry
 import com.example.vehiclemaintenance.vehicles.JsonVehicleRepository
 import com.example.vehiclemaintenance.vehicles.Vehicle
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -55,13 +53,14 @@ class JsonMaintenanceItemRepositoryTest {
 
     private fun seed(store: MaintenanceStore) = file.writeText(storeJson.encodeToString(store))
 
-    private fun logEntry(id: String, vehicleId: String, itemId: String?): JsonObject =
-        buildJsonObject {
-            put("id", id)
-            put("vehicleId", vehicleId)
-            put("description", "Oil and filter")
-            if (itemId != null) put("maintenanceItemId", itemId)
-        }
+    private fun logEntry(id: String, vehicleId: String, itemId: String?) = ServiceLogEntry(
+        id = id,
+        vehicleId = vehicleId,
+        maintenanceItemId = itemId,
+        description = "Oil and filter",
+        date = LocalDate.of(2026, 3, 15),
+        odometer = 42000,
+    )
 
     private fun onDisk() = storeJson.decodeFromString<MaintenanceStore>(file.readText())
 
@@ -156,9 +155,9 @@ class JsonMaintenanceItemRepositoryTest {
         val store = onDisk()
         assertEquals(emptyList<MaintenanceItem>(), store.maintenanceItems)
         assertEquals(2, store.serviceLogEntries.size)
-        assertNull(store.serviceLogEntries[0]["maintenanceItemId"])
-        assertEquals("Oil and filter", store.serviceLogEntries[0]["description"]?.toString()?.trim('"'))
-        assertEquals("\"m-other\"", store.serviceLogEntries[1]["maintenanceItemId"]?.toString())
+        assertNull(store.serviceLogEntries[0].maintenanceItemId)
+        assertEquals("Oil and filter", store.serviceLogEntries[0].description)
+        assertEquals("m-other", store.serviceLogEntries[1].maintenanceItemId)
     }
 
     @Test
@@ -172,7 +171,7 @@ class JsonMaintenanceItemRepositoryTest {
 
         val store = onDisk()
         assertEquals(emptyList<MaintenanceItem>(), store.maintenanceItems)
-        assertEquals(emptyList<JsonObject>(), store.serviceLogEntries)
+        assertEquals(emptyList<ServiceLogEntry>(), store.serviceLogEntries)
     }
 
     @Test

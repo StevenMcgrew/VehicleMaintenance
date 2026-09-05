@@ -5,8 +5,6 @@ import com.example.vehiclemaintenance.data.StoreResult
 import com.example.vehiclemaintenance.data.StoreUpdate
 import com.example.vehiclemaintenance.data.mapState
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import java.util.UUID
 
 /** The fields the user supplies; the repository owns id assignment. */
@@ -63,12 +61,9 @@ class JsonVehicleRepository(
             store.copy(
                 vehicles = store.vehicles.filterNot { it.id == vehicleId },
                 maintenanceItems = store.maintenanceItems.filterNot { it.vehicleId == vehicleId },
-                serviceLogEntries = store.serviceLogEntries.filterNot { it.belongsTo(vehicleId) },
+                serviceLogEntries = store.serviceLogEntries.filterNot { it.vehicleId == vehicleId },
             ),
             Unit,
         )
     }
 }
-
-private fun JsonObject.belongsTo(vehicleId: String): Boolean =
-    (this["vehicleId"] as? JsonPrimitive)?.content == vehicleId

@@ -17,13 +17,22 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -42,6 +51,7 @@ fun VehicleDetailScreen(
     onEditVehicle: () -> Unit,
     onAddItem: () -> Unit,
     onEditItem: (String) -> Unit,
+    onLogService: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: VehicleDetailViewModel = viewModel(
@@ -56,6 +66,9 @@ fun VehicleDetailScreen(
         onEditVehicle = onEditVehicle,
         onAddItem = onAddItem,
         onEditItem = onEditItem,
+        onLogService = onLogService,
+        onDeleteItem = viewModel::deleteItem,
+        onDeleteErrorShown = viewModel::dismissDeleteError,
         onRetry = viewModel::refresh,
         onBack = onBack,
         modifier = modifier,
@@ -69,17 +82,34 @@ fun VehicleDetailContent(
     onEditVehicle: () -> Unit,
     onAddItem: () -> Unit,
     onEditItem: (String) -> Unit,
+    onLogService: (String) -> Unit,
+    onDeleteItem: (String) -> Unit,
+    onDeleteErrorShown: () -> Unit,
     onRetry: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val vehicle = uiState.vehicle
+    // The sheet and the dialog track an id, not the item, so a concurrent edit cannot show stale
+    // text; the name is read back out of the current list each recomposition.
+    var actionsForItemId by rememberSaveable { mutableStateOf<String?>(null) }
+    var confirmingDeletionOfItemId by rememberSaveable { mutableStateOf<String?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val deleteFailedMessage = stringResource(R.string.delete_item_failed)
+
+    LaunchedEffect(uiState.deleteFailed) {
+        if (uiState.deleteFailed) {
+            snackbarHostState.showSnackbar(deleteFailedMessage)
+            onDeleteErrorShown()
+        }
+    }
     val title = vehicle?.let {
         stringResource(R.string.vehicle_summary_with_engine, it.year, it.make, it.model, it.engine)
     } ?: stringResource(R.string.maintenance_title)
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
@@ -138,17 +168,90 @@ fun VehicleDetailContent(
 
             else -> MaintenanceItemTable(
                 items = uiState.items,
-                onEditItem = onEditItem,
+                onOpenItemActions = { actionsForItemId = it },
                 modifier = Modifier.padding(innerPadding),
             )
+        }
+    }
+
+    val actionsItem = uiState.items.firstOrNull { it.id == actionsForItemId }
+    if (actionsItem != null) {
+        MaintenanceItemActionsSheet(
+            itemName = actionsItem.name,
+            onLogService = {
+                actionsForItemId = null
+                onLogService(actionsItem.id)
+            },
+            onEdit = {
+                actionsForItemId = null
+                onEditItem(actionsItem.id)
+            },
+            onDelete = {
+                actionsForItemId = null
+                confirmingDeletionOfItemId = actionsItem.id
+            },
+            onDismiss = { actionsForItemId = null },
+        )
+    }
+
+    val deletingItem = uiState.items.firstOrNull { it.id == confirmingDeletionOfItemId }
+    if (deletingItem != null) {
+        DeleteItemDialog(
+            itemName = deletingItem.name,
+            onConfirm = {
+                confirmingDeletionOfItemId = null
+                onDeleteItem(deletingItem.id)
+            },
+            onDismiss = { confirmingDeletionOfItemId = null },
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MaintenanceItemActionsSheet(
+    itemName: String,
+    onLogService: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(),
+        modifier = modifier,
+    ) {
+        Column(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
+            Text(
+                text = stringResource(R.string.item_actions_title, itemName),
+                modifier = Modifier.padding(horizontal = HORIZONTAL_PADDING, vertical = 12.dp),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            SheetAction(stringResource(R.string.item_action_log_service), onLogService)
+            SheetAction(stringResource(R.string.edit_maintenance_item), onEdit)
+            SheetAction(stringResource(R.string.delete_maintenance_item), onDelete)
         }
     }
 }
 
 @Composable
+private fun SheetAction(text: String, onClick: () -> Unit) {
+    Text(
+        text = text,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .heightIn(min = 48.dp)
+            .padding(horizontal = HORIZONTAL_PADDING, vertical = 14.dp),
+        style = MaterialTheme.typography.bodyLarge,
+    )
+}
+
+@Composable
 private fun MaintenanceItemTable(
     items: List<MaintenanceItem>,
-    onEditItem: (String) -> Unit,
+    onOpenItemActions: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
@@ -156,7 +259,7 @@ private fun MaintenanceItemTable(
         HorizontalDivider()
         LazyColumn {
             items(items, key = { it.id }) { item ->
-                MaintenanceItemRow(item = item, onEdit = { onEditItem(item.id) })
+                MaintenanceItemRow(item = item, onClick = { onOpenItemActions(item.id) })
                 HorizontalDivider()
             }
         }
@@ -194,13 +297,13 @@ private fun RowScope.HeaderCell(text: String, weight: Float, textAlign: TextAlig
 @Composable
 private fun MaintenanceItemRow(
     item: MaintenanceItem,
-    onEdit: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onEdit)
+            .clickable(onClick = onClick)
             .heightIn(min = 48.dp)
             .padding(horizontal = HORIZONTAL_PADDING, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(COLUMN_SPACING),
@@ -283,6 +386,9 @@ private fun VehicleDetailEmptyPreview() {
             onEditVehicle = {},
             onAddItem = {},
             onEditItem = {},
+            onLogService = {},
+            onDeleteItem = {},
+            onDeleteErrorShown = {},
             onRetry = {},
             onBack = {},
         )
@@ -325,6 +431,9 @@ private fun VehicleDetailPreview() {
             onEditVehicle = {},
             onAddItem = {},
             onEditItem = {},
+            onLogService = {},
+            onDeleteItem = {},
+            onDeleteErrorShown = {},
             onRetry = {},
             onBack = {},
         )

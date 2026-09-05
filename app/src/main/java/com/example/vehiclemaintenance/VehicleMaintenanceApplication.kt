@@ -5,6 +5,8 @@ import com.example.vehiclemaintenance.data.JsonFileStore
 import com.example.vehiclemaintenance.data.MaintenanceStoreHolder
 import com.example.vehiclemaintenance.maintenance.JsonMaintenanceItemRepository
 import com.example.vehiclemaintenance.maintenance.MaintenanceItemRepository
+import com.example.vehiclemaintenance.servicelog.JsonServiceLogRepository
+import com.example.vehiclemaintenance.servicelog.ServiceLogRepository
 import com.example.vehiclemaintenance.vehicles.JsonVehicleRepository
 import com.example.vehiclemaintenance.vehicles.VehicleRepository
 import java.io.File
@@ -18,6 +20,8 @@ class AppContainer(storeFile: File) {
 
     val maintenanceItemRepository: MaintenanceItemRepository =
         JsonMaintenanceItemRepository(storeHolder)
+
+    val serviceLogRepository: ServiceLogRepository = JsonServiceLogRepository(storeHolder)
 }
 
 class VehicleMaintenanceApplication : Application() {

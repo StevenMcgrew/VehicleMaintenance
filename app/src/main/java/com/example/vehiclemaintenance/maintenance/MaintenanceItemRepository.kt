@@ -5,12 +5,8 @@ import com.example.vehiclemaintenance.data.StoreResult
 import com.example.vehiclemaintenance.data.StoreUpdate
 import com.example.vehiclemaintenance.data.mapState
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import java.time.LocalDate
 import java.util.UUID
-
-private const val MAINTENANCE_ITEM_ID = "maintenanceItemId"
 
 /** The fields the user supplies; the repository owns the id and the last-done baseline. */
 data class MaintenanceItemDraft(
@@ -75,16 +71,11 @@ class JsonMaintenanceItemRepository(
         StoreUpdate.Write(
             store.copy(
                 maintenanceItems = store.maintenanceItems.filterNot { it.id == itemId },
-                serviceLogEntries = store.serviceLogEntries.map { it.unlinkFrom(itemId) },
+                serviceLogEntries = store.serviceLogEntries.map {
+                    if (it.maintenanceItemId == itemId) it.copy(maintenanceItemId = null) else it
+                },
             ),
             Unit,
         )
     }
 }
-
-private fun JsonObject.unlinkFrom(itemId: String): JsonObject =
-    if ((this[MAINTENANCE_ITEM_ID] as? JsonPrimitive)?.content == itemId) {
-        JsonObject(this - MAINTENANCE_ITEM_ID)
-    } else {
-        this
-    }

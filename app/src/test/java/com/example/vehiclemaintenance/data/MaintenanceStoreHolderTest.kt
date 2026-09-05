@@ -1,12 +1,10 @@
 package com.example.vehiclemaintenance.data
 
+import com.example.vehiclemaintenance.servicelog.ServiceLogEntry
 import com.example.vehiclemaintenance.vehicles.JsonVehicleRepository
 import com.example.vehiclemaintenance.vehicles.Vehicle
 import com.example.vehiclemaintenance.vehicles.VehicleDraft
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -14,6 +12,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
+import java.time.LocalDate
 
 class MaintenanceStoreHolderTest {
 
@@ -31,10 +30,13 @@ class MaintenanceStoreHolderTest {
 
     private fun draft(make: String) = VehicleDraft(2014, make, "Tacoma", "4.0L V6")
 
-    private fun entry(id: String, vehicleId: String): JsonObject = buildJsonObject {
-        put("id", id)
-        put("vehicleId", vehicleId)
-    }
+    private fun entry(id: String, vehicleId: String) = ServiceLogEntry(
+        id = id,
+        vehicleId = vehicleId,
+        description = "Oil and filter",
+        date = LocalDate.of(2026, 3, 15),
+        odometer = 42000,
+    )
 
     @Test
     fun `a write through one repository is visible to another sharing the holder`() = runBlocking {
@@ -108,7 +110,7 @@ class MaintenanceStoreHolderTest {
     }
 
     @Test
-    fun `entries the holder does not understand survive a write`() = runBlocking {
+    fun `entries owned by another repository survive a write`() = runBlocking {
         file.writeText(
             storeJson.encodeToString(
                 MaintenanceStore(serviceLogEntries = listOf(entry("s-1", "other"))),

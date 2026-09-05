@@ -10,10 +10,8 @@ import com.example.vehiclemaintenance.data.storeJson
 import com.example.vehiclemaintenance.maintenance.Interval
 import com.example.vehiclemaintenance.maintenance.IntervalUnit
 import com.example.vehiclemaintenance.maintenance.MaintenanceItem
+import com.example.vehiclemaintenance.servicelog.ServiceLogEntry
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -21,6 +19,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
+import java.time.LocalDate
 
 class JsonVehicleRepositoryTest {
 
@@ -54,10 +53,13 @@ class JsonVehicleRepositoryTest {
         return JsonVehicleRepository(holder) { queue.removeAt(0) }
     }
 
-    private fun entry(id: String, vehicleId: String): JsonObject = buildJsonObject {
-        put("id", id)
-        put("vehicleId", vehicleId)
-    }
+    private fun entry(id: String, vehicleId: String) = ServiceLogEntry(
+        id = id,
+        vehicleId = vehicleId,
+        description = "Oil and filter",
+        date = LocalDate.of(2026, 3, 15),
+        odometer = 42000,
+    )
 
     private fun item(id: String, vehicleId: String) = MaintenanceItem(
         id = id,

@@ -52,7 +52,7 @@ it to your project.
 - [x] 2. **Maintenance items** - add, edit, and delete maintenance items on a
   vehicle with mileage interval, recurrence, and reminder interval, including
   optional last-done seeding
-- [ ] 3. **Log a completed service** - mark a maintenance item done with date,
+- [x] 3. **Log a completed service** - mark a maintenance item done with date,
   odometer, and cost, resetting its clocks
 - [ ] 4. **Log an ad-hoc repair** - record work that is not a tracked maintenance
   item, with description, date, odometer, and cost

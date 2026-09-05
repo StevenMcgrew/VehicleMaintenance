@@ -152,7 +152,8 @@ class VehicleDetailScreenTest {
     fun deletingFromTheItemFormRemovesTheRowAndTheStoredItem() {
         addOilChange()
 
-        composeRule.onNodeWithText("Oil change").performClick()
+        openItemActions()
+        composeRule.onNodeWithText(string(R.string.edit_maintenance_item)).performClick()
         waitForText(string(R.string.save))
 
         composeRule.onNodeWithText(string(R.string.delete)).performClick()
@@ -167,6 +168,42 @@ class VehicleDetailScreenTest {
         assert(onDisk.maintenanceItems.isEmpty()) {
             "expected no stored items, got ${onDisk.maintenanceItems}"
         }
+    }
+
+    @Test
+    fun tappingARowOffersLogEditAndDelete() {
+        addOilChange()
+
+        openItemActions()
+
+        composeRule.onNodeWithText(string(R.string.item_action_log_service)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.edit_maintenance_item)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.delete_maintenance_item)).assertIsDisplayed()
+    }
+
+    @Test
+    fun deletingFromTheActionsSheetRemovesTheRowAndTheStoredItem() {
+        addOilChange()
+
+        openItemActions()
+        composeRule.onNodeWithText(string(R.string.delete_maintenance_item)).performClick()
+        waitForText(context.getString(R.string.delete_item_title, "Oil change"))
+        composeRule
+            .onNode(hasText(string(R.string.delete)) and hasAnyAncestor(isDialog()))
+            .performClick()
+
+        waitForText(string(R.string.maintenance_empty_title))
+
+        val onDisk = storeJson.decodeFromString<MaintenanceStore>(storeFile.readText())
+        assert(onDisk.maintenanceItems.isEmpty()) {
+            "expected no stored items, got ${onDisk.maintenanceItems}"
+        }
+    }
+
+    /** A row tap now opens the actions sheet rather than going straight to the form. */
+    private fun openItemActions() {
+        composeRule.onNodeWithText("Oil change").performClick()
+        waitForText(string(R.string.item_action_log_service))
     }
 
     /** Creates one item through the real form so the detail screen renders persisted data. */
@@ -219,6 +256,7 @@ class VehicleDetailScreenTest {
                     editingItemId = it
                     showForm = true
                 },
+                onLogService = {},
                 onBack = {},
                 viewModel = detailViewModel,
             )

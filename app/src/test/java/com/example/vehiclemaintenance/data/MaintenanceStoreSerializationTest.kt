@@ -1,11 +1,13 @@
 package com.example.vehiclemaintenance.data
 
+import com.example.vehiclemaintenance.servicelog.ServiceLogEntry
 import com.example.vehiclemaintenance.vehicles.Vehicle
 import kotlinx.serialization.json.jsonObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.LocalDate
 
 class MaintenanceStoreSerializationTest {
 
@@ -78,19 +80,32 @@ class MaintenanceStoreSerializationTest {
     }
 
     @Test
-    fun `unrecognized log entries survive a round trip`() {
-        // Maintenance items are typed as of feature 2; service log entries stay raw until
-        // features 3 and 4 define them, so writes must still preserve them verbatim.
+    fun `log entries are typed, so an unknown entry key is dropped on rewrite`() {
+        // Service log entries became typed with feature 3. This app owns the schema and
+        // schemaVersion covers real changes, so dropping a key it does not know is deliberate.
         val json = """
             {"schemaVersion":1,"vehicles":[],"maintenanceItems":[],
-             "serviceLogEntries":[{"id":"s-1","vehicleId":"v-1","odometer":42000,
-              "notes":"shop said belts look fine"}]}
+             "serviceLogEntries":[{"id":"s-1","vehicleId":"v-1","description":"Oil and filter",
+              "date":"2026-03-15","odometer":42000,"notes":"shop said belts look fine",
+              "futureEntryKey":"ignored"}]}
         """.trimIndent()
 
         val decoded = storeJson.decodeFromString<MaintenanceStore>(json)
         val reEncoded = storeJson.encodeToString(decoded)
 
+        assertEquals(
+            ServiceLogEntry(
+                id = "s-1",
+                vehicleId = "v-1",
+                description = "Oil and filter",
+                date = LocalDate.of(2026, 3, 15),
+                odometer = 42000,
+                notes = "shop said belts look fine",
+            ),
+            decoded.serviceLogEntries.single(),
+        )
         assertTrue(reEncoded.contains("\"odometer\":42000"))
         assertTrue(reEncoded.contains("\"notes\":\"shop said belts look fine\""))
+        assertFalse(reEncoded.contains("futureEntryKey"))
     }
 }

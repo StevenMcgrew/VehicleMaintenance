@@ -114,12 +114,13 @@ class MaintenanceItemSerializationTest {
     }
 
     @Test
-    fun `typed items and raw log entries survive the same round trip`() {
+    fun `typed items and typed log entries survive the same round trip`() {
         val json = """
             {"schemaVersion":1,"vehicles":[],"maintenanceItems":[
               {"id":"m-1","vehicleId":"v-1","name":"Oil change",
                "reminder":{"value":5,"unit":"MONTHS"}}
-            ],"serviceLogEntries":[{"id":"s-1","vehicleId":"v-1","odometer":42000}]}
+            ],"serviceLogEntries":[{"id":"s-1","vehicleId":"v-1","description":"Oil and filter",
+              "date":"2026-03-15","odometer":42000}]}
         """.trimIndent()
 
         val reEncoded = storeJson.encodeToString(storeJson.decodeFromString<MaintenanceStore>(json))
