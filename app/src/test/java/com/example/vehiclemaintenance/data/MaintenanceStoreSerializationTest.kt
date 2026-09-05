@@ -4,7 +4,6 @@ import com.example.vehiclemaintenance.vehicles.Vehicle
 import kotlinx.serialization.json.jsonObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -12,7 +11,6 @@ class MaintenanceStoreSerializationTest {
 
     private val fullVehicle = Vehicle(
         id = "v-1",
-        nickname = "Daily",
         year = 2014,
         make = "Toyota",
         model = "Tacoma",
@@ -50,25 +48,18 @@ class MaintenanceStoreSerializationTest {
     }
 
     @Test
-    fun `a null nickname is omitted from the encoded output`() {
-        val encoded = storeJson.encodeToString(
-            MaintenanceStore(vehicles = listOf(fullVehicle.copy(nickname = null))),
-        )
-
-        assertFalse(encoded.contains("nickname"))
-    }
-
-    @Test
-    fun `a missing nickname decodes to null`() {
+    fun `a stored nickname from an older file decodes and is dropped on rewrite`() {
         val json = """
             {"schemaVersion":1,"vehicles":[
-              {"id":"v-1","year":2014,"make":"Toyota","model":"Tacoma","engine":"4.0L V6"}
+              {"id":"v-1","nickname":"Daily","year":2014,"make":"Toyota",
+               "model":"Tacoma","engine":"4.0L V6"}
             ],"maintenanceItems":[],"serviceLogEntries":[]}
         """.trimIndent()
 
         val decoded = storeJson.decodeFromString<MaintenanceStore>(json)
 
-        assertNull(decoded.vehicles.single().nickname)
+        assertEquals(fullVehicle, decoded.vehicles.single())
+        assertFalse(storeJson.encodeToString(decoded).contains("nickname"))
     }
 
     @Test

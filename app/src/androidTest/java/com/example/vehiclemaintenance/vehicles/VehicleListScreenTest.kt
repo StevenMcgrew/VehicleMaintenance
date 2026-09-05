@@ -68,12 +68,12 @@ class VehicleListScreenTest {
         composeRule.onNodeWithText(string(R.string.add_vehicle)).performClick()
         waitForText(R.string.save)
 
-        // Field order on the form: nickname, year, make, model, engine.
+        // Field order on the form: year, make, model, engine.
         val fields = composeRule.onAllNodes(hasSetTextAction())
-        fields[1].performTextInput("2014")
-        fields[2].performTextInput("Toyota")
-        fields[3].performTextInput("Tacoma")
-        fields[4].performTextInput("4.0L V6")
+        fields[0].performTextInput("2014")
+        fields[1].performTextInput("Toyota")
+        fields[2].performTextInput("Tacoma")
+        fields[3].performTextInput("4.0L V6")
 
         composeRule.onNodeWithText(string(R.string.save)).performClick()
 

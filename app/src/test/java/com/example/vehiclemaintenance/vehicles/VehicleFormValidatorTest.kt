@@ -1,7 +1,6 @@
 package com.example.vehiclemaintenance.vehicles
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Test
 
 class VehicleFormValidatorTest {
@@ -9,7 +8,6 @@ class VehicleFormValidatorTest {
     private val currentYear = 2026
 
     private val validFields = VehicleFormFields(
-        nickname = "Daily",
         year = "2014",
         make = "Toyota",
         model = "Tacoma",
@@ -28,7 +26,7 @@ class VehicleFormValidatorTest {
     @Test
     fun `a valid form produces a draft`() {
         assertEquals(
-            VehicleDraft("Daily", 2014, "Toyota", "Tacoma", "4.0L V6"),
+            VehicleDraft(2014, "Toyota", "Tacoma", "4.0L V6"),
             draftOf(validFields),
         )
     }
@@ -93,7 +91,6 @@ class VehicleFormValidatorTest {
     fun `surrounding whitespace is trimmed from every text field`() {
         val draft = draftOf(
             VehicleFormFields(
-                nickname = "  Daily  ",
                 year = " 2014 ",
                 make = " Toyota ",
                 model = "\tTacoma\t",
@@ -101,12 +98,7 @@ class VehicleFormValidatorTest {
             ),
         )
 
-        assertEquals(VehicleDraft("Daily", 2014, "Toyota", "Tacoma", "4.0L V6"), draft)
+        assertEquals(VehicleDraft(2014, "Toyota", "Tacoma", "4.0L V6"), draft)
     }
 
-    @Test
-    fun `a blank nickname becomes absent`() {
-        assertNull(draftOf(validFields.copy(nickname = "   ")).nickname)
-        assertNull(draftOf(validFields.copy(nickname = "")).nickname)
-    }
 }

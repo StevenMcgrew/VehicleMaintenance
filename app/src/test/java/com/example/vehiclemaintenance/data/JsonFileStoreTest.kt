@@ -18,7 +18,6 @@ class JsonFileStoreTest {
 
     private val vehicle = Vehicle(
         id = "v-1",
-        nickname = null,
         year = 2014,
         make = "Toyota",
         model = "Tacoma",

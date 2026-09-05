@@ -61,8 +61,6 @@ class VehicleFormViewModel(
         }
     }
 
-    fun onNicknameChange(value: String) = updateFields { it.copy(nickname = value) }
-
     fun onYearChange(value: String) = updateFields { it.copy(year = value) }
 
     fun onMakeChange(value: String) = updateFields { it.copy(make = value) }
@@ -131,7 +129,6 @@ class VehicleFormViewModel(
 }
 
 private fun Vehicle.toFormFields() = VehicleFormFields(
-    nickname = nickname.orEmpty(),
     year = year.toString(),
     make = make,
     model = model,
@@ -140,7 +137,6 @@ private fun Vehicle.toFormFields() = VehicleFormFields(
 
 private fun VehicleDraft.toVehicle(id: String) = Vehicle(
     id = id,
-    nickname = nickname,
     year = year,
     make = make,
     model = model,

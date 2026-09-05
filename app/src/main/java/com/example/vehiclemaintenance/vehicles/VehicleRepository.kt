@@ -14,7 +14,6 @@ import java.util.UUID
 
 /** The fields the user supplies; the repository owns id assignment. */
 data class VehicleDraft(
-    val nickname: String?,
     val year: Int,
     val make: String,
     val model: String,
@@ -69,7 +68,6 @@ class JsonVehicleRepository(
         val current = cached ?: return@withLock StoreResult.Failure(StoreUnavailableException())
         val vehicle = Vehicle(
             id = newId(),
-            nickname = draft.nickname,
             year = draft.year,
             make = draft.make,
             model = draft.model,

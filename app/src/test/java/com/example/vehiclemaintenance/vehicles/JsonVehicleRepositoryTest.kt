@@ -25,7 +25,6 @@ class JsonVehicleRepositoryTest {
     private lateinit var file: File
 
     private val draft = VehicleDraft(
-        nickname = "Daily",
         year = 2014,
         make = "Toyota",
         model = "Tacoma",
@@ -60,7 +59,7 @@ class JsonVehicleRepositoryTest {
 
         val vehicle = (added as StoreResult.Success).value
         assertEquals("id-1", vehicle.id)
-        assertEquals(draft.nickname, vehicle.nickname)
+        assertEquals(draft.model, vehicle.model)
         assertEquals(listOf(vehicle), repository.vehicles.value)
     }
 
@@ -88,14 +87,14 @@ class JsonVehicleRepositoryTest {
         val repository = repository("id-1", "id-2")
         repository.load()
         repository.add(draft)
-        val second = (repository.add(draft.copy(nickname = "Second")) as StoreResult.Success).value
+        val second = (repository.add(draft.copy(model = "Second")) as StoreResult.Success).value
 
-        val result = repository.update(second.copy(nickname = "Renamed", engine = "2.7L I4"))
+        val result = repository.update(second.copy(model = "Renamed", engine = "2.7L I4"))
 
         assertTrue(result is StoreResult.Success)
         val vehicles = repository.vehicles.value
         assertEquals(listOf("id-1", "id-2"), vehicles.map { it.id })
-        assertEquals("Renamed", vehicles[1].nickname)
+        assertEquals("Renamed", vehicles[1].model)
         assertEquals("2.7L I4", vehicles[1].engine)
     }
 
@@ -104,8 +103,8 @@ class JsonVehicleRepositoryTest {
         seed(
             MaintenanceStore(
                 vehicles = listOf(
-                    Vehicle("keep", null, 2020, "Honda", "Civic", "2.0L"),
-                    Vehicle("drop", null, 2014, "Toyota", "Tacoma", "4.0L V6"),
+                    Vehicle("keep", 2020, "Honda", "Civic", "2.0L"),
+                    Vehicle("drop", 2014, "Toyota", "Tacoma", "4.0L V6"),
                 ),
                 maintenanceItems = listOf(entry("m-keep", "keep"), entry("m-drop", "drop")),
                 serviceLogEntries = listOf(entry("s-keep", "keep"), entry("s-drop", "drop")),
@@ -133,7 +132,7 @@ class JsonVehicleRepositoryTest {
         reopened.load()
 
         assertEquals("id-1", reopened.vehicles.value.single().id)
-        assertEquals("Daily", reopened.vehicles.value.single().nickname)
+        assertEquals("Tacoma", reopened.vehicles.value.single().model)
     }
 
     @Test
@@ -145,7 +144,7 @@ class JsonVehicleRepositoryTest {
 
         assertTrue(loaded is StoreResult.Failure)
         assertTrue((repository.add(draft) as StoreResult.Failure).cause is StoreUnavailableException)
-        val existing = Vehicle("id-1", null, 2014, "Toyota", "Tacoma", "4.0L V6")
+        val existing = Vehicle("id-1", 2014, "Toyota", "Tacoma", "4.0L V6")
         assertTrue((repository.update(existing) as StoreResult.Failure).cause is StoreUnavailableException)
         assertTrue((repository.delete("id-1") as StoreResult.Failure).cause is StoreUnavailableException)
         assertEquals("{ not json", file.readText())

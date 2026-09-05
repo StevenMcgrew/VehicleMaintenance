@@ -1,6 +1,6 @@
 # Vehicle Maintenance - Project Overview
 
-<!-- blueprint:source-hash 019c048019347bb0c85058e7f707b5f40e367ae4d1b3869de3c7106cda786fdd -->
+<!-- blueprint:source-hash 80b14ea4930614ed103b2cd5e8867ac70a50eb0f1364c2f765d2ba92ea872859 -->
 
 > An offline Android app that reminds a vehicle owner when service is due and
 > keeps a permanent, exportable record of what was done and what it cost.
@@ -72,7 +72,6 @@ A value object used by both time fields on a maintenance item.
 ### Vehicle
 
 - `id` (string)
-- `nickname` (string, optional) - distinguishes two vehicles of the same year/make/model
 - `year` (int)
 - `make` (string)
 - `model` (string)
@@ -209,9 +208,9 @@ Out of scope for v1, recorded so they are not built by accident:
   reminder date?
 - Should the daily check batch multiple due items into one notification per
   vehicle, or post one per item?
-- Assumed and correctable: optional vehicle nickname; ad-hoc repairs carry the
-  same fields as a completion minus the item link; cost totals are all-time plus
-  per calendar year; distance is miles with no unit setting in v1.
+- Assumed and correctable: ad-hoc repairs carry the same fields as a completion
+  minus the item link; cost totals are all-time plus per calendar year; distance
+  is miles with no unit setting in v1.
 - `blueprint/context/coding-standards.md` still carries a TODO to pick the
   persistence library. The plans have settled it as a JSON file, so that TODO is
   stale and its Database section should be updated to match.

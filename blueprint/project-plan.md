@@ -53,7 +53,7 @@ the device unless the user explicitly exports it.
 
 **Vehicle**
 
-- id, nickname (optional), year, make, model, engine
+- id, year, make, model, engine
 
 **Maintenance item** (belongs to a vehicle)
 
@@ -189,8 +189,8 @@ Explicitly out of scope for v1, recorded so they do not get built by accident:
 
 Working assumptions, confirmed at review or corrected later:
 
-- Vehicles have an optional nickname so "the truck" is distinguishable from
-  another vehicle of the same year, make, and model
+- Vehicles have no nickname. A vehicle is identified by its year, make, and
+  model
 - An ad-hoc repair captures description, date, odometer, and cost, the same
   shape as a completion log without a linked maintenance item
 - Cost totals are all time and per calendar year, per vehicle

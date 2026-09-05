@@ -53,7 +53,6 @@ fun VehicleFormScreen(
 
     VehicleFormContent(
         uiState = uiState,
-        onNicknameChange = viewModel::onNicknameChange,
         onYearChange = viewModel::onYearChange,
         onMakeChange = viewModel::onMakeChange,
         onModelChange = viewModel::onModelChange,
@@ -69,7 +68,6 @@ fun VehicleFormScreen(
 @Composable
 fun VehicleFormContent(
     uiState: VehicleFormUiState,
-    onNicknameChange: (String) -> Unit,
     onYearChange: (String) -> Unit,
     onMakeChange: (String) -> Unit,
     onModelChange: (String) -> Unit,
@@ -143,12 +141,6 @@ fun VehicleFormContent(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                VehicleField(
-                    value = uiState.fields.nickname,
-                    onValueChange = onNicknameChange,
-                    label = stringResource(R.string.vehicle_nickname),
-                    error = null,
-                )
                 VehicleField(
                     value = uiState.fields.year,
                     onValueChange = onYearChange,
@@ -225,14 +217,12 @@ private fun VehicleFormPreview() {
                 isLoading = false,
                 maxYear = 2027,
                 fields = VehicleFormFields(
-                    nickname = "Daily",
                     year = "2014",
                     make = "Toyota",
                     model = "Tacoma",
                     engine = "4.0L V6",
                 ),
             ),
-            onNicknameChange = {},
             onYearChange = {},
             onMakeChange = {},
             onModelChange = {},
@@ -260,7 +250,6 @@ private fun VehicleFormErrorsPreview() {
                 ),
                 fields = VehicleFormFields(year = "1800"),
             ),
-            onNicknameChange = {},
             onYearChange = {},
             onMakeChange = {},
             onModelChange = {},

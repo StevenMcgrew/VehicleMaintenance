@@ -90,11 +90,12 @@ fun VehicleListContent(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             if (!uiState.loadFailed) {
-                ExtendedFloatingActionButton(
-                    onClick = onAddVehicle,
-                    text = { Text(stringResource(R.string.add_vehicle)) },
-                    icon = {},
-                )
+                // The text/icon overload strips its label with clearAndSetSemantics and takes the
+                // content description from the icon, so a FAB with no icon needs this overload to
+                // stay labelled for TalkBack.
+                ExtendedFloatingActionButton(onClick = onAddVehicle) {
+                    Text(stringResource(R.string.add_vehicle))
+                }
             }
         },
     ) { innerPadding ->
@@ -166,7 +167,7 @@ private fun VehicleRow(
         },
         supportingContent = {
             Text(
-                text = vehicle.secondaryLabel(),
+                text = vehicle.engine,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -219,14 +220,7 @@ private fun CenteredColumn(
 
 @Composable
 private fun Vehicle.primaryLabel(): String =
-    nickname ?: stringResource(R.string.vehicle_summary, year, make, model)
-
-@Composable
-private fun Vehicle.secondaryLabel(): String = if (nickname == null) {
-    engine
-} else {
-    "${stringResource(R.string.vehicle_summary, year, make, model)} - $engine"
-}
+    stringResource(R.string.vehicle_summary, year, make, model)
 
 @Preview(showBackground = true)
 @Composable
@@ -251,8 +245,8 @@ private fun VehicleListPreview() {
             uiState = VehicleListUiState(
                 isLoading = false,
                 vehicles = listOf(
-                    Vehicle("1", "Daily", 2014, "Toyota", "Tacoma", "4.0L V6"),
-                    Vehicle("2", null, 2020, "Honda", "Civic", "2.0L I4"),
+                    Vehicle("1", 2014, "Toyota", "Tacoma", "4.0L V6"),
+                    Vehicle("2", 2020, "Honda", "Civic", "2.0L I4"),
                 ),
             ),
             onAddVehicle = {},

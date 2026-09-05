@@ -1,7 +1,6 @@
 package com.example.vehiclemaintenance.vehicles
 
 data class VehicleFormFields(
-    val nickname: String = "",
     val year: String = "",
     val make: String = "",
     val model: String = "",
@@ -29,7 +28,6 @@ object VehicleFormValidator {
     const val MIN_YEAR = 1900
 
     fun validate(fields: VehicleFormFields, currentYear: Int): VehicleFormValidation {
-        val nickname = fields.nickname.trim().ifBlank { null }
         val make = fields.make.trim()
         val model = fields.model.trim()
         val engine = fields.engine.trim()
@@ -51,7 +49,7 @@ object VehicleFormValidator {
         return if (errors.hasAny || year == null) {
             VehicleFormValidation.Invalid(errors)
         } else {
-            VehicleFormValidation.Valid(VehicleDraft(nickname, year, make, model, engine))
+            VehicleFormValidation.Valid(VehicleDraft(year, make, model, engine))
         }
     }
 }
