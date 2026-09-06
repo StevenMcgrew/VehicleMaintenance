@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -46,6 +47,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vehiclemaintenance.R
+import com.example.vehiclemaintenance.servicelog.VehicleCostTotals
+import com.example.vehiclemaintenance.servicelog.YearCost
+import com.example.vehiclemaintenance.servicelog.formatCost
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 import com.example.vehiclemaintenance.vehicles.Vehicle
 import java.time.LocalDate
@@ -107,6 +111,7 @@ fun VehicleDetailContent(
     // text; the name is read back out of the current list each recomposition.
     var actionsForItemId by rememberSaveable { mutableStateOf<String?>(null) }
     var confirmingDeletionOfItemId by rememberSaveable { mutableStateOf<String?>(null) }
+    var showingCostTotals by rememberSaveable { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val deleteFailedMessage = stringResource(R.string.delete_item_failed)
 
@@ -167,6 +172,11 @@ fun VehicleDetailContent(
                     onEditVehicle = onEditVehicle,
                 )
                 HorizontalDivider()
+                CostTotalsRow(
+                    totals = uiState.costTotals,
+                    onClick = { showingCostTotals = true },
+                )
+                HorizontalDivider()
                 if (uiState.rows.isEmpty()) {
                     CenteredColumn {
                         Text(
@@ -219,6 +229,14 @@ fun VehicleDetailContent(
                 onDeleteItem(deletingRow.item.id)
             },
             onDismiss = { confirmingDeletionOfItemId = null },
+        )
+    }
+
+    // Guarded on the current totals so the breakdown closes if the last costed entry goes away.
+    if (showingCostTotals && uiState.costTotals.byYear.isNotEmpty()) {
+        CostTotalsSheet(
+            totals = uiState.costTotals,
+            onDismiss = { showingCostTotals = false },
         )
     }
 
@@ -304,6 +322,90 @@ private fun MaintenanceItemActionsSheet(
             SheetAction(stringResource(R.string.item_action_log_service), onLogService)
             SheetAction(stringResource(R.string.edit_maintenance_item), onEdit)
             SheetAction(stringResource(R.string.delete_maintenance_item), onDelete)
+        }
+    }
+}
+
+/**
+ * Derived from the service log on every emission, so a newly logged cost lands here with no
+ * refresh. A vehicle with nothing costed says so rather than claiming it has been free to run.
+ */
+@Composable
+private fun CostTotalsRow(
+    totals: VehicleCostTotals,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val hasCosts = totals.byYear.isNotEmpty()
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .then(if (hasCosts) Modifier.clickable(onClick = onClick) else Modifier)
+            .heightIn(min = 48.dp)
+            .padding(horizontal = HORIZONTAL_PADDING, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(COLUMN_SPACING),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.cost_total_label),
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = if (hasCosts) {
+                formatCost(totals.allTime)
+            } else {
+                stringResource(R.string.cost_totals_none)
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.End,
+        )
+    }
+}
+
+/** Scrolls, because a long history can list more years than a sheet has room for. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CostTotalsSheet(
+    totals: VehicleCostTotals,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(),
+        modifier = modifier,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.cost_totals_title),
+                modifier = Modifier.padding(horizontal = HORIZONTAL_PADDING, vertical = 12.dp),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = HORIZONTAL_PADDING)
+                    .padding(bottom = 12.dp),
+            ) {
+                totals.byYear.forEach { year ->
+                    DetailLine(
+                        label = stringResource(R.string.cost_year, year.year),
+                        value = formatCost(year.total),
+                    )
+                }
+                HorizontalDivider(Modifier.padding(vertical = 8.dp))
+                DetailLine(
+                    label = stringResource(R.string.cost_total_label),
+                    value = formatCost(totals.allTime),
+                )
+            }
         }
     }
 }
@@ -609,6 +711,11 @@ private val previewRows = listOf(
     previewRow(id = "m-4", name = "Cabin air filter", lastDoneDate = null),
 )
 
+private val previewCostTotals = VehicleCostTotals(
+    allTime = 184_297L,
+    byYear = listOf(YearCost(2026, 64_99L), YearCost(2025, 98_50L), YearCost(2024, 20_848L)),
+)
+
 @Preview(showBackground = true)
 @Composable
 private fun VehicleDetailEmptyPreview() {
@@ -633,6 +740,32 @@ private fun VehicleDetailEmptyPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun VehicleDetailPreview() {
+    VehicleMaintenanceTheme {
+        VehicleDetailContent(
+            uiState = VehicleDetailUiState(
+                isLoading = false,
+                vehicle = previewVehicle,
+                rows = previewRows,
+                costTotals = previewCostTotals,
+            ),
+            onEditVehicle = {},
+            onAddItem = {},
+            onEditItem = {},
+            onLogService = {},
+            onLogRepair = {},
+            onViewHistory = {},
+            onDeleteItem = {},
+            onDeleteErrorShown = {},
+            onNewlyOverdueShown = {},
+            onRetry = {},
+            onBack = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun VehicleDetailNoCostsPreview() {
     VehicleMaintenanceTheme {
         VehicleDetailContent(
             uiState = VehicleDetailUiState(

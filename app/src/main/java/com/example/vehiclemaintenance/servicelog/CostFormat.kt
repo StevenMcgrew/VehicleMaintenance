@@ -8,5 +8,8 @@ import java.util.Locale
  * Renders the stored minor units as money without ever passing through a floating point type, which
  * would reintroduce the rounding the integer storage exists to avoid.
  */
+fun formatCost(minorUnits: Long, locale: Locale = Locale.getDefault()): String =
+    NumberFormat.getCurrencyInstance(locale).format(BigDecimal.valueOf(minorUnits, 2))
+
 fun formatCost(minorUnits: Int, locale: Locale = Locale.getDefault()): String =
-    NumberFormat.getCurrencyInstance(locale).format(BigDecimal.valueOf(minorUnits.toLong(), 2))
+    formatCost(minorUnits.toLong(), locale)

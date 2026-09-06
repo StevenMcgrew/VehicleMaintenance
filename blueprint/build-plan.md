@@ -63,7 +63,7 @@ it to your project.
 - [x] 7. **Reminders and notifications** - daily background check that notifies
   when an item is due, repeating every two weeks until it is logged, with runtime
   permission handling
-- [ ] 8. **Cost totals** - per-vehicle spend, all time and by year
+- [x] 8. **Cost totals** - per-vehicle spend, all time and by year
 - [ ] 9. **Export and import** - write all data to a JSON file the user chooses
   and restore from one, with schema version handling
 - [ ] 10. **Play Store readiness** - app icon, signed release build, data safety

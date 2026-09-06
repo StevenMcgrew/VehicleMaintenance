@@ -119,6 +119,12 @@
     <string name="detail_mileage_due">Due at odometer</string>
     <string name="detail_miles_left">Miles left</string>
 
+    <string name="cost_total_label">Total spent</string>
+    <string name="cost_totals_title">Cost totals</string>
+    <string name="cost_totals_none">No costs recorded yet</string>
+    <!-- A calendar year in the cost breakdown, kept out of code so it is never concatenated. -->
+    <string name="cost_year" tools:ignore="PluralsCandidate">%1$d</string>
+
     <string name="ok">OK</string>
 
     <string name="notification_channel_name">Service reminders</string>

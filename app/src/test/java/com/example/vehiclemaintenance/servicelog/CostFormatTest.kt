@@ -20,4 +20,9 @@ class CostFormatTest {
     fun `groups a four figure amount`() {
         assertEquals("$1,234.56", formatCost(123456, Locale.US))
     }
+
+    @Test
+    fun `formats a long total larger than an Int can hold`() {
+        assertEquals("$42,949,672.96", formatCost(4_294_967_296L, Locale.US))
+    }
 }
