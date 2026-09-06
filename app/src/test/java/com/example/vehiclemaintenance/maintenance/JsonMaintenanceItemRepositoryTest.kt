@@ -17,6 +17,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
+import java.time.Instant
 import java.time.LocalDate
 
 class JsonMaintenanceItemRepositoryTest {
@@ -209,6 +210,39 @@ class JsonMaintenanceItemRepositoryTest {
 
         assertEquals(listOf("m-1"), second.itemsFor("v-1").value.map { it.id })
         assertEquals("Oil change", second.itemsFor("v-1").value.single().name)
+    }
+
+    @Test
+    fun `marking notified stamps every named item in one write`() = runBlocking {
+        val holder = holder()
+        val repository = repository(holder, "m-1", "m-2", "m-3")
+        holder.load()
+        repository.add(draft)
+        repository.add(draft.copy(name = "Tire rotation"))
+        repository.add(draft.copy(name = "Air filter"))
+        val at = Instant.parse("2026-09-06T14:03:11Z")
+
+        val result = repository.markNotified(setOf("m-1", "m-3"), at)
+
+        assertTrue(result is StoreResult.Success)
+        val items = onDisk().maintenanceItems.associateBy { it.id }
+        assertEquals("2026-09-06T14:03:11Z", items.getValue("m-1").lastNotifiedAt)
+        assertEquals("2026-09-06T14:03:11Z", items.getValue("m-3").lastNotifiedAt)
+        assertNull(items.getValue("m-2").lastNotifiedAt)
+    }
+
+    @Test
+    fun `marking notified succeeds when an id no longer exists`() = runBlocking {
+        val holder = holder()
+        val repository = repository(holder, "m-1")
+        holder.load()
+        repository.add(draft)
+
+        val result = repository.markNotified(setOf("m-1", "gone"), Instant.parse("2026-09-06T14:03:11Z"))
+
+        assertTrue(result is StoreResult.Success)
+        assertEquals(1, onDisk().maintenanceItems.size)
+        assertEquals("2026-09-06T14:03:11Z", onDisk().maintenanceItems.single().lastNotifiedAt)
     }
 
     @Test

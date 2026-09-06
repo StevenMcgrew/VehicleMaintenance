@@ -121,6 +121,15 @@
 
     <string name="ok">OK</string>
 
+    <string name="notification_channel_name">Service reminders</string>
+    <string name="notification_channel_description">Reminds you when a tracked service is due.</string>
+    <plurals name="notification_due_count">
+        <item quantity="one">1 service due</item>
+        <item quantity="other">%1$d services due</item>
+    </plurals>
+    <!-- Joins the service names listed in one vehicle's reminder. -->
+    <string name="notification_name_separator">, </string>
+
     <plurals name="newly_overdue_title">
         <item quantity="one">This reading put 1 item overdue</item>
         <item quantity="other">This reading put %1$d items overdue</item>

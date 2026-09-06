@@ -5,6 +5,8 @@ import com.example.vehiclemaintenance.data.JsonFileStore
 import com.example.vehiclemaintenance.data.MaintenanceStoreHolder
 import com.example.vehiclemaintenance.maintenance.JsonMaintenanceItemRepository
 import com.example.vehiclemaintenance.maintenance.MaintenanceItemRepository
+import com.example.vehiclemaintenance.reminders.ReminderNotifier
+import com.example.vehiclemaintenance.reminders.scheduleDailyDueCheck
 import com.example.vehiclemaintenance.servicelog.JsonServiceLogRepository
 import com.example.vehiclemaintenance.servicelog.ServiceLogRepository
 import com.example.vehiclemaintenance.vehicles.JsonVehicleRepository
@@ -32,5 +34,7 @@ class VehicleMaintenanceApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(File(filesDir, STORE_FILE_NAME))
+        ReminderNotifier(this).createChannel()
+        scheduleDailyDueCheck(this)
     }
 }

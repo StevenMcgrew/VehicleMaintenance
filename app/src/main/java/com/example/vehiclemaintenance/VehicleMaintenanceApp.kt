@@ -8,12 +8,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.example.vehiclemaintenance.maintenance.MaintenanceItemFormScreen
 import com.example.vehiclemaintenance.maintenance.VehicleDetailScreen
 import com.example.vehiclemaintenance.servicelog.ServiceHistoryScreen
 import com.example.vehiclemaintenance.servicelog.ServiceLogFormScreen
 import com.example.vehiclemaintenance.vehicles.VehicleFormScreen
 import com.example.vehiclemaintenance.vehicles.VehicleListScreen
+
+/** The reminder notification opens a vehicle through this scheme; MainActivity declares it. */
+const val VEHICLE_DEEP_LINK_PREFIX = "vehiclemaintenance://vehicles"
 
 private const val VEHICLE_ID_ARG = "vehicleId"
 private const val ITEM_ID_ARG = "itemId"
@@ -80,6 +84,9 @@ fun VehicleMaintenanceApp(
         composable(
             route = Routes.VEHICLE_DETAIL,
             arguments = listOf(navArgument(VEHICLE_ID_ARG) { type = NavType.StringType }),
+            deepLinks = listOf(
+                navDeepLink { uriPattern = "$VEHICLE_DEEP_LINK_PREFIX/{$VEHICLE_ID_ARG}" },
+            ),
         ) { backStackEntry ->
             val vehicleId = backStackEntry.requireVehicleId()
             VehicleDetailScreen(

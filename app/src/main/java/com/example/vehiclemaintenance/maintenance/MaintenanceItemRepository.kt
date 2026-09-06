@@ -5,6 +5,7 @@ import com.example.vehiclemaintenance.data.StoreResult
 import com.example.vehiclemaintenance.data.StoreUpdate
 import com.example.vehiclemaintenance.data.mapState
 import kotlinx.coroutines.flow.StateFlow
+import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
@@ -27,6 +28,9 @@ interface MaintenanceItemRepository {
     suspend fun update(item: MaintenanceItem): StoreResult<Unit>
 
     suspend fun delete(itemId: String): StoreResult<Unit>
+
+    /** Records that the given items were just included in a posted reminder. */
+    suspend fun markNotified(itemIds: Set<String>, at: Instant): StoreResult<Unit>
 }
 
 class JsonMaintenanceItemRepository(
@@ -78,4 +82,18 @@ class JsonMaintenanceItemRepository(
             Unit,
         )
     }
+
+    /**
+     * Ids that no longer exist are skipped rather than rejected: the store can change between the
+     * planner reading it and this write landing, and a deleted item is not a reason to lose the
+     * stamps for the items that survived.
+     */
+    override suspend fun markNotified(itemIds: Set<String>, at: Instant): StoreResult<Unit> =
+        holder.update { store ->
+            val stamp = at.toString()
+            val items = store.maintenanceItems.map {
+                if (it.id in itemIds) it.copy(lastNotifiedAt = stamp) else it
+            }
+            StoreUpdate.Write(store.copy(maintenanceItems = items), Unit)
+        }
 }

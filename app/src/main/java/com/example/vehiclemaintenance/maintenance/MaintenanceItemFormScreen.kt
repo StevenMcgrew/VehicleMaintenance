@@ -1,5 +1,11 @@
 package com.example.vehiclemaintenance.maintenance
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -41,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
@@ -48,6 +55,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vehiclemaintenance.R
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
@@ -68,9 +76,13 @@ fun MaintenanceItemFormScreen(
     ),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val finishSave = rememberNotificationPermissionGate(onDone)
 
     LaunchedEffect(uiState.savedSuccessfully, uiState.deletedSuccessfully) {
-        if (uiState.savedSuccessfully || uiState.deletedSuccessfully) onDone()
+        when {
+            uiState.savedSuccessfully -> finishSave()
+            uiState.deletedSuccessfully -> onDone()
+        }
     }
 
     MaintenanceItemFormContent(
@@ -91,6 +103,32 @@ fun MaintenanceItemFormScreen(
         modifier = modifier,
     )
 }
+
+/**
+ * Saving the first item is the moment a reminder becomes real, which is where asking for the
+ * notification permission explains itself. Either answer continues to [onDone]; Android stops
+ * showing the dialog itself once the user has refused, so no "already asked" flag is stored.
+ */
+@Composable
+private fun rememberNotificationPermissionGate(onDone: () -> Unit): () -> Unit {
+    val context = LocalContext.current
+    val currentOnDone by rememberUpdatedState(onDone)
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { currentOnDone() }
+    return {
+        if (needsNotificationPermission(context)) {
+            launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            currentOnDone()
+        }
+    }
+}
+
+private fun needsNotificationPermission(context: Context): Boolean =
+    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+        PackageManager.PERMISSION_GRANTED
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -60,7 +60,7 @@ it to your project.
 - [x] 6. **Due and overdue status** - compute and display next reminder, due date,
   and overdue state for every item, including the mileage check that runs when a
   new odometer reading is captured
-- [ ] 7. **Reminders and notifications** - daily background check that notifies
+- [x] 7. **Reminders and notifications** - daily background check that notifies
   when an item is due, repeating every two weeks until it is logged, with runtime
   permission handling
 - [ ] 8. **Cost totals** - per-vehicle spend, all time and by year
