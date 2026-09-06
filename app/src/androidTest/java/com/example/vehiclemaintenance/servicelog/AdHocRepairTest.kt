@@ -155,7 +155,9 @@ class AdHocRepairTest {
                 viewModel = formViewModel,
             )
         } else {
-            val detailViewModel = remember { VehicleDetailViewModel(vehicles, items, "v-1") }
+            val detailViewModel = remember {
+                VehicleDetailViewModel(vehicles, items, serviceLog, "v-1")
+            }
             VehicleDetailScreen(
                 vehicleId = "v-1",
                 onEditVehicle = {},

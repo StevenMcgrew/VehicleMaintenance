@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,6 +38,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -46,6 +48,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vehiclemaintenance.R
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 import com.example.vehiclemaintenance.vehicles.Vehicle
+import java.time.LocalDate
 
 @Composable
 fun VehicleDetailScreen(
@@ -75,6 +78,7 @@ fun VehicleDetailScreen(
         onViewHistory = onViewHistory,
         onDeleteItem = viewModel::deleteItem,
         onDeleteErrorShown = viewModel::dismissDeleteError,
+        onNewlyOverdueShown = viewModel::dismissNewlyOverdue,
         onRetry = viewModel::refresh,
         onBack = onBack,
         modifier = modifier,
@@ -93,6 +97,7 @@ fun VehicleDetailContent(
     onViewHistory: () -> Unit,
     onDeleteItem: (String) -> Unit,
     onDeleteErrorShown: () -> Unit,
+    onNewlyOverdueShown: () -> Unit,
     onRetry: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -162,7 +167,7 @@ fun VehicleDetailContent(
                     onEditVehicle = onEditVehicle,
                 )
                 HorizontalDivider()
-                if (uiState.items.isEmpty()) {
+                if (uiState.rows.isEmpty()) {
                     CenteredColumn {
                         Text(
                             text = stringResource(R.string.maintenance_empty_title),
@@ -176,7 +181,7 @@ fun VehicleDetailContent(
                     }
                 } else {
                     MaintenanceItemTable(
-                        items = uiState.items,
+                        rows = uiState.rows,
                         onOpenItemActions = { actionsForItemId = it },
                     )
                 }
@@ -184,37 +189,71 @@ fun VehicleDetailContent(
         }
     }
 
-    val actionsItem = uiState.items.firstOrNull { it.id == actionsForItemId }
-    if (actionsItem != null) {
+    val actionsRow = uiState.rows.firstOrNull { it.item.id == actionsForItemId }
+    if (actionsRow != null) {
         MaintenanceItemActionsSheet(
-            itemName = actionsItem.name,
+            itemName = actionsRow.item.name,
+            status = actionsRow.status,
             onLogService = {
                 actionsForItemId = null
-                onLogService(actionsItem.id)
+                onLogService(actionsRow.item.id)
             },
             onEdit = {
                 actionsForItemId = null
-                onEditItem(actionsItem.id)
+                onEditItem(actionsRow.item.id)
             },
             onDelete = {
                 actionsForItemId = null
-                confirmingDeletionOfItemId = actionsItem.id
+                confirmingDeletionOfItemId = actionsRow.item.id
             },
             onDismiss = { actionsForItemId = null },
         )
     }
 
-    val deletingItem = uiState.items.firstOrNull { it.id == confirmingDeletionOfItemId }
-    if (deletingItem != null) {
+    val deletingRow = uiState.rows.firstOrNull { it.item.id == confirmingDeletionOfItemId }
+    if (deletingRow != null) {
         DeleteItemDialog(
-            itemName = deletingItem.name,
+            itemName = deletingRow.item.name,
             onConfirm = {
                 confirmingDeletionOfItemId = null
-                onDeleteItem(deletingItem.id)
+                onDeleteItem(deletingRow.item.id)
             },
             onDismiss = { confirmingDeletionOfItemId = null },
         )
     }
+
+    if (uiState.newlyOverdueByMileage.isNotEmpty()) {
+        NewlyOverdueDialog(
+            itemNames = uiState.newlyOverdueByMileage,
+            onDismiss = onNewlyOverdueShown,
+        )
+    }
+}
+
+/** The app cannot read an odometer, so a new reading is the only moment mileage can go overdue. */
+@Composable
+private fun NewlyOverdueDialog(
+    itemNames: List<String>,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        modifier = modifier,
+        title = {
+            Text(
+                pluralStringResource(
+                    R.plurals.newly_overdue_title,
+                    itemNames.size,
+                    itemNames.size,
+                ),
+            )
+        },
+        text = { Text(itemNames.joinToString(separator = "\n")) },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.ok)) }
+        },
+    )
 }
 
 /** Scrolls sideways so a large font scale cannot clip an action off the screen. */
@@ -242,6 +281,7 @@ private fun VehicleActionsRow(
 @Composable
 private fun MaintenanceItemActionsSheet(
     itemName: String,
+    status: MaintenanceItemStatus,
     onLogService: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
@@ -259,10 +299,59 @@ private fun MaintenanceItemActionsSheet(
                 modifier = Modifier.padding(horizontal = HORIZONTAL_PADDING, vertical = 12.dp),
                 style = MaterialTheme.typography.titleMedium,
             )
+            ItemStatusDetail(status)
+            HorizontalDivider()
             SheetAction(stringResource(R.string.item_action_log_service), onLogService)
             SheetAction(stringResource(R.string.edit_maintenance_item), onEdit)
             SheetAction(stringResource(R.string.delete_maintenance_item), onDelete)
         }
+    }
+}
+
+/** The full derived picture for one item, which the table row has no room to spell out. */
+@Composable
+private fun ItemStatusDetail(status: MaintenanceItemStatus, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = HORIZONTAL_PADDING)
+            .padding(bottom = 12.dp),
+    ) {
+        DetailLine(stringResource(R.string.detail_status), statusLabel(status.status))
+        DetailLine(
+            label = stringResource(R.string.detail_next_reminder),
+            value = status.nextReminderDate?.let { formatMediumDate(it) },
+        )
+        DetailLine(
+            label = stringResource(R.string.detail_due_date),
+            value = status.dueDate?.let { formatMediumDate(it) },
+        )
+        DetailLine(
+            label = stringResource(R.string.detail_mileage_due),
+            value = status.mileageDue?.let { milesLabel(it) },
+        )
+        DetailLine(
+            label = stringResource(R.string.detail_miles_left),
+            value = status.milesLeft?.let { milesLabel(it) },
+        )
+    }
+}
+
+@Composable
+private fun DetailLine(label: String, value: String?, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth().padding(vertical = 3.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = value ?: stringResource(R.string.value_not_set),
+            style = MaterialTheme.typography.bodyMedium,
+        )
     }
 }
 
@@ -281,7 +370,7 @@ private fun SheetAction(text: String, onClick: () -> Unit) {
 
 @Composable
 private fun MaintenanceItemTable(
-    items: List<MaintenanceItem>,
+    rows: List<MaintenanceItemRow>,
     onOpenItemActions: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -289,8 +378,8 @@ private fun MaintenanceItemTable(
         MaintenanceItemHeader()
         HorizontalDivider()
         LazyColumn {
-            items(items, key = { it.id }) { item ->
-                MaintenanceItemRow(item = item, onClick = { onOpenItemActions(item.id) })
+            items(rows, key = { it.item.id }) { row ->
+                MaintenanceTableRow(row = row, onClick = { onOpenItemActions(row.item.id) })
                 HorizontalDivider()
             }
         }
@@ -306,12 +395,13 @@ private fun MaintenanceItemHeader(modifier: Modifier = Modifier) {
         horizontalArrangement = Arrangement.spacedBy(COLUMN_SPACING),
     ) {
         HeaderCell(stringResource(R.string.column_service), SERVICE_WEIGHT, TextAlign.Start)
-        HeaderCell(stringResource(R.string.column_miles), VALUE_WEIGHT, TextAlign.End)
-        HeaderCell(stringResource(R.string.column_time), VALUE_WEIGHT, TextAlign.End)
-        HeaderCell(stringResource(R.string.column_remind), VALUE_WEIGHT, TextAlign.End)
+        HeaderCell(stringResource(R.string.column_next_due), VALUE_WEIGHT, TextAlign.End)
+        HeaderCell(stringResource(R.string.column_miles_left), VALUE_WEIGHT, TextAlign.End)
+        HeaderCell(stringResource(R.string.column_status), STATUS_WEIGHT, TextAlign.End)
     }
 }
 
+/** Two lines, so a two word heading wraps instead of ellipsizing in a narrow column. */
 @Composable
 private fun RowScope.HeaderCell(text: String, weight: Float, textAlign: TextAlign) {
     Text(
@@ -320,14 +410,14 @@ private fun RowScope.HeaderCell(text: String, weight: Float, textAlign: TextAlig
         style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         textAlign = textAlign,
-        maxLines = 1,
+        maxLines = 2,
         overflow = TextOverflow.Ellipsis,
     )
 }
 
 @Composable
-private fun MaintenanceItemRow(
-    item: MaintenanceItem,
+private fun MaintenanceTableRow(
+    row: MaintenanceItemRow,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -340,16 +430,27 @@ private fun MaintenanceItemRow(
         horizontalArrangement = Arrangement.spacedBy(COLUMN_SPACING),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = item.name,
-            modifier = Modifier.weight(SERVICE_WEIGHT),
-            style = MaterialTheme.typography.bodyMedium,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-        )
-        ValueCell(item.mileageInterval?.let { formatMileage(it) })
-        ValueCell(item.recurrence?.shortLabel())
-        ValueCell(item.reminder.shortLabel())
+        Column(modifier = Modifier.weight(SERVICE_WEIGHT)) {
+            Text(
+                text = row.item.name,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            val intervals = row.item.intervalSummary()
+            if (intervals != null) {
+                Text(
+                    text = intervals,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+        ValueCell(row.status.nextDueDate?.let { formatShortDate(it) })
+        ValueCell(row.status.milesLeft?.let { formatMileage(it) })
+        StatusCell(row.status.status)
     }
 }
 
@@ -365,7 +466,53 @@ private fun RowScope.ValueCell(value: String?) {
     )
 }
 
-/** "5 mo", short enough to stay on one line in a table column. */
+/** The label always states the status, so color is never the only thing carrying it. */
+@Composable
+private fun RowScope.StatusCell(status: MaintenanceStatus) {
+    Text(
+        text = statusLabel(status),
+        modifier = Modifier.weight(STATUS_WEIGHT),
+        style = MaterialTheme.typography.bodyMedium,
+        color = when (status) {
+            MaintenanceStatus.OVERDUE -> MaterialTheme.colorScheme.error
+            MaintenanceStatus.DUE -> MaterialTheme.colorScheme.tertiary
+            MaintenanceStatus.OK, MaintenanceStatus.NONE ->
+                MaterialTheme.colorScheme.onSurfaceVariant
+        },
+        textAlign = TextAlign.End,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
+}
+
+@Composable
+private fun statusLabel(status: MaintenanceStatus): String = stringResource(
+    when (status) {
+        MaintenanceStatus.OK -> R.string.status_ok
+        MaintenanceStatus.DUE -> R.string.status_due
+        MaintenanceStatus.OVERDUE -> R.string.status_overdue
+        MaintenanceStatus.NONE -> R.string.value_not_set
+    },
+)
+
+/** "5,000 mi - 6 mo": the settings behind the row, kept under the name so the columns fit. */
+@Composable
+private fun MaintenanceItem.intervalSummary(): String? {
+    val miles = mileageInterval?.let { milesLabel(it) }
+    val time = recurrence?.shortLabel()
+    return when {
+        miles != null && time != null ->
+            stringResource(R.string.interval_summary_both, miles, time)
+
+        else -> miles ?: time
+    }
+}
+
+@Composable
+private fun milesLabel(miles: Int): String =
+    stringResource(R.string.interval_short_miles, formatMileage(miles))
+
+/** "5 mo", short enough to stay on one line under the service name. */
 @Composable
 private fun Interval.shortLabel(): String = stringResource(
     when (unit) {
@@ -379,8 +526,9 @@ private fun Interval.shortLabel(): String = stringResource(
 
 private val HORIZONTAL_PADDING = 16.dp
 private val COLUMN_SPACING = 8.dp
-private const val SERVICE_WEIGHT = 4f
+private const val SERVICE_WEIGHT = 3.5f
 private const val VALUE_WEIGHT = 2f
+private const val STATUS_WEIGHT = 2.5f
 
 @Composable
 fun unitLabel(unit: IntervalUnit): String = stringResource(
@@ -408,6 +556,59 @@ private fun CenteredColumn(
 
 private val previewVehicle = Vehicle("v-1", 2014, "Toyota", "Tacoma", "4.0L V6")
 
+private val previewToday = LocalDate.of(2026, 9, 6)
+
+private fun previewRow(
+    id: String,
+    name: String,
+    mileageInterval: Int? = null,
+    recurrence: Interval? = null,
+    reminder: Interval = Interval(5, IntervalUnit.MONTHS),
+    lastDoneDate: LocalDate? = LocalDate.of(2026, 3, 1),
+    lastDoneMileage: Int? = null,
+    odometer: Int? = null,
+): MaintenanceItemRow {
+    val item = MaintenanceItem(
+        id = id,
+        vehicleId = "v-1",
+        name = name,
+        mileageInterval = mileageInterval,
+        recurrence = recurrence,
+        reminder = reminder,
+        lastDoneDate = lastDoneDate,
+        lastDoneMileage = lastDoneMileage,
+    )
+    return MaintenanceItemRow(item, statusOf(item, odometer, previewToday))
+}
+
+private val previewRows = listOf(
+    // Overdue by mileage, with both intervals under the name.
+    previewRow(
+        id = "m-1",
+        name = "Oil change",
+        mileageInterval = 5_000,
+        recurrence = Interval(6, IntervalUnit.MONTHS),
+        lastDoneMileage = 42_000,
+        odometer = 48_000,
+    ),
+    // Mileage only, so the reminder is what turns it Due.
+    previewRow(
+        id = "m-2",
+        name = "Tire rotation",
+        mileageInterval = 7_500,
+        reminder = Interval(90, IntervalUnit.DAYS),
+    ),
+    // Still inside every interval.
+    previewRow(
+        id = "m-3",
+        name = "Brake fluid flush",
+        recurrence = Interval(2, IntervalUnit.YEARS),
+        reminder = Interval(22, IntervalUnit.MONTHS),
+    ),
+    // Last done date cleared and no mileage baseline, so nothing is computable.
+    previewRow(id = "m-4", name = "Cabin air filter", lastDoneDate = null),
+)
+
 @Preview(showBackground = true)
 @Composable
 private fun VehicleDetailEmptyPreview() {
@@ -422,6 +623,7 @@ private fun VehicleDetailEmptyPreview() {
             onViewHistory = {},
             onDeleteItem = {},
             onDeleteErrorShown = {},
+            onNewlyOverdueShown = {},
             onRetry = {},
             onBack = {},
         )
@@ -436,30 +638,7 @@ private fun VehicleDetailPreview() {
             uiState = VehicleDetailUiState(
                 isLoading = false,
                 vehicle = previewVehicle,
-                items = listOf(
-                    MaintenanceItem(
-                        id = "m-1",
-                        vehicleId = "v-1",
-                        name = "Oil change",
-                        mileageInterval = 5000,
-                        recurrence = Interval(6, IntervalUnit.MONTHS),
-                        reminder = Interval(5, IntervalUnit.MONTHS),
-                    ),
-                    MaintenanceItem(
-                        id = "m-2",
-                        vehicleId = "v-1",
-                        name = "Tire rotation",
-                        mileageInterval = 7500,
-                        reminder = Interval(90, IntervalUnit.DAYS),
-                    ),
-                    MaintenanceItem(
-                        id = "m-3",
-                        vehicleId = "v-1",
-                        name = "Brake fluid flush",
-                        recurrence = Interval(2, IntervalUnit.YEARS),
-                        reminder = Interval(22, IntervalUnit.MONTHS),
-                    ),
-                ),
+                rows = previewRows,
             ),
             onEditVehicle = {},
             onAddItem = {},
@@ -469,6 +648,33 @@ private fun VehicleDetailPreview() {
             onViewHistory = {},
             onDeleteItem = {},
             onDeleteErrorShown = {},
+            onNewlyOverdueShown = {},
+            onRetry = {},
+            onBack = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun VehicleDetailNewlyOverduePreview() {
+    VehicleMaintenanceTheme {
+        VehicleDetailContent(
+            uiState = VehicleDetailUiState(
+                isLoading = false,
+                vehicle = previewVehicle,
+                rows = previewRows,
+                newlyOverdueByMileage = listOf("Oil change", "Air filter"),
+            ),
+            onEditVehicle = {},
+            onAddItem = {},
+            onEditItem = {},
+            onLogService = {},
+            onLogRepair = {},
+            onViewHistory = {},
+            onDeleteItem = {},
+            onDeleteErrorShown = {},
+            onNewlyOverdueShown = {},
             onRetry = {},
             onBack = {},
         )

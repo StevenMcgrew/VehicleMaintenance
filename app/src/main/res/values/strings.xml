@@ -104,12 +104,32 @@
     <string name="unit_years">Years</string>
 
     <string name="column_service">Service</string>
-    <string name="column_miles">Miles</string>
-    <string name="column_time">Time</string>
-    <string name="column_remind">Remind</string>
+    <string name="column_next_due">Next due</string>
+    <string name="column_miles_left">Miles left</string>
+    <string name="column_status">Status</string>
     <string name="value_not_set">-</string>
 
-    <!-- Abbreviated so a whole interval fits one line in a narrow table column. -->
+    <string name="status_ok">OK</string>
+    <string name="status_due">Due</string>
+    <string name="status_overdue">Overdue</string>
+
+    <string name="detail_status">Status</string>
+    <string name="detail_next_reminder">Next reminder</string>
+    <string name="detail_due_date">Due date</string>
+    <string name="detail_mileage_due">Due at odometer</string>
+    <string name="detail_miles_left">Miles left</string>
+
+    <string name="ok">OK</string>
+
+    <plurals name="newly_overdue_title">
+        <item quantity="one">This reading put 1 item overdue</item>
+        <item quantity="other">This reading put %1$d items overdue</item>
+    </plurals>
+
+    <!-- Abbreviated so both intervals fit one line under the service name. -->
+    <string name="interval_short_miles">%1$s mi</string>
+    <!-- Joins the mileage and time intervals under a service name: "5,000 mi · 6 mo". -->
+    <string name="interval_summary_both">%1$s · %2$s</string>
     <string name="interval_short_days" tools:ignore="PluralsCandidate">%1$d d</string>
     <string name="interval_short_weeks" tools:ignore="PluralsCandidate">%1$d wk</string>
     <string name="interval_short_months" tools:ignore="PluralsCandidate">%1$d mo</string>

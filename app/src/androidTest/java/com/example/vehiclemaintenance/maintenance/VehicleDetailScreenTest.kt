@@ -22,6 +22,8 @@ import com.example.vehiclemaintenance.data.JsonFileStore
 import com.example.vehiclemaintenance.data.MaintenanceStore
 import com.example.vehiclemaintenance.data.MaintenanceStoreHolder
 import com.example.vehiclemaintenance.data.storeJson
+import com.example.vehiclemaintenance.servicelog.JsonServiceLogRepository
+import com.example.vehiclemaintenance.servicelog.ServiceLogRepository
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 import com.example.vehiclemaintenance.vehicles.JsonVehicleRepository
 import com.example.vehiclemaintenance.vehicles.Vehicle
@@ -32,6 +34,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
+import java.time.LocalDate
 
 /**
  * Drives the detail screen and the item form over real repositories backed by a temp file, so the
@@ -48,6 +51,7 @@ class VehicleDetailScreenTest {
     private lateinit var storeFile: File
     private lateinit var vehicles: VehicleRepository
     private lateinit var items: MaintenanceItemRepository
+    private lateinit var serviceLog: ServiceLogRepository
 
     private val vehicle = Vehicle("v-1", 2014, "Toyota", "Tacoma", "4.0L V6")
 
@@ -62,6 +66,7 @@ class VehicleDetailScreenTest {
         val holder = MaintenanceStoreHolder(JsonFileStore(storeFile))
         vehicles = JsonVehicleRepository(holder)
         items = JsonMaintenanceItemRepository(holder)
+        serviceLog = JsonServiceLogRepository(holder)
     }
 
     @After
@@ -138,16 +143,119 @@ class VehicleDetailScreenTest {
     }
 
     @Test
-    fun theTableLabelsEveryColumnAndShowsTheReminderInterval() {
+    fun theTableLabelsEveryColumnAndShowsTheStatus() {
         addOilChange()
 
         composeRule.onNodeWithText(string(R.string.column_service)).assertIsDisplayed()
-        composeRule.onNodeWithText(string(R.string.column_miles)).assertIsDisplayed()
-        composeRule.onNodeWithText(string(R.string.column_time)).assertIsDisplayed()
-        composeRule.onNodeWithText(string(R.string.column_remind)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.column_next_due)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.column_miles_left)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.column_status)).assertIsDisplayed()
 
-        val remind = context.getString(R.string.interval_short_months, 5)
-        composeRule.onNodeWithText(remind).assertIsDisplayed()
+        // Created today with a five month reminder, so nothing has come due yet.
+        composeRule.onNodeWithText(string(R.string.status_ok)).assertIsDisplayed()
+    }
+
+    @Test
+    fun anOverdueRowNamesItsStatusAndShowsBothIntervalsUnderTheName() {
+        setDetailContent(rows = listOf(overdueRow()))
+
+        composeRule.onNodeWithText(string(R.string.status_overdue)).assertIsDisplayed()
+
+        val subtitle = context.getString(
+            R.string.interval_summary_both,
+            context.getString(R.string.interval_short_miles, formatMileage(5_000)),
+            context.getString(R.string.interval_short_months, 6),
+        )
+        composeRule.onNodeWithText(subtitle).assertIsDisplayed()
+    }
+
+    @Test
+    fun anItemWithNothingComputableShowsADashInEveryDerivedColumn() {
+        setDetailContent(rows = listOf(noSignalRow()))
+
+        // The row is clickable, so its cells merge into one node unless the tree is unmerged.
+        val dashes = composeRule
+            .onAllNodesWithText(string(R.string.value_not_set), useUnmergedTree = true)
+            .fetchSemanticsNodes()
+        assert(dashes.size == 3) { "expected next due, miles left, and status dashes, got $dashes" }
+    }
+
+    @Test
+    fun aNewReadingCalloutNamesTheItemsAndDismisses() {
+        var dismissed = false
+        setDetailContent(
+            rows = listOf(overdueRow()),
+            newlyOverdue = listOf("Oil change"),
+            onNewlyOverdueShown = { dismissed = true },
+        )
+
+        composeRule
+            .onNode(hasText("Oil change") and hasAnyAncestor(isDialog()))
+            .assertIsDisplayed()
+
+        composeRule.onNodeWithText(string(R.string.ok)).performClick()
+
+        assert(dismissed) { "expected the callout dismissal to fire" }
+    }
+
+    /** Overdue by mileage: due at 47,000 with the vehicle reading 48,000. */
+    private fun overdueRow(): MaintenanceItemRow = row(
+        MaintenanceItem(
+            id = "m-1",
+            vehicleId = "v-1",
+            name = "Oil change",
+            mileageInterval = 5_000,
+            recurrence = Interval(6, IntervalUnit.MONTHS),
+            reminder = Interval(5, IntervalUnit.MONTHS),
+            lastDoneDate = LocalDate.of(2026, 3, 1),
+            lastDoneMileage = 42_000,
+        ),
+        odometer = 48_000,
+    )
+
+    private fun noSignalRow(): MaintenanceItemRow = row(
+        MaintenanceItem(
+            id = "m-2",
+            vehicleId = "v-1",
+            name = "Cabin air filter",
+            reminder = Interval(1, IntervalUnit.YEARS),
+            lastDoneDate = null,
+        ),
+        odometer = 48_000,
+    )
+
+    private fun row(item: MaintenanceItem, odometer: Int?) =
+        MaintenanceItemRow(item, statusOf(item, odometer, TODAY))
+
+    /** Drives the content directly, which needs no repository and no store file. */
+    private fun setDetailContent(
+        rows: List<MaintenanceItemRow>,
+        newlyOverdue: List<String> = emptyList(),
+        onNewlyOverdueShown: () -> Unit = {},
+    ) {
+        composeRule.setContent {
+            VehicleMaintenanceTheme {
+                VehicleDetailContent(
+                    uiState = VehicleDetailUiState(
+                        isLoading = false,
+                        vehicle = vehicle,
+                        rows = rows,
+                        newlyOverdueByMileage = newlyOverdue,
+                    ),
+                    onEditVehicle = {},
+                    onAddItem = {},
+                    onEditItem = {},
+                    onLogService = {},
+                    onLogRepair = {},
+                    onViewHistory = {},
+                    onDeleteItem = {},
+                    onDeleteErrorShown = {},
+                    onNewlyOverdueShown = onNewlyOverdueShown,
+                    onRetry = {},
+                    onBack = {},
+                )
+            }
+        }
     }
 
     @Test
@@ -266,7 +374,9 @@ class VehicleDetailScreenTest {
                 viewModel = formViewModel,
             )
         } else {
-            val detailViewModel = remember { VehicleDetailViewModel(vehicles, items, "v-1") }
+            val detailViewModel = remember {
+                VehicleDetailViewModel(vehicles, items, serviceLog, "v-1")
+            }
             VehicleDetailScreen(
                 vehicleId = "v-1",
                 onEditVehicle = {},
@@ -297,5 +407,6 @@ class VehicleDetailScreenTest {
 
     private companion object {
         const val TIMEOUT_MS = 5_000L
+        val TODAY: LocalDate = LocalDate.of(2026, 9, 6)
     }
 }
