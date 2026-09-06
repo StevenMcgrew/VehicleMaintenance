@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.vehiclemaintenance.maintenance.MaintenanceItemFormScreen
 import com.example.vehiclemaintenance.maintenance.VehicleDetailScreen
+import com.example.vehiclemaintenance.servicelog.ServiceHistoryScreen
 import com.example.vehiclemaintenance.servicelog.ServiceLogFormScreen
 import com.example.vehiclemaintenance.vehicles.VehicleFormScreen
 import com.example.vehiclemaintenance.vehicles.VehicleListScreen
@@ -26,6 +27,7 @@ object Routes {
     const val EDIT_ITEM = "vehicles/{$VEHICLE_ID_ARG}/items/{$ITEM_ID_ARG}/edit"
     const val LOG_SERVICE = "vehicles/{$VEHICLE_ID_ARG}/items/{$ITEM_ID_ARG}/log"
     const val LOG_REPAIR = "vehicles/{$VEHICLE_ID_ARG}/repairs/new"
+    const val VEHICLE_HISTORY = "vehicles/{$VEHICLE_ID_ARG}/history"
 
     fun editVehicle(vehicleId: String): String = "vehicles/$vehicleId/edit"
 
@@ -40,6 +42,8 @@ object Routes {
         "vehicles/$vehicleId/items/$itemId/log"
 
     fun logRepair(vehicleId: String): String = "vehicles/$vehicleId/repairs/new"
+
+    fun vehicleHistory(vehicleId: String): String = "vehicles/$vehicleId/history"
 }
 
 @Composable
@@ -85,6 +89,16 @@ fun VehicleMaintenanceApp(
                 onEditItem = { navController.navigate(Routes.editItem(vehicleId, it)) },
                 onLogService = { navController.navigate(Routes.logService(vehicleId, it)) },
                 onLogRepair = { navController.navigate(Routes.logRepair(vehicleId)) },
+                onViewHistory = { navController.navigate(Routes.vehicleHistory(vehicleId)) },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(
+            route = Routes.VEHICLE_HISTORY,
+            arguments = listOf(navArgument(VEHICLE_ID_ARG) { type = NavType.StringType }),
+        ) { backStackEntry ->
+            ServiceHistoryScreen(
+                vehicleId = backStackEntry.requireVehicleId(),
                 onBack = { navController.popBackStack() },
             )
         }

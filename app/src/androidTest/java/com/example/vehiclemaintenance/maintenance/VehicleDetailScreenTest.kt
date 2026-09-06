@@ -51,6 +51,8 @@ class VehicleDetailScreenTest {
 
     private val vehicle = Vehicle("v-1", 2014, "Toyota", "Tacoma", "4.0L V6")
 
+    private var historyRequested = false
+
     @Before
     fun setUp() {
         storeFile = File(context.cacheDir, "detail-test-${System.nanoTime()}.json")
@@ -146,6 +148,26 @@ class VehicleDetailScreenTest {
 
         val remind = context.getString(R.string.interval_short_months, 5)
         composeRule.onNodeWithText(remind).assertIsDisplayed()
+    }
+
+    @Test
+    fun theActionRowOffersHistoryLogRepairAndEditFromTheBody() {
+        setContent()
+        waitForText(string(R.string.service_history))
+
+        composeRule.onNodeWithText(string(R.string.service_history)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.log_repair)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.edit_vehicle)).assertIsDisplayed()
+    }
+
+    @Test
+    fun tappingServiceHistoryAsksToOpenTheHistory() {
+        setContent()
+        waitForText(string(R.string.service_history))
+
+        composeRule.onNodeWithText(string(R.string.service_history)).performClick()
+
+        assert(historyRequested) { "expected the history callback to fire" }
     }
 
     @Test
@@ -258,6 +280,7 @@ class VehicleDetailScreenTest {
                 },
                 onLogService = {},
                 onLogRepair = {},
+                onViewHistory = { historyRequested = true },
                 onBack = {},
                 viewModel = detailViewModel,
             )

@@ -1,6 +1,7 @@
 package com.example.vehiclemaintenance.maintenance
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,6 +55,7 @@ fun VehicleDetailScreen(
     onEditItem: (String) -> Unit,
     onLogService: (String) -> Unit,
     onLogRepair: () -> Unit,
+    onViewHistory: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: VehicleDetailViewModel = viewModel(
@@ -69,6 +72,7 @@ fun VehicleDetailScreen(
         onEditItem = onEditItem,
         onLogService = onLogService,
         onLogRepair = onLogRepair,
+        onViewHistory = onViewHistory,
         onDeleteItem = viewModel::deleteItem,
         onDeleteErrorShown = viewModel::dismissDeleteError,
         onRetry = viewModel::refresh,
@@ -86,6 +90,7 @@ fun VehicleDetailContent(
     onEditItem: (String) -> Unit,
     onLogService: (String) -> Unit,
     onLogRepair: () -> Unit,
+    onViewHistory: () -> Unit,
     onDeleteItem: (String) -> Unit,
     onDeleteErrorShown: () -> Unit,
     onRetry: () -> Unit,
@@ -119,16 +124,6 @@ fun VehicleDetailContent(
                 navigationIcon = {
                     TextButton(onClick = onBack) { Text(stringResource(R.string.back)) }
                 },
-                actions = {
-                    if (vehicle != null) {
-                        TextButton(onClick = onLogRepair) {
-                            Text(stringResource(R.string.log_repair))
-                        }
-                        TextButton(onClick = onEditVehicle) {
-                            Text(stringResource(R.string.edit_vehicle))
-                        }
-                    }
-                },
             )
         },
         floatingActionButton = {
@@ -160,23 +155,32 @@ fun VehicleDetailContent(
                 TextButton(onClick = onBack) { Text(stringResource(R.string.back)) }
             }
 
-            uiState.items.isEmpty() -> CenteredColumn(Modifier.padding(innerPadding)) {
-                Text(
-                    text = stringResource(R.string.maintenance_empty_title),
-                    style = MaterialTheme.typography.titleLarge,
+            else -> Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                VehicleActionsRow(
+                    onViewHistory = onViewHistory,
+                    onLogRepair = onLogRepair,
+                    onEditVehicle = onEditVehicle,
                 )
-                Text(
-                    text = stringResource(R.string.maintenance_empty_body),
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center,
-                )
+                HorizontalDivider()
+                if (uiState.items.isEmpty()) {
+                    CenteredColumn {
+                        Text(
+                            text = stringResource(R.string.maintenance_empty_title),
+                            style = MaterialTheme.typography.titleLarge,
+                        )
+                        Text(
+                            text = stringResource(R.string.maintenance_empty_body),
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                } else {
+                    MaintenanceItemTable(
+                        items = uiState.items,
+                        onOpenItemActions = { actionsForItemId = it },
+                    )
+                }
             }
-
-            else -> MaintenanceItemTable(
-                items = uiState.items,
-                onOpenItemActions = { actionsForItemId = it },
-                modifier = Modifier.padding(innerPadding),
-            )
         }
     }
 
@@ -210,6 +214,27 @@ fun VehicleDetailContent(
             },
             onDismiss = { confirmingDeletionOfItemId = null },
         )
+    }
+}
+
+/** Scrolls sideways so a large font scale cannot clip an action off the screen. */
+@Composable
+private fun VehicleActionsRow(
+    onViewHistory: () -> Unit,
+    onLogRepair: () -> Unit,
+    onEditVehicle: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        TextButton(onClick = onViewHistory) { Text(stringResource(R.string.service_history)) }
+        TextButton(onClick = onLogRepair) { Text(stringResource(R.string.log_repair)) }
+        TextButton(onClick = onEditVehicle) { Text(stringResource(R.string.edit_vehicle)) }
     }
 }
 
@@ -394,6 +419,7 @@ private fun VehicleDetailEmptyPreview() {
             onEditItem = {},
             onLogService = {},
             onLogRepair = {},
+            onViewHistory = {},
             onDeleteItem = {},
             onDeleteErrorShown = {},
             onRetry = {},
@@ -440,6 +466,7 @@ private fun VehicleDetailPreview() {
             onEditItem = {},
             onLogService = {},
             onLogRepair = {},
+            onViewHistory = {},
             onDeleteItem = {},
             onDeleteErrorShown = {},
             onRetry = {},

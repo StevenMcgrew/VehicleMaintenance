@@ -56,7 +56,7 @@ it to your project.
   odometer, and cost, resetting its clocks
 - [x] 4. **Log an ad-hoc repair** - record work that is not a tracked maintenance
   item, with description, date, odometer, and cost
-- [ ] 5. **Service history** - per-vehicle list of everything logged, newest first
+- [x] 5. **Service history** - per-vehicle list of everything logged, newest first
 - [ ] 6. **Due and overdue status** - compute and display next reminder, due date,
   and overdue state for every item, including the mileage check that runs when a
   new odometer reading is captured

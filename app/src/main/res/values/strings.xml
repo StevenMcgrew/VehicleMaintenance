@@ -85,6 +85,12 @@
     <string name="log_cost_placeholder">64.99</string>
     <string name="log_notes_placeholder">Shop said the belts look fine</string>
 
+    <string name="service_history">Service history</string>
+    <string name="history_empty_title">Nothing logged yet</string>
+    <string name="history_empty_body">Log a completed service or a repair and it shows up here.</string>
+    <!-- The odometer reading on a logged entry: "48,000 mi". -->
+    <string name="history_odometer">%1$s mi</string>
+
     <string name="error_positive_number">Enter a whole number of 1 or more</string>
     <string name="error_non_negative_number">Enter a whole number of 0 or more</string>
     <string name="error_value_required">Enter a value or clear the unit</string>

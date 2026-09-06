@@ -66,6 +66,21 @@ class JsonServiceLogRepositoryTest {
 
     private fun onDisk() = storeJson.decodeFromString<MaintenanceStore>(file.readText())
 
+    private fun entry(
+        id: String,
+        vehicleId: String = "v-1",
+        date: LocalDate = loggedOn,
+        maintenanceItemId: String? = "m-1",
+        description: String = "Oil and filter",
+    ) = ServiceLogEntry(
+        id = id,
+        vehicleId = vehicleId,
+        maintenanceItemId = maintenanceItemId,
+        description = description,
+        date = date,
+        odometer = 48000,
+    )
+
     @Test
     fun `add appends an entry carrying the injected id and every drafted field`() = runBlocking {
         seed(MaintenanceStore(maintenanceItems = listOf(item)))
@@ -184,6 +199,102 @@ class JsonServiceLogRepositoryTest {
         val store = onDisk()
         assertEquals(listOf("s-1", "s-2"), store.serviceLogEntries.map { it.id })
         assertEquals(48100, store.maintenanceItems.single().lastDoneMileage)
+    }
+
+    @Test
+    fun `entriesFor returns only the requested vehicle's entries`() = runBlocking {
+        seed(
+            MaintenanceStore(
+                serviceLogEntries = listOf(
+                    entry("s-1", vehicleId = "v-1"),
+                    entry("s-2", vehicleId = "v-2"),
+                    entry("s-3", vehicleId = "v-1"),
+                ),
+            ),
+        )
+        val holder = holder()
+        val repository = repository(holder, "s-4")
+        holder.load()
+
+        assertEquals(
+            listOf("s-1", "s-3"),
+            repository.entriesFor("v-1").value.map { it.id }.sorted(),
+        )
+    }
+
+    @Test
+    fun `entriesFor orders distinct dates newest first`() = runBlocking {
+        seed(
+            MaintenanceStore(
+                serviceLogEntries = listOf(
+                    entry("s-old", date = LocalDate.of(2026, 1, 4)),
+                    entry("s-new", date = LocalDate.of(2026, 9, 5)),
+                    entry("s-mid", date = LocalDate.of(2026, 5, 20)),
+                ),
+            ),
+        )
+        val holder = holder()
+        val repository = repository(holder, "s-1")
+        holder.load()
+
+        assertEquals(
+            listOf("s-new", "s-mid", "s-old"),
+            repository.entriesFor("v-1").value.map { it.id },
+        )
+    }
+
+    @Test
+    fun `entriesFor puts the most recently added first among entries sharing a date`() =
+        runBlocking {
+            seed(
+                MaintenanceStore(
+                    serviceLogEntries = listOf(
+                        entry("s-first", date = loggedOn),
+                        entry("s-second", date = loggedOn),
+                        entry("s-third", date = loggedOn),
+                    ),
+                ),
+            )
+            val holder = holder()
+            val repository = repository(holder, "s-1")
+            holder.load()
+
+            assertEquals(
+                listOf("s-third", "s-second", "s-first"),
+                repository.entriesFor("v-1").value.map { it.id },
+            )
+        }
+
+    @Test
+    fun `entriesFor reflects a new entry as soon as the write succeeds`() = runBlocking {
+        seed(MaintenanceStore(maintenanceItems = listOf(item)))
+        val holder = holder()
+        val repository = repository(holder, "s-1")
+        holder.load()
+        val history = repository.entriesFor("v-1")
+        assertEquals(emptyList<ServiceLogEntry>(), history.value)
+
+        repository.add(draft)
+
+        assertEquals(listOf("s-1"), history.value.map { it.id })
+    }
+
+    @Test
+    fun `entriesFor still lists an entry whose item link was cleared`() = runBlocking {
+        seed(
+            MaintenanceStore(
+                serviceLogEntries = listOf(
+                    entry("s-1", maintenanceItemId = null, description = "Replaced the alternator"),
+                ),
+            ),
+        )
+        val holder = holder()
+        val repository = repository(holder, "s-2")
+        holder.load()
+
+        val listed = repository.entriesFor("v-1").value.single()
+        assertNull(listed.maintenanceItemId)
+        assertEquals("Replaced the alternator", listed.description)
     }
 
     @Test

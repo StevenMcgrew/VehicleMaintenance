@@ -3,6 +3,8 @@ package com.example.vehiclemaintenance.servicelog
 import com.example.vehiclemaintenance.data.MaintenanceStoreHolder
 import com.example.vehiclemaintenance.data.StoreResult
 import com.example.vehiclemaintenance.data.StoreUpdate
+import com.example.vehiclemaintenance.data.mapState
+import kotlinx.coroutines.flow.StateFlow
 import java.time.LocalDate
 import java.util.UUID
 
@@ -18,6 +20,9 @@ data class ServiceLogDraft(
 )
 
 interface ServiceLogRepository {
+    /** The vehicle's history, newest first. */
+    fun entriesFor(vehicleId: String): StateFlow<List<ServiceLogEntry>>
+
     suspend fun add(draft: ServiceLogDraft): StoreResult<ServiceLogEntry>
 }
 
@@ -25,6 +30,18 @@ class JsonServiceLogRepository(
     private val holder: MaintenanceStoreHolder,
     private val newId: () -> String = { UUID.randomUUID().toString() },
 ) : ServiceLogRepository {
+
+    /**
+     * Reversing before the stable sort is what orders entries that share a date: new entries are
+     * appended, so the reversal puts the most recently logged one first and equal dates keep it.
+     */
+    override fun entriesFor(vehicleId: String): StateFlow<List<ServiceLogEntry>> =
+        holder.state.mapState { store ->
+            store.serviceLogEntries
+                .filter { it.vehicleId == vehicleId }
+                .asReversed()
+                .sortedByDescending { it.date }
+        }
 
     /**
      * Appends the entry and resets its item's clocks in one write, so a failure can never log the
