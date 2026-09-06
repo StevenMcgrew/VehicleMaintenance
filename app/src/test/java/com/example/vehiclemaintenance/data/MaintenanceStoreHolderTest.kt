@@ -6,6 +6,7 @@ import com.example.vehiclemaintenance.vehicles.Vehicle
 import com.example.vehiclemaintenance.vehicles.VehicleDraft
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -29,6 +30,14 @@ class MaintenanceStoreHolderTest {
     private fun holder() = MaintenanceStoreHolder(JsonFileStore(file))
 
     private fun draft(make: String) = VehicleDraft(2014, make, "Tacoma", "4.0L V6")
+
+    private fun vehicle(id: String) = Vehicle(id, 2014, "Toyota", "Tacoma", "4.0L V6")
+
+    /** A directory where the store file belongs makes the atomic rename fail. */
+    private fun blockWrites() {
+        file.delete()
+        file.mkdirs()
+    }
 
     private fun entry(id: String, vehicleId: String) = ServiceLogEntry(
         id = id,
@@ -124,6 +133,53 @@ class MaintenanceStoreHolderTest {
 
         val onDisk = storeJson.decodeFromString<MaintenanceStore>(file.readText())
         assertEquals(listOf(entry("s-1", "other")), onDisk.serviceLogEntries)
+    }
+
+    @Test
+    fun `replace overwrites an unparseable file and unblocks later writes`() = runBlocking {
+        file.writeText("{ not json")
+        val holder = holder()
+        holder.load()
+
+        val replaced = holder.replace(MaintenanceStore(vehicles = listOf(vehicle("v-1"))))
+
+        assertTrue(replaced is StoreResult.Success)
+        assertEquals(listOf("v-1"), holder.state.value.vehicles.map { it.id })
+        assertEquals(
+            listOf("v-1"),
+            storeJson.decodeFromString<MaintenanceStore>(file.readText()).vehicles.map { it.id },
+        )
+        val write = JsonVehicleRepository(holder) { "id-2" }.add(draft("Honda"))
+        assertTrue(write is StoreResult.Success)
+    }
+
+    @Test
+    fun `a failed replace leaves the loaded store untouched`() = runBlocking {
+        val holder = holder()
+        holder.load()
+        JsonVehicleRepository(holder) { "id-1" }.add(draft("Toyota"))
+        blockWrites()
+
+        val result = holder.replace(MaintenanceStore(vehicles = listOf(vehicle("v-9"))))
+
+        assertTrue(result is StoreResult.Failure)
+        assertTrue(holder.isLoaded)
+        assertEquals(listOf("id-1"), holder.state.value.vehicles.map { it.id })
+    }
+
+    @Test
+    fun `a failed replace after a failed load keeps writes blocked`() = runBlocking {
+        file.writeText("{ not json")
+        val holder = holder()
+        holder.load()
+        blockWrites()
+
+        val result = holder.replace(MaintenanceStore(vehicles = listOf(vehicle("v-9"))))
+
+        assertTrue(result is StoreResult.Failure)
+        assertFalse(holder.isLoaded)
+        val write = holder.update { StoreUpdate.Write(MaintenanceStore(), Unit) }
+        assertTrue((write as StoreResult.Failure).cause is StoreUnavailableException)
     }
 
     @Test

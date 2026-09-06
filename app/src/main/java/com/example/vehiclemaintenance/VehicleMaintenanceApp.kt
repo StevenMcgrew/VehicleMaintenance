@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
+import com.example.vehiclemaintenance.backup.BackupScreen
 import com.example.vehiclemaintenance.maintenance.MaintenanceItemFormScreen
 import com.example.vehiclemaintenance.maintenance.VehicleDetailScreen
 import com.example.vehiclemaintenance.servicelog.ServiceHistoryScreen
@@ -32,6 +33,7 @@ object Routes {
     const val LOG_SERVICE = "vehicles/{$VEHICLE_ID_ARG}/items/{$ITEM_ID_ARG}/log"
     const val LOG_REPAIR = "vehicles/{$VEHICLE_ID_ARG}/repairs/new"
     const val VEHICLE_HISTORY = "vehicles/{$VEHICLE_ID_ARG}/history"
+    const val BACKUP = "backup"
 
     fun editVehicle(vehicleId: String): String = "vehicles/$vehicleId/edit"
 
@@ -64,7 +66,11 @@ fun VehicleMaintenanceApp(
             VehicleListScreen(
                 onAddVehicle = { navController.navigate(Routes.NEW_VEHICLE) },
                 onOpenVehicle = { navController.navigate(Routes.vehicleDetail(it)) },
+                onOpenBackup = { navController.navigate(Routes.BACKUP) },
             )
+        }
+        composable(Routes.BACKUP) {
+            BackupScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.NEW_VEHICLE) {
             VehicleFormScreen(

@@ -108,6 +108,7 @@ class VehicleListScreenTest {
             VehicleListScreen(
                 onAddVehicle = { showForm = true },
                 onOpenVehicle = {},
+                onOpenBackup = {},
                 viewModel = listViewModel,
             )
         }

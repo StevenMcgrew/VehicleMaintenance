@@ -46,6 +46,7 @@ import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 fun VehicleListScreen(
     onAddVehicle: () -> Unit,
     onOpenVehicle: (String) -> Unit,
+    onOpenBackup: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: VehicleListViewModel = viewModel(factory = VehicleListViewModel.Factory),
 ) {
@@ -55,6 +56,7 @@ fun VehicleListScreen(
         uiState = uiState,
         onAddVehicle = onAddVehicle,
         onOpenVehicle = onOpenVehicle,
+        onOpenBackup = onOpenBackup,
         onDeleteVehicle = viewModel::deleteVehicle,
         onRetry = viewModel::refresh,
         onDeleteErrorShown = viewModel::dismissDeleteError,
@@ -68,6 +70,7 @@ fun VehicleListContent(
     uiState: VehicleListUiState,
     onAddVehicle: () -> Unit,
     onOpenVehicle: (String) -> Unit,
+    onOpenBackup: () -> Unit,
     onDeleteVehicle: (String) -> Unit,
     onRetry: () -> Unit,
     onDeleteErrorShown: () -> Unit,
@@ -86,7 +89,16 @@ fun VehicleListContent(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.vehicles_title)) }) },
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.vehicles_title)) },
+                actions = {
+                    TextButton(onClick = onOpenBackup) {
+                        Text(stringResource(R.string.backup_action))
+                    }
+                },
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             if (!uiState.loadFailed) {
@@ -230,6 +242,7 @@ private fun VehicleListEmptyPreview() {
             uiState = VehicleListUiState(isLoading = false),
             onAddVehicle = {},
             onOpenVehicle = {},
+            onOpenBackup = {},
             onDeleteVehicle = {},
             onRetry = {},
             onDeleteErrorShown = {},
@@ -251,6 +264,7 @@ private fun VehicleListPreview() {
             ),
             onAddVehicle = {},
             onOpenVehicle = {},
+            onOpenBackup = {},
             onDeleteVehicle = {},
             onRetry = {},
             onDeleteErrorShown = {},

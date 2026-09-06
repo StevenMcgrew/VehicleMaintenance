@@ -149,4 +149,38 @@
     <string name="interval_short_weeks" tools:ignore="PluralsCandidate">%1$d wk</string>
     <string name="interval_short_months" tools:ignore="PluralsCandidate">%1$d mo</string>
     <string name="interval_short_years" tools:ignore="PluralsCandidate">%1$d yr</string>
+    <string name="backup_action">Backup</string>
+    <string name="backup_title">Export and import</string>
+    <string name="backup_export_explanation">Export writes everything tracked in this app to a file you choose. Keep it somewhere safe; it is the only copy outside this device.</string>
+    <string name="backup_export">Export to a file</string>
+    <string name="backup_export_succeeded">Your data was exported.</string>
+    <string name="backup_export_failed">That file could not be written.</string>
+    <string name="backup_store_unavailable">Your saved data could not be read, so there is nothing safe to export.</string>
+    <string name="backup_picker_unavailable">No app on this device can choose files.</string>
+    <string name="backup_import_explanation">Import replaces everything in this app with the contents of a backup file you pick.</string>
+    <string name="backup_import">Import from a file</string>
+    <string name="backup_import_succeeded">Your data was restored.</string>
+    <string name="backup_import_failed">The restored data could not be saved, so nothing changed.</string>
+    <string name="backup_file_unreadable">That file could not be read.</string>
+    <string name="backup_file_too_large">That file is too large to be a backup from this app.</string>
+    <string name="backup_file_invalid">That file is not a backup from this app.</string>
+    <string name="backup_file_other_version">That backup came from a different version of this app (version %1$d) and cannot be imported.</string>
+
+    <string name="import_confirm_title">Replace everything?</string>
+    <!-- Joins the three counts in the import confirmation: "3 vehicles, 12 maintenance items, and 40 service records." -->
+    <string name="import_confirm_counts">This file holds %1$s, %2$s, and %3$s.</string>
+    <string name="import_confirm_warning">Importing replaces everything currently in this app. This cannot be undone.</string>
+    <string name="import_confirm_action">Replace</string>
+    <plurals name="import_vehicle_count">
+        <item quantity="one">1 vehicle</item>
+        <item quantity="other">%1$d vehicles</item>
+    </plurals>
+    <plurals name="import_item_count">
+        <item quantity="one">1 maintenance item</item>
+        <item quantity="other">%1$d maintenance items</item>
+    </plurals>
+    <plurals name="import_record_count">
+        <item quantity="one">1 service record</item>
+        <item quantity="other">%1$d service records</item>
+    </plurals>
 </resources>

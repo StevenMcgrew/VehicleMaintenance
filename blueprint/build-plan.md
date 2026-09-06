@@ -64,7 +64,7 @@ it to your project.
   when an item is due, repeating every two weeks until it is logged, with runtime
   permission handling
 - [x] 8. **Cost totals** - per-vehicle spend, all time and by year
-- [ ] 9. **Export and import** - write all data to a JSON file the user chooses
+- [x] 9. **Export and import** - write all data to a JSON file the user chooses
   and restore from one, with schema version handling
 - [ ] 10. **Play Store readiness** - app icon, signed release build, data safety
   declaration, and privacy policy

@@ -1,6 +1,8 @@
 package com.example.vehiclemaintenance
 
 import android.app.Application
+import com.example.vehiclemaintenance.backup.BackupRepository
+import com.example.vehiclemaintenance.backup.JsonBackupRepository
 import com.example.vehiclemaintenance.data.JsonFileStore
 import com.example.vehiclemaintenance.data.MaintenanceStoreHolder
 import com.example.vehiclemaintenance.maintenance.JsonMaintenanceItemRepository
@@ -24,6 +26,8 @@ class AppContainer(storeFile: File) {
         JsonMaintenanceItemRepository(storeHolder)
 
     val serviceLogRepository: ServiceLogRepository = JsonServiceLogRepository(storeHolder)
+
+    val backupRepository: BackupRepository = JsonBackupRepository(storeHolder)
 }
 
 class VehicleMaintenanceApplication : Application() {

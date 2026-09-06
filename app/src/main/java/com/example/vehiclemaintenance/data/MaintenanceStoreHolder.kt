@@ -32,6 +32,9 @@ class MaintenanceStoreHolder(private val file: JsonFileStore) {
 
     private var loaded = false
 
+    /** Whether the file was read successfully, so its contents are safe to write back out. */
+    val isLoaded: Boolean get() = loaded
+
     suspend fun load(): StoreResult<Unit> = mutex.withLock {
         when (val result = file.load()) {
             is StoreResult.Success -> {
@@ -45,6 +48,24 @@ class MaintenanceStoreHolder(private val file: JsonFileStore) {
                 _state.value = MaintenanceStore()
                 result
             }
+        }
+    }
+
+    /**
+     * Overwrites everything with [store], which is how an imported backup lands.
+     *
+     * This deliberately does not require a successful load: replacing a file we could not parse is
+     * exactly how a user recovers from one.
+     */
+    suspend fun replace(store: MaintenanceStore): StoreResult<Unit> = mutex.withLock {
+        when (val saved = file.save(store)) {
+            is StoreResult.Success -> {
+                loaded = true
+                _state.value = store
+                StoreResult.Success(Unit)
+            }
+
+            is StoreResult.Failure -> saved
         }
     }
 
