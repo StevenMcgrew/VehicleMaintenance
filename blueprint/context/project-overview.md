@@ -1,6 +1,6 @@
 # Vehicle Maintenance - Project Overview
 
-<!-- blueprint:source-hash 80b14ea4930614ed103b2cd5e8867ac70a50eb0f1364c2f765d2ba92ea872859 -->
+<!-- blueprint:source-hash 3fe9179ee0cc1d7e6728817a9c0aa246cb9181c2e95fe7e3e262fc3c0df6b526 -->
 
 > An offline Android app that reminds a vehicle owner when service is due and
 > keeps a permanent, exportable record of what was done and what it cost.
@@ -34,10 +34,10 @@ reason someone installs a watchdog rather than keeping a spreadsheet.
 2. **Maintenance items** - define per-vehicle services with their mileage, recurrence, and reminder intervals.
 3. **Log a completed service** - mark a tracked item done and reset its clocks.
 4. **Log an ad-hoc repair** - record work that was never a tracked item.
-5. **Service history** - per-vehicle record of everything logged, newest first.
+5. **Service history** - per-vehicle record of everything logged, grouped by year and newest first, with date, mileage, cost, and notes.
 6. **Due and overdue status** - compute and show what is due, including the mileage check triggered by a new odometer reading.
 7. **Reminders and notifications** - reach the user when the app is closed, repeating until the service is logged.
-8. **Cost totals** - what each vehicle has cost, all time and by year.
+8. **Cost totals** - what each vehicle has cost: all time, per calendar year, and an average per year, shown on the service history screen.
 9. **Export and import** - move the whole history to and from a JSON file.
 10. **Play Store readiness** - icon, signed release build, data safety declaration, privacy policy.
 
@@ -117,6 +117,7 @@ Owns many MaintenanceItem and many ServiceLogEntry.
 - Due date = `lastDoneDate` + `recurrence`, when recurrence is set
 - Mileage due = `lastDoneMileage` + `mileageInterval`, when both are set
 - Cost totals = sums over `serviceLogEntries`
+- Average per year = all-time cost ÷ months between the first and last logged entry × 12, shown only once entries span at least 30 days
 
 ### Behavioral rules
 
@@ -165,11 +166,11 @@ are both required, driven by Material 3 theming.
 Screens:
 
 - **Vehicle list** - home screen
-- **Vehicle detail** - maintenance items as a table with due status, plus cost totals
+- **Vehicle detail** - maintenance items as a table with due status
 - **Add/edit vehicle** - form
 - **Add/edit maintenance item** - form, including optional last-done seeding
 - **Log service** - completion or ad-hoc repair; captures date, odometer, cost
-- **Service history** - per-vehicle list, newest first
+- **Service history** - per-vehicle log grouped by year, combined with its cost totals
 - **Export/import** - file out, file in
 
 > The overdue view must stand alone without notifications. On Android 13+ the
@@ -209,10 +210,5 @@ Out of scope for v1, recorded so they are not built by accident:
 - Should the daily check batch multiple due items into one notification per
   vehicle, or post one per item?
 - Assumed and correctable: ad-hoc repairs carry the same fields as a completion
-  minus the item link; cost totals are all-time plus per calendar year; distance
-  is miles with no unit setting in v1.
-- `blueprint/context/coding-standards.md` still carries a TODO to pick the
-  persistence library. The plans have settled it as a JSON file, so that TODO is
-  stale and its Database section should be updated to match.
-- `AGENTS.md` still carries a TODO placeholder for the project description, now
-  answerable from this overview.
+  minus the item link; cost totals are all-time, per calendar year, and an
+  average per year; distance is miles with no unit setting in v1.

@@ -40,10 +40,10 @@ account.
 - Define maintenance items per vehicle with mileage, recurrence, and reminder intervals
 - Log a completed maintenance item with date, odometer, and cost
 - Log an ad-hoc repair that is not a tracked maintenance item
-- View service history per vehicle
+- View service history per vehicle: every log entry by year, with date, mileage, cost, and notes
 - See due and overdue status for every maintenance item
 - Receive notifications when a service is due, repeating until it is logged
-- See cost totals per vehicle, all time and per year
+- See cost totals per vehicle on the service history screen: all time, per calendar year, and an average per year
 - Export and import all data as a JSON file
 
 ## 4. Data - What are we storing?
@@ -82,6 +82,7 @@ Nothing below is stored. All of it is computed from the fields above.
 - Due date = last done date plus recurrence interval, when recurrence is set
 - Mileage due = last done mileage plus mileage interval, when both are set
 - Cost totals = sums over service log entries
+- Average per year = all-time cost ÷ months between the first and last logged entry × 12, shown only once entries span at least 30 days
 
 ### Rules that matter
 
@@ -150,7 +151,7 @@ beats visual ambition.
 
 - Vehicle list as the home screen
 - Vehicle detail showing its maintenance items as a table with due status
-- Service history as a list or table per vehicle
+- Service history per vehicle, grouped by year, combining the log with its cost totals
 - Standard forms for adding and editing vehicles, items, and log entries
 
 Light and dark mode are both required, driven by Material 3 theming.
@@ -193,7 +194,7 @@ Working assumptions, confirmed at review or corrected later:
   model
 - An ad-hoc repair captures description, date, odometer, and cost, the same
   shape as a completion log without a linked maintenance item
-- Cost totals are all time and per calendar year, per vehicle
+- Cost totals are all time, per calendar year, and an average per year, per vehicle
 - Distance is in miles, with no unit setting in v1
 
 Open TODOs:

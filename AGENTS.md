@@ -7,10 +7,11 @@ this file, so there is a single source of truth.
 
 ## What this is
 
-An Android app for tracking vehicle maintenance.
-
-> TODO: replace this line with the real problem statement once
-> `blueprint/project-plan.md` is filled in and `/overview` has run.
+An offline Android app that reminds a vehicle owner when service is due and
+keeps a permanent, exportable record of what was done and what it cost. It is a
+watchdog first and a logbook second: due and overdue status plus reminders are
+the headline, and the service history is what makes them worth acting on. Full
+product context lives in `blueprint/context/project-overview.md`.
 
 This project is built with the **AI Blueprint**, a workflow layer, not an
 app skeleton. To start a new project, scaffold the app first in an empty folder

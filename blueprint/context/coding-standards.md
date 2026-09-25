@@ -70,8 +70,17 @@
 - Do no disk or network work on the main thread; use coroutines with the correct
   dispatcher
 
-> TODO: pick the local persistence library (Room, DataStore, or files) during
-> planning and record the choice here.
+Persistence is a single JSON file in app-private storage, read and written with
+kotlinx.serialization. The same format is the export and import file.
+
+- `JsonFileStore` owns the file. Every write goes to a temp file that is synced
+  and atomically renamed over the original, so an interrupted write cannot
+  destroy the user's only copy
+- `MaintenanceStoreHolder` holds the in-memory store and serializes updates;
+  repositories read and write through it, never the file directly
+- The file root carries `schemaVersion`; bump it and handle the old shape when
+  the stored format changes
+- Money is integer minor units, never a floating point type
 
 ## Error Handling
 
