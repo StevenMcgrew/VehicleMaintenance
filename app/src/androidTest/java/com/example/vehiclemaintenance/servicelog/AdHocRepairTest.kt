@@ -9,6 +9,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
@@ -105,7 +106,7 @@ class AdHocRepairTest {
         fields[1].performTextInput("51000")
         fields[2].performTextInput("320.50")
 
-        composeRule.onNodeWithText(string(R.string.save)).performClick()
+        composeRule.onNodeWithContentDescription(string(R.string.save)).performClick()
         waitForText("Oil change")
 
         val onDisk = storeJson.decodeFromString<MaintenanceStore>(storeFile.readText())

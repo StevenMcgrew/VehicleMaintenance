@@ -27,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
@@ -112,13 +113,16 @@ fun VehicleFormContent(
                     }
                 },
                 actions = {
-                    TextButton(
+                    IconButton(
                         onClick = onSave,
                         enabled = !uiState.isLoading &&
                             !uiState.isSaving &&
                             !uiState.vehicleNotFound,
                     ) {
-                        Text(stringResource(R.string.save))
+                        Icon(
+                            painterResource(R.drawable.ic_save),
+                            contentDescription = stringResource(R.string.save),
+                        )
                     }
                 },
             )

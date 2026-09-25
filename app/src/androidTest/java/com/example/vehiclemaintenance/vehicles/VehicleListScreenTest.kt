@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -65,26 +66,22 @@ class VehicleListScreenTest {
 
     @Test
     fun addedVehicleAppearsInTheList() {
-        setContent()
-        waitForText(R.string.vehicles_empty_title)
+        val summary = addTacoma()
 
-        composeRule.onNodeWithText(string(R.string.add_vehicle)).performClick()
-        waitForText(R.string.save)
-
-        // Field order on the form: year, make, model, engine.
-        val fields = composeRule.onAllNodes(hasSetTextAction())
-        fields[0].performTextInput("2014")
-        fields[1].performTextInput("Toyota")
-        fields[2].performTextInput("Tacoma")
-        fields[3].performTextInput("4.0L V6")
-
-        composeRule.onNodeWithText(string(R.string.save)).performClick()
-
-        val summary = context.getString(R.string.vehicle_summary, 2014, "Toyota", "Tacoma")
-        composeRule.waitUntil(TIMEOUT_MS) {
-            composeRule.onAllNodesWithText(summary).fetchSemanticsNodes().isNotEmpty()
-        }
         composeRule.onNodeWithText(summary).assertIsDisplayed()
+    }
+
+    @Test
+    fun rowDeleteIconAsksToConfirmDeletingThatVehicle() {
+        val summary = addTacoma()
+
+        composeRule
+            .onNodeWithContentDescription(context.getString(R.string.delete_vehicle_action, summary))
+            .performClick()
+
+        composeRule
+            .onNodeWithText(context.getString(R.string.delete_vehicle_title, summary))
+            .assertIsDisplayed()
     }
 
     @Test
@@ -96,6 +93,30 @@ class VehicleListScreenTest {
         composeRule.onNodeWithContentDescription(string(R.string.backup_action)).performClick()
 
         assertEquals(1, backupOpened)
+    }
+
+    /** Adds a vehicle through the real form and returns its list label once the row shows. */
+    private fun addTacoma(): String {
+        setContent()
+        waitForText(R.string.vehicles_empty_title)
+
+        composeRule.onNodeWithText(string(R.string.add_vehicle)).performClick()
+        waitForContentDescription(R.string.save)
+
+        // Field order on the form: year, make, model, engine.
+        val fields = composeRule.onAllNodes(hasSetTextAction())
+        fields[0].performTextInput("2014")
+        fields[1].performTextInput("Toyota")
+        fields[2].performTextInput("Tacoma")
+        fields[3].performTextInput("4.0L V6")
+
+        composeRule.onNodeWithContentDescription(string(R.string.save)).performClick()
+
+        val summary = context.getString(R.string.vehicle_summary, 2014, "Toyota", "Tacoma")
+        composeRule.waitUntil(TIMEOUT_MS) {
+            composeRule.onAllNodesWithText(summary).fetchSemanticsNodes().isNotEmpty()
+        }
+        return summary
     }
 
     private fun setContent(onOpenBackup: () -> Unit = {}) {
@@ -133,6 +154,15 @@ class VehicleListScreenTest {
         val text = string(id)
         composeRule.waitUntil(TIMEOUT_MS) {
             composeRule.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
+        }
+    }
+
+    private fun waitForContentDescription(id: Int) {
+        val description = string(id)
+        composeRule.waitUntil(TIMEOUT_MS) {
+            composeRule.onAllNodesWithContentDescription(description)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
         }
     }
 
