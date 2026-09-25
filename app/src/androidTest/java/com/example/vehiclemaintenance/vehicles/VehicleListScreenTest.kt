@@ -9,6 +9,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
@@ -19,6 +20,7 @@ import com.example.vehiclemaintenance.data.JsonFileStore
 import com.example.vehiclemaintenance.data.MaintenanceStoreHolder
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -85,16 +87,27 @@ class VehicleListScreenTest {
         composeRule.onNodeWithText(summary).assertIsDisplayed()
     }
 
-    private fun setContent() {
+    @Test
+    fun exportAndImportIconOpensBackup() {
+        var backupOpened = 0
+        setContent(onOpenBackup = { backupOpened++ })
+        waitForText(R.string.vehicles_empty_title)
+
+        composeRule.onNodeWithContentDescription(string(R.string.backup_action)).performClick()
+
+        assertEquals(1, backupOpened)
+    }
+
+    private fun setContent(onOpenBackup: () -> Unit = {}) {
         composeRule.setContent {
             VehicleMaintenanceTheme {
-                Harness()
+                Harness(onOpenBackup)
             }
         }
     }
 
     @Composable
-    private fun Harness() {
+    private fun Harness(onOpenBackup: () -> Unit) {
         var showForm by remember { mutableStateOf(false) }
         if (showForm) {
             val formViewModel = remember { VehicleFormViewModel(repository, null) }
@@ -108,7 +121,7 @@ class VehicleListScreenTest {
             VehicleListScreen(
                 onAddVehicle = { showForm = true },
                 onOpenVehicle = {},
-                onOpenBackup = {},
+                onOpenBackup = onOpenBackup,
                 viewModel = listViewModel,
             )
         }
