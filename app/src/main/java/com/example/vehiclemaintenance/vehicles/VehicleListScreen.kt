@@ -3,16 +3,21 @@ package com.example.vehiclemaintenance.vehicles
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -103,9 +108,11 @@ fun VehicleListContent(
         floatingActionButton = {
             if (!uiState.loadFailed) {
                 // The text/icon overload strips its label with clearAndSetSemantics and takes the
-                // content description from the icon, so a FAB with no icon needs this overload to
-                // stay labelled for TalkBack.
+                // content description from the icon. This content-slot overload keeps the label as
+                // merged text for TalkBack, so the icon stays decorative.
                 ExtendedFloatingActionButton(onClick = onAddVehicle) {
+                    Icon(Icons.Filled.Add, contentDescription = null)
+                    Spacer(Modifier.width(12.dp))
                     Text(stringResource(R.string.add_vehicle))
                 }
             }
