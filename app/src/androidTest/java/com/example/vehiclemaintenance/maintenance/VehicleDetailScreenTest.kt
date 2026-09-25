@@ -1,5 +1,7 @@
 package com.example.vehiclemaintenance.maintenance
 
+import android.Manifest
+import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,6 +63,14 @@ class VehicleDetailScreenTest {
 
     @Before
     fun setUp() {
+        // Saving the item form asks for notification permission on API 33+, and the system dialog
+        // would cover the test activity. Granting it up front lets the form continue straight on.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            InstrumentationRegistry.getInstrumentation().uiAutomation.grantRuntimePermission(
+                context.packageName,
+                Manifest.permission.POST_NOTIFICATIONS,
+            )
+        }
         storeFile = File(context.cacheDir, "detail-test-${System.nanoTime()}.json")
         seedStore()
         val holder = MaintenanceStoreHolder(JsonFileStore(storeFile))
