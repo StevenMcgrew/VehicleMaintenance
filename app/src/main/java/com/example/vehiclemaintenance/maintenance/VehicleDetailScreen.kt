@@ -64,7 +64,6 @@ import java.time.LocalDate
 @Composable
 fun VehicleDetailScreen(
     vehicleId: String,
-    onEditVehicle: () -> Unit,
     onAddItem: () -> Unit,
     onEditItem: (String) -> Unit,
     onLogService: (String) -> Unit,
@@ -81,7 +80,6 @@ fun VehicleDetailScreen(
 
     VehicleDetailContent(
         uiState = uiState,
-        onEditVehicle = onEditVehicle,
         onAddItem = onAddItem,
         onEditItem = onEditItem,
         onLogService = onLogService,
@@ -100,7 +98,6 @@ fun VehicleDetailScreen(
 @Composable
 fun VehicleDetailContent(
     uiState: VehicleDetailUiState,
-    onEditVehicle: () -> Unit,
     onAddItem: () -> Unit,
     onEditItem: (String) -> Unit,
     onLogService: (String) -> Unit,
@@ -183,7 +180,6 @@ fun VehicleDetailContent(
                 VehicleActionsRow(
                     onViewHistory = onViewHistory,
                     onLogRepair = onLogRepair,
-                    onEditVehicle = onEditVehicle,
                 )
                 HorizontalDivider()
                 CostTotalsRow(
@@ -293,7 +289,6 @@ private fun NewlyOverdueDialog(
 private fun VehicleActionsRow(
     onViewHistory: () -> Unit,
     onLogRepair: () -> Unit,
-    onEditVehicle: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -305,7 +300,6 @@ private fun VehicleActionsRow(
     ) {
         TextButton(onClick = onViewHistory) { Text(stringResource(R.string.service_history)) }
         TextButton(onClick = onLogRepair) { Text(stringResource(R.string.log_repair)) }
-        TextButton(onClick = onEditVehicle) { Text(stringResource(R.string.edit_vehicle)) }
     }
 }
 
@@ -736,7 +730,6 @@ private fun VehicleDetailEmptyPreview() {
     VehicleMaintenanceTheme {
         VehicleDetailContent(
             uiState = VehicleDetailUiState(isLoading = false, vehicle = previewVehicle),
-            onEditVehicle = {},
             onAddItem = {},
             onEditItem = {},
             onLogService = {},
@@ -762,7 +755,6 @@ private fun VehicleDetailPreview() {
                 rows = previewRows,
                 costTotals = previewCostTotals,
             ),
-            onEditVehicle = {},
             onAddItem = {},
             onEditItem = {},
             onLogService = {},
@@ -787,7 +779,6 @@ private fun VehicleDetailNoCostsPreview() {
                 vehicle = previewVehicle,
                 rows = previewRows,
             ),
-            onEditVehicle = {},
             onAddItem = {},
             onEditItem = {},
             onLogService = {},
@@ -813,7 +804,6 @@ private fun VehicleDetailNewlyOverduePreview() {
                 rows = previewRows,
                 newlyOverdueByMileage = listOf("Oil change", "Air filter"),
             ),
-            onEditVehicle = {},
             onAddItem = {},
             onEditItem = {},
             onLogService = {},

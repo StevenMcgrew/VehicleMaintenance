@@ -161,7 +161,6 @@ class AdHocRepairTest {
             }
             VehicleDetailScreen(
                 vehicleId = "v-1",
-                onEditVehicle = {},
                 onAddItem = {},
                 onEditItem = {},
                 onLogService = {},

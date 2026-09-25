@@ -263,7 +263,6 @@ class VehicleDetailScreenTest {
                         rows = rows,
                         newlyOverdueByMileage = newlyOverdue,
                     ),
-                    onEditVehicle = {},
                     onAddItem = {},
                     onEditItem = {},
                     onLogService = {},
@@ -280,13 +279,13 @@ class VehicleDetailScreenTest {
     }
 
     @Test
-    fun theActionRowOffersHistoryLogRepairAndEditFromTheBody() {
+    fun theActionRowOffersHistoryAndLogRepair() {
         setContent()
         waitForText(string(R.string.service_history))
 
         composeRule.onNodeWithText(string(R.string.service_history)).assertIsDisplayed()
         composeRule.onNodeWithText(string(R.string.log_repair)).assertIsDisplayed()
-        composeRule.onNodeWithText(string(R.string.edit_vehicle)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.edit_vehicle)).assertDoesNotExist()
     }
 
     @Test
@@ -457,7 +456,6 @@ class VehicleDetailScreenTest {
             }
             VehicleDetailScreen(
                 vehicleId = "v-1",
-                onEditVehicle = {},
                 onAddItem = {
                     editingItemId = null
                     showForm = true

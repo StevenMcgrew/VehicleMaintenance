@@ -18,7 +18,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.vehiclemaintenance.R
 import com.example.vehiclemaintenance.data.JsonFileStore
+import com.example.vehiclemaintenance.data.MaintenanceStore
 import com.example.vehiclemaintenance.data.MaintenanceStoreHolder
+import com.example.vehiclemaintenance.data.storeJson
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -72,6 +74,19 @@ class VehicleListScreenTest {
     }
 
     @Test
+    fun rowEditIconOpensThatVehicleForEditing() {
+        var editedId: String? = null
+        val summary = addTacoma(onEditVehicle = { editedId = it })
+
+        composeRule
+            .onNodeWithContentDescription(context.getString(R.string.edit_vehicle_action, summary))
+            .performClick()
+
+        val stored = storeJson.decodeFromString<MaintenanceStore>(storeFile.readText())
+        assertEquals(stored.vehicles.single().id, editedId)
+    }
+
+    @Test
     fun rowDeleteIconAsksToConfirmDeletingThatVehicle() {
         val summary = addTacoma()
 
@@ -96,8 +111,8 @@ class VehicleListScreenTest {
     }
 
     /** Adds a vehicle through the real form and returns its list label once the row shows. */
-    private fun addTacoma(): String {
-        setContent()
+    private fun addTacoma(onEditVehicle: (String) -> Unit = {}): String {
+        setContent(onEditVehicle = onEditVehicle)
         waitForText(R.string.vehicles_empty_title)
 
         composeRule.onNodeWithText(string(R.string.add_vehicle)).performClick()
@@ -119,16 +134,19 @@ class VehicleListScreenTest {
         return summary
     }
 
-    private fun setContent(onOpenBackup: () -> Unit = {}) {
+    private fun setContent(
+        onOpenBackup: () -> Unit = {},
+        onEditVehicle: (String) -> Unit = {},
+    ) {
         composeRule.setContent {
             VehicleMaintenanceTheme {
-                Harness(onOpenBackup)
+                Harness(onOpenBackup, onEditVehicle)
             }
         }
     }
 
     @Composable
-    private fun Harness(onOpenBackup: () -> Unit) {
+    private fun Harness(onOpenBackup: () -> Unit, onEditVehicle: (String) -> Unit) {
         var showForm by remember { mutableStateOf(false) }
         if (showForm) {
             val formViewModel = remember { VehicleFormViewModel(repository, null) }
@@ -142,6 +160,7 @@ class VehicleListScreenTest {
             VehicleListScreen(
                 onAddVehicle = { showForm = true },
                 onOpenVehicle = {},
+                onEditVehicle = onEditVehicle,
                 onOpenBackup = onOpenBackup,
                 viewModel = listViewModel,
             )

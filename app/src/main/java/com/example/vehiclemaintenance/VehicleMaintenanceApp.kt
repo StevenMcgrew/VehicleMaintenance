@@ -66,6 +66,7 @@ fun VehicleMaintenanceApp(
             VehicleListScreen(
                 onAddVehicle = { navController.navigate(Routes.NEW_VEHICLE) },
                 onOpenVehicle = { navController.navigate(Routes.vehicleDetail(it)) },
+                onEditVehicle = { navController.navigate(Routes.editVehicle(it)) },
                 onOpenBackup = { navController.navigate(Routes.BACKUP) },
             )
         }
@@ -97,7 +98,6 @@ fun VehicleMaintenanceApp(
             val vehicleId = backStackEntry.requireVehicleId()
             VehicleDetailScreen(
                 vehicleId = vehicleId,
-                onEditVehicle = { navController.navigate(Routes.editVehicle(vehicleId)) },
                 onAddItem = { navController.navigate(Routes.newItem(vehicleId)) },
                 onEditItem = { navController.navigate(Routes.editItem(vehicleId, it)) },
                 onLogService = { navController.navigate(Routes.logService(vehicleId, it)) },

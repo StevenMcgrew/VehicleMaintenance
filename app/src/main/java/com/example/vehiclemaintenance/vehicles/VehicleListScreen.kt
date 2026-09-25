@@ -3,6 +3,7 @@ package com.example.vehiclemaintenance.vehicles
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -12,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -57,6 +59,7 @@ import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 fun VehicleListScreen(
     onAddVehicle: () -> Unit,
     onOpenVehicle: (String) -> Unit,
+    onEditVehicle: (String) -> Unit,
     onOpenBackup: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: VehicleListViewModel = viewModel(factory = VehicleListViewModel.Factory),
@@ -67,6 +70,7 @@ fun VehicleListScreen(
         uiState = uiState,
         onAddVehicle = onAddVehicle,
         onOpenVehicle = onOpenVehicle,
+        onEditVehicle = onEditVehicle,
         onOpenBackup = onOpenBackup,
         onDeleteVehicle = viewModel::deleteVehicle,
         onRetry = viewModel::refresh,
@@ -81,6 +85,7 @@ fun VehicleListContent(
     uiState: VehicleListUiState,
     onAddVehicle: () -> Unit,
     onOpenVehicle: (String) -> Unit,
+    onEditVehicle: (String) -> Unit,
     onOpenBackup: () -> Unit,
     onDeleteVehicle: (String) -> Unit,
     onRetry: () -> Unit,
@@ -169,6 +174,7 @@ fun VehicleListContent(
                     VehicleRow(
                         vehicle = vehicle,
                         onOpen = { onOpenVehicle(vehicle.id) },
+                        onEdit = { onEditVehicle(vehicle.id) },
                         onDelete = { pendingDeletionId = vehicle.id },
                     )
                     HorizontalDivider()
@@ -194,10 +200,12 @@ fun VehicleListContent(
 private fun VehicleRow(
     vehicle: Vehicle,
     onOpen: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val label = vehicle.primaryLabel()
+    val editLabel = stringResource(R.string.edit_vehicle_action, label)
     val deleteLabel = stringResource(R.string.delete_vehicle_action, label)
     ListItem(
         modifier = modifier.clickable(onClick = onOpen),
@@ -212,8 +220,13 @@ private fun VehicleRow(
             )
         },
         trailingContent = {
-            IconButton(onClick = onDelete) {
-                Icon(Icons.Filled.Delete, contentDescription = deleteLabel)
+            Row {
+                IconButton(onClick = onEdit) {
+                    Icon(Icons.Filled.Edit, contentDescription = editLabel)
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Filled.Delete, contentDescription = deleteLabel)
+                }
             }
         },
     )
@@ -264,6 +277,7 @@ private fun VehicleListEmptyPreview() {
             uiState = VehicleListUiState(isLoading = false),
             onAddVehicle = {},
             onOpenVehicle = {},
+            onEditVehicle = {},
             onOpenBackup = {},
             onDeleteVehicle = {},
             onRetry = {},
@@ -286,6 +300,7 @@ private fun VehicleListPreview() {
             ),
             onAddVehicle = {},
             onOpenVehicle = {},
+            onEditVehicle = {},
             onOpenBackup = {},
             onDeleteVehicle = {},
             onRetry = {},
