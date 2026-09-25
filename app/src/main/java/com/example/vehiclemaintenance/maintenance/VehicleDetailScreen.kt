@@ -68,7 +68,6 @@ fun VehicleDetailScreen(
     onLogService: (String) -> Unit,
     onLogRepair: () -> Unit,
     onViewHistory: () -> Unit,
-    onViewCosts: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: VehicleDetailViewModel = viewModel(
@@ -85,7 +84,6 @@ fun VehicleDetailScreen(
         onLogService = onLogService,
         onLogRepair = onLogRepair,
         onViewHistory = onViewHistory,
-        onViewCosts = onViewCosts,
         onDeleteItem = viewModel::deleteItem,
         onDeleteErrorShown = viewModel::dismissDeleteError,
         onNewlyOverdueShown = viewModel::dismissNewlyOverdue,
@@ -104,7 +102,6 @@ fun VehicleDetailContent(
     onLogService: (String) -> Unit,
     onLogRepair: () -> Unit,
     onViewHistory: () -> Unit,
-    onViewCosts: () -> Unit,
     onDeleteItem: (String) -> Unit,
     onDeleteErrorShown: () -> Unit,
     onNewlyOverdueShown: () -> Unit,
@@ -181,8 +178,7 @@ fun VehicleDetailContent(
                 VehicleActionsRow(
                     onViewHistory = onViewHistory,
                     onLogRepair = onLogRepair,
-                    onViewCosts = onViewCosts,
-                )
+                            )
                 HorizontalDivider()
                 if (uiState.rows.isEmpty()) {
                     CenteredColumn {
@@ -278,7 +274,6 @@ private fun NewlyOverdueDialog(
 private fun VehicleActionsRow(
     onViewHistory: () -> Unit,
     onLogRepair: () -> Unit,
-    onViewCosts: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -290,7 +285,6 @@ private fun VehicleActionsRow(
     ) {
         ExtraSmallButton(stringResource(R.string.service_history), onViewHistory)
         ExtraSmallButton(stringResource(R.string.log_repair), onLogRepair)
-        ExtraSmallButton(stringResource(R.string.cost_total_label), onViewCosts)
     }
 }
 
@@ -653,7 +647,6 @@ private fun VehicleDetailEmptyPreview() {
             onLogService = {},
             onLogRepair = {},
             onViewHistory = {},
-            onViewCosts = {},
             onDeleteItem = {},
             onDeleteErrorShown = {},
             onNewlyOverdueShown = {},
@@ -678,7 +671,6 @@ private fun VehicleDetailPreview() {
             onLogService = {},
             onLogRepair = {},
             onViewHistory = {},
-            onViewCosts = {},
             onDeleteItem = {},
             onDeleteErrorShown = {},
             onNewlyOverdueShown = {},
@@ -703,7 +695,6 @@ private fun VehicleDetailNoCostsPreview() {
             onLogService = {},
             onLogRepair = {},
             onViewHistory = {},
-            onViewCosts = {},
             onDeleteItem = {},
             onDeleteErrorShown = {},
             onNewlyOverdueShown = {},
@@ -729,7 +720,6 @@ private fun VehicleDetailNewlyOverduePreview() {
             onLogService = {},
             onLogRepair = {},
             onViewHistory = {},
-            onViewCosts = {},
             onDeleteItem = {},
             onDeleteErrorShown = {},
             onNewlyOverdueShown = {},

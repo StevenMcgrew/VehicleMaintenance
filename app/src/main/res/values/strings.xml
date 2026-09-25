@@ -90,7 +90,8 @@
     <string name="history_empty_title">Nothing logged yet</string>
     <string name="history_empty_body">Log a completed service or a repair and it shows up here.</string>
     <!-- The odometer reading on a logged entry: "48,000 mi". -->
-    <string name="history_odometer">%1$s mi</string>
+    <!-- A history entry's date, then its odometer reading in miles. -->
+    <string name="history_date_odometer">%1$s · %2$s mi</string>
 
     <string name="error_positive_number">Enter a whole number of 1 or more</string>
     <string name="error_non_negative_number">Enter a whole number of 0 or more</string>
@@ -120,10 +121,12 @@
     <string name="detail_mileage_due">Due at odometer</string>
     <string name="detail_miles_left">Miles left</string>
 
-    <string name="cost_total_label">Total spent</string>
     <string name="cost_totals_none">No costs recorded yet</string>
-    <string name="cost_breakdown_empty_body">Add a cost when you log a service or repair and it shows up here.</string>
     <string name="cost_all_time">All time</string>
+    <string name="cost_average_per_year">Average per year</string>
+    <string name="cost_average_info">How the average is calculated</string>
+    <!-- Keep the day count in step with MIN_AVERAGE_SPAN_DAYS in ServiceHistory.kt. -->
+    <string name="cost_average_info_body">Your total spent, divided by the number of months between your first and last logged service, then multiplied by 12.\n\nServices logged without a cost still count toward that time span. The average appears once your logged services span at least 30 days.</string>
     <!-- A calendar year in the cost breakdown, kept out of code so it is never concatenated. -->
     <string name="cost_year" tools:ignore="PluralsCandidate">%1$d</string>
 

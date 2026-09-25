@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 data class ServiceHistoryUiState(
     val isLoading: Boolean = true,
     val vehicle: Vehicle? = null,
-    val entries: List<ServiceLogEntry> = emptyList(),
+    val history: ServiceHistory = ServiceHistory(null, null, emptyList()),
     val loadFailed: Boolean = false,
     val vehicleNotFound: Boolean = false,
 )
@@ -40,7 +40,7 @@ class ServiceHistoryViewModel(
         }
         viewModelScope.launch {
             serviceLog.entriesFor(vehicleId).collect { entries ->
-                _uiState.update { it.copy(entries = entries) }
+                _uiState.update { it.copy(history = serviceHistoryOf(entries)) }
             }
         }
         refresh()

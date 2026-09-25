@@ -60,7 +60,6 @@ class VehicleDetailScreenTest {
     private val vehicle = Vehicle("v-1", 2014, "Toyota", "Tacoma", "4.0L V6")
 
     private var historyRequested = false
-    private var costsRequested = false
 
     @Before
     fun setUp() {
@@ -262,7 +261,6 @@ class VehicleDetailScreenTest {
                     onLogService = {},
                     onLogRepair = {},
                     onViewHistory = {},
-                    onViewCosts = {},
                     onDeleteItem = {},
                     onDeleteErrorShown = {},
                     onNewlyOverdueShown = onNewlyOverdueShown,
@@ -274,13 +272,13 @@ class VehicleDetailScreenTest {
     }
 
     @Test
-    fun theActionRowOffersHistoryLogRepairAndTotalSpent() {
+    fun theActionRowOffersOnlyHistoryAndLogRepair() {
         setContent()
         waitForText(string(R.string.service_history))
 
         composeRule.onNodeWithText(string(R.string.service_history)).assertIsDisplayed()
         composeRule.onNodeWithText(string(R.string.log_repair)).assertIsDisplayed()
-        composeRule.onNodeWithText(string(R.string.cost_total_label)).assertIsDisplayed()
+        composeRule.onNodeWithText("Total spent").assertDoesNotExist()
         composeRule.onNodeWithText(string(R.string.edit_vehicle)).assertDoesNotExist()
     }
 
@@ -292,16 +290,6 @@ class VehicleDetailScreenTest {
         composeRule.onNodeWithText(string(R.string.service_history)).performClick()
 
         assert(historyRequested) { "expected the history callback to fire" }
-    }
-
-    @Test
-    fun tappingTotalSpentAsksToOpenTheCostBreakdown() {
-        setContent()
-        waitForText(string(R.string.cost_total_label))
-
-        composeRule.onNodeWithText(string(R.string.cost_total_label)).performClick()
-
-        assert(costsRequested) { "expected the cost breakdown callback to fire" }
     }
 
     @Test
@@ -416,7 +404,6 @@ class VehicleDetailScreenTest {
                 onLogService = {},
                 onLogRepair = {},
                 onViewHistory = { historyRequested = true },
-                onViewCosts = { costsRequested = true },
                 onBack = {},
                 viewModel = detailViewModel,
             )

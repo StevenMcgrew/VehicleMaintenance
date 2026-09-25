@@ -12,7 +12,6 @@ import androidx.navigation.navDeepLink
 import com.example.vehiclemaintenance.backup.BackupScreen
 import com.example.vehiclemaintenance.maintenance.MaintenanceItemFormScreen
 import com.example.vehiclemaintenance.maintenance.VehicleDetailScreen
-import com.example.vehiclemaintenance.servicelog.CostBreakdownScreen
 import com.example.vehiclemaintenance.servicelog.ServiceHistoryScreen
 import com.example.vehiclemaintenance.servicelog.ServiceLogFormScreen
 import com.example.vehiclemaintenance.vehicles.VehicleFormScreen
@@ -34,7 +33,6 @@ object Routes {
     const val LOG_SERVICE = "vehicles/{$VEHICLE_ID_ARG}/items/{$ITEM_ID_ARG}/log"
     const val LOG_REPAIR = "vehicles/{$VEHICLE_ID_ARG}/repairs/new"
     const val VEHICLE_HISTORY = "vehicles/{$VEHICLE_ID_ARG}/history"
-    const val VEHICLE_COSTS = "vehicles/{$VEHICLE_ID_ARG}/costs"
     const val BACKUP = "backup"
 
     fun editVehicle(vehicleId: String): String = "vehicles/$vehicleId/edit"
@@ -52,8 +50,6 @@ object Routes {
     fun logRepair(vehicleId: String): String = "vehicles/$vehicleId/repairs/new"
 
     fun vehicleHistory(vehicleId: String): String = "vehicles/$vehicleId/history"
-
-    fun vehicleCosts(vehicleId: String): String = "vehicles/$vehicleId/costs"
 }
 
 @Composable
@@ -107,7 +103,6 @@ fun VehicleMaintenanceApp(
                 onLogService = { navController.navigate(Routes.logService(vehicleId, it)) },
                 onLogRepair = { navController.navigate(Routes.logRepair(vehicleId)) },
                 onViewHistory = { navController.navigate(Routes.vehicleHistory(vehicleId)) },
-                onViewCosts = { navController.navigate(Routes.vehicleCosts(vehicleId)) },
                 onBack = { navController.popBackStack() },
             )
         }
@@ -116,15 +111,6 @@ fun VehicleMaintenanceApp(
             arguments = listOf(navArgument(VEHICLE_ID_ARG) { type = NavType.StringType }),
         ) { backStackEntry ->
             ServiceHistoryScreen(
-                vehicleId = backStackEntry.requireVehicleId(),
-                onBack = { navController.popBackStack() },
-            )
-        }
-        composable(
-            route = Routes.VEHICLE_COSTS,
-            arguments = listOf(navArgument(VEHICLE_ID_ARG) { type = NavType.StringType }),
-        ) { backStackEntry ->
-            CostBreakdownScreen(
                 vehicleId = backStackEntry.requireVehicleId(),
                 onBack = { navController.popBackStack() },
             )
