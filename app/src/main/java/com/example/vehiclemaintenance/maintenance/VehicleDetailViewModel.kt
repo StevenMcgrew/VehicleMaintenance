@@ -8,8 +8,6 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.vehiclemaintenance.VehicleMaintenanceApplication
 import com.example.vehiclemaintenance.data.StoreResult
 import com.example.vehiclemaintenance.servicelog.ServiceLogRepository
-import com.example.vehiclemaintenance.servicelog.VehicleCostTotals
-import com.example.vehiclemaintenance.servicelog.costTotalsOf
 import com.example.vehiclemaintenance.vehicles.Vehicle
 import com.example.vehiclemaintenance.vehicles.VehicleRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,7 +32,6 @@ data class VehicleDetailUiState(
     val deleteFailed: Boolean = false,
     /** Names of the items a newly captured odometer reading just pushed overdue. */
     val newlyOverdueByMileage: List<String> = emptyList(),
-    val costTotals: VehicleCostTotals = VehicleCostTotals(0L, emptyList()),
 )
 
 class VehicleDetailViewModel(
@@ -71,7 +68,7 @@ class VehicleDetailViewModel(
                 // The first emission is the baseline this screen opened with, not a new reading.
                 val isNew = seenLog && reading != null && (odometer == null || reading > odometer!!)
                 seenLog = true
-                recompute(reading, newReading = isNew, costTotals = costTotalsOf(entries))
+                recompute(reading, newReading = isNew)
             }
         }
         refresh()
@@ -81,11 +78,7 @@ class VehicleDetailViewModel(
      * Only a rising odometer can raise the callout, so editing an item's mileage interval never
      * claims a reading pushed it overdue.
      */
-    private fun recompute(
-        reading: Int?,
-        newReading: Boolean,
-        costTotals: VehicleCostTotals? = null,
-    ) {
+    private fun recompute(reading: Int?, newReading: Boolean) {
         odometer = reading
         val now = today()
         val rows = latestItems.map { MaintenanceItemRow(it, statusOf(it, reading, now)) }
@@ -101,9 +94,6 @@ class VehicleDetailViewModel(
             state.copy(
                 rows = rows,
                 newlyOverdueByMileage = newlyOverdue.ifEmpty { state.newlyOverdueByMileage },
-                // Only the service log carries costs, so an item change keeps the totals already
-                // published instead of recomputing them.
-                costTotals = costTotals ?: state.costTotals,
             )
         }
     }

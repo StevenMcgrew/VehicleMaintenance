@@ -9,11 +9,16 @@ class CostTotalsTest {
 
     private var nextId = 0
 
-    private fun entry(year: Int, cost: Int?, month: Int = 6): ServiceLogEntry = ServiceLogEntry(
+    private fun entry(
+        year: Int,
+        cost: Int?,
+        month: Int = 6,
+        day: Int = 15,
+    ): ServiceLogEntry = ServiceLogEntry(
         id = "e-${nextId++}",
         vehicleId = "v-1",
         description = "Oil change",
-        date = LocalDate.of(year, month, 15),
+        date = LocalDate.of(year, month, day),
         odometer = 50_000,
         cost = cost,
     )
@@ -41,7 +46,7 @@ class CostTotalsTest {
         )
 
         assertEquals(8000L, totals.allTime)
-        assertEquals(listOf(YearCost(2026, 8000L)), totals.byYear)
+        assertEquals(listOf(2026 to 8000L), totals.yearRows())
     }
 
     @Test
@@ -51,7 +56,7 @@ class CostTotalsTest {
         )
 
         assertEquals(10_000L, totals.allTime)
-        assertEquals(listOf(YearCost(2026, 2500L), YearCost(2024, 7500L)), totals.byYear)
+        assertEquals(listOf(2026 to 2500L, 2024 to 7500L), totals.yearRows())
     }
 
     @Test
@@ -70,7 +75,7 @@ class CostTotalsTest {
             listOf(entry(2026, 1000, month = 1), entry(2026, 2000, month = 11)),
         )
 
-        assertEquals(listOf(YearCost(2026, 3000L)), totals.byYear)
+        assertEquals(listOf(2026 to 3000L), totals.yearRows())
     }
 
     @Test
@@ -90,4 +95,39 @@ class CostTotalsTest {
 
         assertEquals(totals.byYear.sumOf { it.total }, totals.allTime)
     }
+
+    @Test
+    fun `each year lists only its costed entries`() {
+        val costed2026 = entry(2026, 1000)
+        val uncosted2026 = entry(2026, null)
+        val costed2025 = entry(2025, 2000)
+
+        val totals = costTotalsOf(listOf(costed2026, uncosted2026, costed2025))
+
+        assertEquals(listOf(costed2026), totals.byYear[0].entries)
+        assertEquals(listOf(costed2025), totals.byYear[1].entries)
+    }
+
+    @Test
+    fun `a year's entries read newest first`() {
+        val march = entry(2026, 100, month = 3)
+        val november = entry(2026, 200, month = 11)
+        val july = entry(2026, 300, month = 7)
+
+        val totals = costTotalsOf(listOf(march, november, july))
+
+        assertEquals(listOf(november, july, march), totals.byYear.single().entries)
+    }
+
+    @Test
+    fun `entries sharing a date keep the order they were given in`() {
+        val first = entry(2026, 100, month = 9, day = 5)
+        val second = entry(2026, 200, month = 9, day = 5)
+
+        val totals = costTotalsOf(listOf(first, second))
+
+        assertEquals(listOf(first, second), totals.byYear.single().entries)
+    }
+
+    private fun VehicleCostTotals.yearRows(): List<Pair<Int, Long>> = byYear.map { it.year to it.total }
 }

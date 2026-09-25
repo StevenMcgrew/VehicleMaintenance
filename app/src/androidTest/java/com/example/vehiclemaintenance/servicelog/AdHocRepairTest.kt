@@ -166,6 +166,7 @@ class AdHocRepairTest {
                 onLogService = {},
                 onLogRepair = { showRepairForm = true },
                 onViewHistory = {},
+                onViewCosts = {},
                 onBack = {},
                 viewModel = detailViewModel,
             )

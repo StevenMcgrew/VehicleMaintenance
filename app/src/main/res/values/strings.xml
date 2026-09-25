@@ -121,8 +121,9 @@
     <string name="detail_miles_left">Miles left</string>
 
     <string name="cost_total_label">Total spent</string>
-    <string name="cost_totals_title">Cost totals</string>
     <string name="cost_totals_none">No costs recorded yet</string>
+    <string name="cost_breakdown_empty_body">Add a cost when you log a service or repair and it shows up here.</string>
+    <string name="cost_all_time">All time</string>
     <!-- A calendar year in the cost breakdown, kept out of code so it is never concatenated. -->
     <string name="cost_year" tools:ignore="PluralsCandidate">%1$d</string>
 

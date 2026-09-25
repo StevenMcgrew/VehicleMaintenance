@@ -27,9 +27,7 @@ import com.example.vehiclemaintenance.data.MaintenanceStore
 import com.example.vehiclemaintenance.data.MaintenanceStoreHolder
 import com.example.vehiclemaintenance.data.storeJson
 import com.example.vehiclemaintenance.servicelog.JsonServiceLogRepository
-import com.example.vehiclemaintenance.servicelog.ServiceLogEntry
 import com.example.vehiclemaintenance.servicelog.ServiceLogRepository
-import com.example.vehiclemaintenance.servicelog.formatCost
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 import com.example.vehiclemaintenance.vehicles.JsonVehicleRepository
 import com.example.vehiclemaintenance.vehicles.Vehicle
@@ -62,6 +60,7 @@ class VehicleDetailScreenTest {
     private val vehicle = Vehicle("v-1", 2014, "Toyota", "Tacoma", "4.0L V6")
 
     private var historyRequested = false
+    private var costsRequested = false
 
     @Before
     fun setUp() {
@@ -81,13 +80,8 @@ class VehicleDetailScreenTest {
         serviceLog = JsonServiceLogRepository(holder)
     }
 
-    /** Writes the backing file the repositories read, optionally with a seeded service log. */
-    private fun seedStore(entries: List<ServiceLogEntry> = emptyList()) {
-        storeFile.writeText(
-            storeJson.encodeToString(
-                MaintenanceStore(vehicles = listOf(vehicle), serviceLogEntries = entries),
-            ),
-        )
+    private fun seedStore() {
+        storeFile.writeText(storeJson.encodeToString(MaintenanceStore(vehicles = listOf(vehicle))))
     }
 
     @After
@@ -268,6 +262,7 @@ class VehicleDetailScreenTest {
                     onLogService = {},
                     onLogRepair = {},
                     onViewHistory = {},
+                    onViewCosts = {},
                     onDeleteItem = {},
                     onDeleteErrorShown = {},
                     onNewlyOverdueShown = onNewlyOverdueShown,
@@ -279,12 +274,13 @@ class VehicleDetailScreenTest {
     }
 
     @Test
-    fun theActionRowOffersHistoryAndLogRepair() {
+    fun theActionRowOffersHistoryLogRepairAndTotalSpent() {
         setContent()
         waitForText(string(R.string.service_history))
 
         composeRule.onNodeWithText(string(R.string.service_history)).assertIsDisplayed()
         composeRule.onNodeWithText(string(R.string.log_repair)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.cost_total_label)).assertIsDisplayed()
         composeRule.onNodeWithText(string(R.string.edit_vehicle)).assertDoesNotExist()
     }
 
@@ -296,6 +292,16 @@ class VehicleDetailScreenTest {
         composeRule.onNodeWithText(string(R.string.service_history)).performClick()
 
         assert(historyRequested) { "expected the history callback to fire" }
+    }
+
+    @Test
+    fun tappingTotalSpentAsksToOpenTheCostBreakdown() {
+        setContent()
+        waitForText(string(R.string.cost_total_label))
+
+        composeRule.onNodeWithText(string(R.string.cost_total_label)).performClick()
+
+        assert(costsRequested) { "expected the cost breakdown callback to fire" }
     }
 
     @Test
@@ -349,63 +355,6 @@ class VehicleDetailScreenTest {
             "expected no stored items, got ${onDisk.maintenanceItems}"
         }
     }
-
-    @Test
-    fun theDetailScreenTotalsTheCostOfEveryLoggedService() {
-        seedStore(twoYearLog())
-        setContent()
-
-        val allTime = formatCost(24_000L)
-        waitForText(allTime)
-        composeRule.onNodeWithText(string(R.string.cost_total_label)).assertIsDisplayed()
-        composeRule.onNodeWithText(allTime).assertIsDisplayed()
-    }
-
-    @Test
-    fun theTotalsRowOpensAPerYearBreakdown() {
-        seedStore(twoYearLog())
-        setContent()
-        waitForText(formatCost(24_000L))
-
-        composeRule.onNodeWithText(string(R.string.cost_total_label)).performClick()
-        waitForText(string(R.string.cost_totals_title))
-
-        composeRule.onNodeWithText(context.getString(R.string.cost_year, 2026)).assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.cost_year, 2025)).assertIsDisplayed()
-        composeRule.onNodeWithText(formatCost(15_000L)).assertIsDisplayed()
-        composeRule.onNodeWithText(formatCost(9_000L)).assertIsDisplayed()
-    }
-
-    @Test
-    fun aVehicleWhoseServicesHaveNoCostSaysSoInsteadOfShowingZero() {
-        seedStore(
-            listOf(
-                logEntry("s-1", LocalDate.of(2026, 4, 2), cost = null),
-                logEntry("s-2", LocalDate.of(2025, 8, 9), cost = null),
-            ),
-        )
-        setContent()
-
-        waitForText(string(R.string.cost_totals_none))
-        composeRule.onNodeWithText(string(R.string.cost_totals_none)).assertIsDisplayed()
-        composeRule.onNodeWithText(formatCost(0L)).assertDoesNotExist()
-    }
-
-    /** 2026 totals $150.00, 2025 totals $90.00, and the 2025 uncosted entry adds nothing. */
-    private fun twoYearLog(): List<ServiceLogEntry> = listOf(
-        logEntry("s-1", LocalDate.of(2026, 4, 2), cost = 15_000),
-        logEntry("s-2", LocalDate.of(2025, 8, 9), cost = 9_000),
-        logEntry("s-3", LocalDate.of(2025, 2, 1), cost = null),
-    )
-
-    private fun logEntry(id: String, date: LocalDate, cost: Int?) = ServiceLogEntry(
-        id = id,
-        vehicleId = "v-1",
-        description = "Oil change",
-        date = date,
-        odometer = 48_000,
-        cost = cost,
-    )
 
     /** A row tap now opens the actions sheet rather than going straight to the form. */
     private fun openItemActions() {
@@ -467,6 +416,7 @@ class VehicleDetailScreenTest {
                 onLogService = {},
                 onLogRepair = {},
                 onViewHistory = { historyRequested = true },
+                onViewCosts = { costsRequested = true },
                 onBack = {},
                 viewModel = detailViewModel,
             )
