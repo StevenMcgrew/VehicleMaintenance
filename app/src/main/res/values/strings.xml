@@ -71,28 +71,23 @@
     <string name="item_last_done_date">Date last done</string>
     <string name="item_last_done_mileage">Mileage last done</string>
     <string name="item_date_not_set">Not set</string>
-    <string name="item_choose_date">Choose</string>
-    <string name="item_clear_date">Clear</string>
-    <string name="item_confirm_date">OK</string>
 
     <string name="item_name_placeholder">ex: Oil change</string>
 
     <string name="log_service_title">Log service</string>
     <string name="log_repair">Log additional repairs</string>
     <string name="log_repair_title">Log repair</string>
-    <string name="log_description">What was done</string>
+    <string name="log_repair_label">Repair</string>
+    <string name="log_service_label">Service</string>
     <string name="log_date">Date</string>
     <string name="log_odometer">Odometer</string>
-    <string name="log_cost">Cost (optional)</string>
-    <string name="log_notes">Notes (optional)</string>
-    <string name="log_choose_date">Choose the date</string>
+    <string name="log_cost">Cost $</string>
+    <string name="log_notes">Notes</string>
+    <string name="optional_marker">(optional)</string>
     <string name="log_save_failed">Your service could not be saved.</string>
 
-    <string name="log_description_placeholder">Oil and filter</string>
-    <string name="log_repair_description_placeholder">Replaced the alternator</string>
-    <string name="log_odometer_placeholder">48000</string>
-    <string name="log_cost_placeholder">64.99</string>
-    <string name="log_notes_placeholder">Shop said the belts look fine</string>
+    <string name="log_description_placeholder">ex: Oil and filter</string>
+    <string name="log_repair_description_placeholder">ex: Replaced alternator</string>
 
     <string name="service_history">Service history</string>
     <string name="history_empty_title">Nothing logged yet</string>
@@ -138,6 +133,8 @@
     <string name="cost_year" tools:ignore="PluralsCandidate">%1$d</string>
 
     <string name="ok">OK</string>
+    <string name="choose_date">Choose</string>
+    <string name="clear_date">Clear</string>
 
     <string name="notification_channel_name">Service reminders</string>
     <string name="notification_channel_description">Reminds you when a tracked service is due.</string>
