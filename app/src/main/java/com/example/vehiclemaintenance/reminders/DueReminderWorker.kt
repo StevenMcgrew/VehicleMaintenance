@@ -3,19 +3,26 @@ package com.example.vehiclemaintenance.reminders
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.example.vehiclemaintenance.AppContainer
 import com.example.vehiclemaintenance.VehicleMaintenanceApplication
 import com.example.vehiclemaintenance.data.StoreResult
 import java.time.Instant
 import java.time.LocalDate
 
-/** The daily check: what is past its reminder date, and has it been two weeks since we last said so. */
-class DueReminderWorker(
+/**
+ * The daily check: what is past its reminder date, and has it been two weeks since we last said so.
+ *
+ * WorkManager builds workers by reflection through the two argument constructor, which
+ * [JvmOverloads] keeps; a test passes its own [container] so it never touches the real store.
+ */
+class DueReminderWorker @JvmOverloads constructor(
     context: Context,
     parameters: WorkerParameters,
+    private val container: AppContainer =
+        (context.applicationContext as VehicleMaintenanceApplication).container,
 ) : CoroutineWorker(context, parameters) {
 
     override suspend fun doWork(): Result {
-        val container = (applicationContext as VehicleMaintenanceApplication).container
         val vehicles = container.vehicleRepository
         val items = container.maintenanceItemRepository
 
