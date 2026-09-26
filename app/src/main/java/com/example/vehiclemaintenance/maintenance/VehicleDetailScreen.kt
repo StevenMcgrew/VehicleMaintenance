@@ -81,6 +81,15 @@ fun VehicleDetailScreen(
         onDeleteItem = viewModel::deleteItem,
         onDeleteErrorShown = viewModel::dismissDeleteError,
         onNewlyOverdueShown = viewModel::dismissNewlyOverdue,
+        mileageActions = MileageActions(
+            onStart = viewModel::startMileageUpdate,
+            onTextChange = viewModel::onMileageTextChange,
+            onSubmit = viewModel::submitMileage,
+            onConfirmLower = viewModel::confirmLowerMileage,
+            onDismissLower = viewModel::dismissLowerMileageWarning,
+            onCancel = viewModel::cancelMileageUpdate,
+            onSaveErrorShown = viewModel::dismissMileageSaveError,
+        ),
         onRetry = viewModel::refresh,
         onBack = onBack,
         modifier = modifier,
@@ -102,6 +111,7 @@ fun VehicleDetailContent(
     onRetry: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    mileageActions: MileageActions = MileageActions(),
 ) {
     val vehicle = uiState.vehicle
     // The sheet and the dialog track an id, not the item, so a concurrent edit cannot show stale
@@ -110,11 +120,18 @@ fun VehicleDetailContent(
     var confirmingDeletionOfItemId by rememberSaveable { mutableStateOf<String?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     val deleteFailedMessage = stringResource(R.string.delete_item_failed)
+    val mileageSaveFailedMessage = stringResource(R.string.mileage_save_failed)
 
     LaunchedEffect(uiState.deleteFailed) {
         if (uiState.deleteFailed) {
             snackbarHostState.showSnackbar(deleteFailedMessage)
             onDeleteErrorShown()
+        }
+    }
+    LaunchedEffect(uiState.mileageSaveFailed) {
+        if (uiState.mileageSaveFailed) {
+            snackbarHostState.showSnackbar(mileageSaveFailedMessage)
+            mileageActions.onSaveErrorShown()
         }
     }
     val title = vehicle?.let {
@@ -164,6 +181,11 @@ fun VehicleDetailContent(
                     onAddItem = onAddItem,
                     onViewHistory = onViewHistory,
                     onLogRepair = onLogRepair,
+                )
+                LastRecordedMileageRow(
+                    mileage = uiState.lastRecordedMileage,
+                    onUpdate = mileageActions.onStart,
+                    modifier = Modifier.padding(horizontal = HORIZONTAL_PADDING),
                 )
                 HorizontalDivider()
                 if (uiState.rows.isEmpty()) {
@@ -219,6 +241,10 @@ fun VehicleDetailContent(
             },
             onDismiss = { confirmingDeletionOfItemId = null },
         )
+    }
+
+    uiState.mileageEditor?.let { editor ->
+        UpdateMileageDialog(editor = editor, actions = mileageActions)
     }
 
     if (uiState.newlyOverdueByMileage.isNotEmpty()) {
@@ -641,6 +667,7 @@ private fun VehicleDetailPreview() {
                 isLoading = false,
                 vehicle = previewVehicle,
                 rows = previewRows,
+                lastRecordedMileage = 48_000,
             ),
             onAddItem = {},
             onEditItem = {},

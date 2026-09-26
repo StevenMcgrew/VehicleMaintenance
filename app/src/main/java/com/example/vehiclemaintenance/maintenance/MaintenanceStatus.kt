@@ -34,11 +34,18 @@ fun LocalDate.plusInterval(interval: Interval): LocalDate {
 }
 
 /**
- * The highest reading, not the newest entry. A repair logged today can be back dated to work the
- * user forgot, and that lower reading must never walk the vehicle's known mileage backwards.
- * Null until something is logged, which is what keeps the mileage check inactive until then.
+ * The vehicle's recorded mileage wins once it exists, because the owner can confirm a lower
+ * reading to correct a mistake. Logging service only ever raises it. Without one, the highest
+ * logged reading stands in, not the newest entry: a repair can be back dated to work the user
+ * forgot, and that lower reading must never walk the known mileage backwards. Null until
+ * something is recorded, which is what keeps the mileage check inactive until then.
  */
-fun currentOdometer(entries: List<ServiceLogEntry>): Int? = entries.maxOfOrNull { it.odometer }
+fun currentOdometer(recordedMileage: Int?, entries: List<ServiceLogEntry>): Int? =
+    recordedMileage ?: entries.maxOfOrNull { it.odometer }
+
+/** What a new reading is compared against before warning that it goes backwards. */
+fun highestKnownMileage(recordedMileage: Int?, entries: List<ServiceLogEntry>): Int? =
+    listOfNotNull(recordedMileage, entries.maxOfOrNull { it.odometer }).maxOrNull()
 
 /**
  * Both thresholds are inclusive: an item reaches its due point on the exact day and the exact

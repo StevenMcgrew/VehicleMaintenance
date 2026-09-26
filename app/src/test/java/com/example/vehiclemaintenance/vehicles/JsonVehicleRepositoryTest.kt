@@ -121,6 +121,40 @@ class JsonVehicleRepositoryTest {
     }
 
     @Test
+    fun `add stores the drafted mileage`() = runBlocking {
+        val repository = repository("id-1")
+        repository.load()
+
+        val vehicle = (repository.add(draft.copy(recordedMileage = 45000)) as StoreResult.Success)
+            .value
+
+        assertEquals(45000, vehicle.recordedMileage)
+    }
+
+    @Test
+    fun `updateMileage replaces the reading, even with a lower one`() = runBlocking {
+        val repository = repository("id-1", "id-2")
+        repository.load()
+        repository.add(draft.copy(recordedMileage = 45000))
+        repository.add(draft.copy(recordedMileage = 10000))
+
+        val result = repository.updateMileage("id-1", 44000)
+
+        assertTrue(result is StoreResult.Success)
+        assertEquals(listOf(44000, 10000), repository.vehicles.value.map { it.recordedMileage })
+        val onDisk = storeJson.decodeFromString<MaintenanceStore>(file.readText())
+        assertEquals(44000, onDisk.vehicles.first().recordedMileage)
+    }
+
+    @Test
+    fun `updateMileage on an unknown vehicle is rejected`() = runBlocking {
+        val repository = repository()
+        repository.load()
+
+        assertTrue(repository.updateMileage("missing", 1000) is StoreResult.Failure)
+    }
+
+    @Test
     fun `delete cascades to the deleted vehicle's items and log entries only`() = runBlocking {
         seed(
             MaintenanceStore(

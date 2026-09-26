@@ -4,6 +4,8 @@ import com.example.vehiclemaintenance.data.MaintenanceStoreHolder
 import com.example.vehiclemaintenance.data.StoreResult
 import com.example.vehiclemaintenance.data.StoreUpdate
 import com.example.vehiclemaintenance.data.mapState
+import com.example.vehiclemaintenance.maintenance.currentOdometer
+import com.example.vehiclemaintenance.vehicles.Vehicle
 import kotlinx.coroutines.flow.StateFlow
 import java.time.LocalDate
 import java.util.UUID
@@ -20,6 +22,9 @@ data class ServiceLogDraft(
 )
 
 interface ServiceLogRepository {
+    /** Every vehicle's entries in stored order. */
+    val allEntries: StateFlow<List<ServiceLogEntry>>
+
     /** The vehicle's history, newest first. */
     fun entriesFor(vehicleId: String): StateFlow<List<ServiceLogEntry>>
 
@@ -30,6 +35,9 @@ class JsonServiceLogRepository(
     private val holder: MaintenanceStoreHolder,
     private val newId: () -> String = { UUID.randomUUID().toString() },
 ) : ServiceLogRepository {
+
+    override val allEntries: StateFlow<List<ServiceLogEntry>> =
+        holder.state.mapState { it.serviceLogEntries }
 
     /**
      * Reversing before the stable sort is what orders entries that share a date: new entries are
@@ -83,10 +91,28 @@ class JsonServiceLogRepository(
             }
             StoreUpdate.Write(
                 store.copy(
+                    vehicles = store.vehicles.raiseMileage(entry, store.serviceLogEntries),
                     maintenanceItems = items,
                     serviceLogEntries = store.serviceLogEntries + entry,
                 ),
                 entry,
             )
         }
+}
+
+/** Only a higher reading moves the vehicle forward, so a back dated entry never lowers it. */
+private fun List<Vehicle>.raiseMileage(
+    entry: ServiceLogEntry,
+    existing: List<ServiceLogEntry>,
+): List<Vehicle> = map { vehicle ->
+    if (vehicle.id != entry.vehicleId) return@map vehicle
+    val current = currentOdometer(
+        vehicle.recordedMileage,
+        existing.filter { it.vehicleId == vehicle.id },
+    )
+    if (current == null || entry.odometer > current) {
+        vehicle.copy(recordedMileage = entry.odometer)
+    } else {
+        vehicle
+    }
 }

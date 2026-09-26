@@ -26,6 +26,18 @@
     <string name="vehicle_make">Make</string>
     <string name="vehicle_model">Model</string>
     <string name="vehicle_engine">Engine</string>
+    <string name="vehicle_mileage">Current mileage (optional)</string>
+
+    <!-- The vehicle's last recorded odometer reading, already grouped: "45,000 mi". -->
+    <string name="last_recorded_mileage">Last recorded mileage: %1$s mi</string>
+    <string name="last_recorded_mileage_none">Last recorded mileage: Not recorded</string>
+    <string name="update_mileage">Update</string>
+    <string name="update_mileage_title">Update mileage</string>
+    <string name="update_mileage_label">Current mileage</string>
+    <string name="mileage_save_failed">The mileage could not be saved.</string>
+    <string name="lower_mileage_title">Lower than before</string>
+    <!-- Both values are grouped odometer readings: "44,000" and "45,000". -->
+    <string name="lower_mileage_message">%1$s mi is lower than the %2$s mi recorded before. Save it anyway?</string>
 
     <string name="error_required">Required</string>
     <string name="error_year_not_a_number">Enter a year as digits, such as 2014</string>

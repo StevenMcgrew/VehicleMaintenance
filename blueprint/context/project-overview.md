@@ -76,6 +76,9 @@ A value object used by both time fields on a maintenance item.
 - `make` (string)
 - `model` (string)
 - `engine` (string)
+- `recordedMileage` (int, optional) - last recorded mileage; entered by hand or
+  raised by a higher logged `odometer`. Absent on vehicles saved before it
+  existed, which fall back to their highest logged `odometer`
 
 Owns many MaintenanceItem and many ServiceLogEntry.
 
@@ -103,7 +106,7 @@ Owns many MaintenanceItem and many ServiceLogEntry.
 - `maintenanceItemId` (string, optional) - empty means an ad-hoc repair
 - `description` (string)
 - `date` (date)
-- `odometer` (int) - miles; the only way mileage ever enters the app
+- `odometer` (int) - miles; also raises the vehicle's `recordedMileage` when higher
 - `cost` (money) - store as integer minor units, never a float, so totals do not drift
 - `notes` (string, optional)
 
@@ -127,9 +130,12 @@ Owns many MaintenanceItem and many ServiceLogEntry.
   weeks from that first reminder until the service is logged. Logging resets the
   clock and cancels repeats.
 - **Mileage is opportunistic.** The app cannot read an odometer. A reading is
-  captured only when work is logged; at that moment every maintenance item for
-  that vehicle is checked, and anything overdue by mileage surfaces immediately.
-  No background mileage tracking, no projection.
+  captured when work is logged, when a current mileage is entered on the vehicle
+  form, or through Update on the vehicle detail screen. Every maintenance item
+  for that vehicle is then checked, and anything overdue by mileage surfaces
+  immediately. A reading below one recorded before saves only after the user
+  accepts a warning; logged service never lowers it. No background mileage
+  tracking, no projection.
 - **Seeding.** Creating an item asks for last done date and mileage. Skipping is
   allowed: the clock then starts at creation and the mileage check stays inactive
   until the first logged completion.
@@ -165,9 +171,9 @@ are both required, driven by Material 3 theming.
 
 Screens:
 
-- **Vehicle list** - home screen
-- **Vehicle detail** - maintenance items as a table with due status
-- **Add/edit vehicle** - form
+- **Vehicle list** - home screen; each row shows the vehicle and its last recorded mileage
+- **Vehicle detail** - maintenance items as a table with due status, under the last recorded mileage and its Update action
+- **Add/edit vehicle** - form, including an optional current mileage
 - **Add/edit maintenance item** - form, including optional last-done seeding
 - **Log service** - completion or ad-hoc repair; captures date, odometer, cost
 - **Service history** - per-vehicle log grouped by year, combined with its cost totals

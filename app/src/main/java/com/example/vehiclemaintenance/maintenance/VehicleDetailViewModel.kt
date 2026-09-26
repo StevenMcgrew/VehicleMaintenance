@@ -7,12 +7,19 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.vehiclemaintenance.VehicleMaintenanceApplication
 import com.example.vehiclemaintenance.data.StoreResult
+import com.example.vehiclemaintenance.servicelog.ServiceLogEntry
 import com.example.vehiclemaintenance.servicelog.ServiceLogRepository
+import com.example.vehiclemaintenance.vehicles.LowerMileageWarning
+import com.example.vehiclemaintenance.vehicles.MileageInput
 import com.example.vehiclemaintenance.vehicles.Vehicle
+import com.example.vehiclemaintenance.vehicles.VehicleFieldError
 import com.example.vehiclemaintenance.vehicles.VehicleRepository
+import com.example.vehiclemaintenance.vehicles.needsLowerMileageWarning
+import com.example.vehiclemaintenance.vehicles.parseMileage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -20,6 +27,14 @@ import java.time.LocalDate
 data class MaintenanceItemRow(
     val item: MaintenanceItem,
     val status: MaintenanceItemStatus,
+)
+
+/** The open Update mileage dialog, and the lower reading warning when it is waiting on an OK. */
+data class MileageEditorState(
+    val text: String = "",
+    val error: VehicleFieldError? = null,
+    val lowerMileageWarning: LowerMileageWarning? = null,
+    val isSaving: Boolean = false,
 )
 
 data class VehicleDetailUiState(
@@ -32,6 +47,9 @@ data class VehicleDetailUiState(
     val deleteFailed: Boolean = false,
     /** Names of the items a newly captured odometer reading just pushed overdue. */
     val newlyOverdueByMileage: List<String> = emptyList(),
+    val lastRecordedMileage: Int? = null,
+    val mileageEditor: MileageEditorState? = null,
+    val mileageSaveFailed: Boolean = false,
 )
 
 class VehicleDetailViewModel(
@@ -47,7 +65,8 @@ class VehicleDetailViewModel(
 
     private var latestItems: List<MaintenanceItem> = emptyList()
     private var odometer: Int? = null
-    private var seenLog = false
+    private var seenReading = false
+    private var latestEntries: List<ServiceLogEntry> = emptyList()
     private var overdueByMileage: Set<String> = emptySet()
 
     init {
@@ -63,11 +82,14 @@ class VehicleDetailViewModel(
             }
         }
         viewModelScope.launch {
-            serviceLog.entriesFor(vehicleId).collect { entries ->
-                val reading = currentOdometer(entries)
+            combine(vehicles.vehicles, serviceLog.entriesFor(vehicleId)) { all, entries ->
+                latestEntries = entries
+                currentOdometer(all.firstOrNull { it.id == vehicleId }?.recordedMileage, entries)
+            }.collect { reading ->
                 // The first emission is the baseline this screen opened with, not a new reading.
-                val isNew = seenLog && reading != null && (odometer == null || reading > odometer!!)
-                seenLog = true
+                val isNew =
+                    seenReading && reading != null && (odometer == null || reading > odometer!!)
+                seenReading = true
                 recompute(reading, newReading = isNew)
             }
         }
@@ -93,6 +115,7 @@ class VehicleDetailViewModel(
         _uiState.update { state ->
             state.copy(
                 rows = rows,
+                lastRecordedMileage = reading,
                 newlyOverdueByMileage = newlyOverdue.ifEmpty { state.newlyOverdueByMileage },
             )
         }
@@ -129,6 +152,63 @@ class VehicleDetailViewModel(
 
     fun dismissNewlyOverdue() {
         _uiState.update { it.copy(newlyOverdueByMileage = emptyList()) }
+    }
+
+    fun startMileageUpdate() {
+        val current = _uiState.value.lastRecordedMileage
+        _uiState.update {
+            it.copy(mileageEditor = MileageEditorState(text = current?.toString().orEmpty()))
+        }
+    }
+
+    fun onMileageTextChange(text: String) = updateEditor { it.copy(text = text, error = null) }
+
+    fun submitMileage() {
+        val editor = _uiState.value.mileageEditor ?: return
+        val miles = when (val input = parseMileage(editor.text)) {
+            MileageInput.Blank -> return updateEditor { it.copy(error = VehicleFieldError.REQUIRED) }
+            MileageInput.Invalid -> return updateEditor {
+                it.copy(error = VehicleFieldError.MILEAGE_NOT_A_NUMBER)
+            }
+            is MileageInput.Miles -> input.value
+        }
+        val highest = highestKnownMileage(_uiState.value.vehicle?.recordedMileage, latestEntries)
+        if (highest != null && needsLowerMileageWarning(miles, highest)) {
+            updateEditor { it.copy(lowerMileageWarning = LowerMileageWarning(miles, highest)) }
+        } else {
+            saveMileage(miles)
+        }
+    }
+
+    fun confirmLowerMileage() {
+        val warning = _uiState.value.mileageEditor?.lowerMileageWarning ?: return
+        saveMileage(warning.entered)
+    }
+
+    fun dismissLowerMileageWarning() = updateEditor { it.copy(lowerMileageWarning = null) }
+
+    fun cancelMileageUpdate() {
+        _uiState.update { it.copy(mileageEditor = null) }
+    }
+
+    fun dismissMileageSaveError() {
+        _uiState.update { it.copy(mileageSaveFailed = false) }
+    }
+
+    private fun saveMileage(miles: Int) {
+        updateEditor { it.copy(lowerMileageWarning = null, isSaving = true) }
+        viewModelScope.launch {
+            val result = vehicles.updateMileage(vehicleId, miles)
+            _uiState.update {
+                it.copy(mileageEditor = null, mileageSaveFailed = result is StoreResult.Failure)
+            }
+        }
+    }
+
+    private fun updateEditor(transform: (MileageEditorState) -> MileageEditorState) {
+        _uiState.update { state ->
+            state.copy(mileageEditor = state.mileageEditor?.let(transform))
+        }
     }
 
     companion object {

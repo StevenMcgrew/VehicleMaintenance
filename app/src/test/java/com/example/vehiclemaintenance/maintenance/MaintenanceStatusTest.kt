@@ -197,7 +197,26 @@ class MaintenanceStatusTest {
 
     @Test
     fun anEmptyLogHasNoCurrentOdometer() {
-        assertNull(currentOdometer(emptyList()))
+        assertNull(currentOdometer(null, emptyList()))
+    }
+
+    @Test
+    fun aRecordedMileageWinsEvenBelowTheLog() {
+        val entries = listOf(entry("s-1", LocalDate.of(2026, 3, 1), 48_000))
+
+        assertEquals(45_000, currentOdometer(45_000, entries))
+        assertEquals(45_000, currentOdometer(45_000, emptyList()))
+    }
+
+    @Test
+    fun theHighestKnownMileageTakesTheLargerOfBothSources() {
+        val entries = listOf(entry("s-1", LocalDate.of(2026, 3, 1), 48_000))
+
+        assertEquals(48_000, highestKnownMileage(45_000, entries))
+        assertEquals(50_000, highestKnownMileage(50_000, entries))
+        assertEquals(48_000, highestKnownMileage(null, entries))
+        assertEquals(45_000, highestKnownMileage(45_000, emptyList()))
+        assertNull(highestKnownMileage(null, emptyList()))
     }
 
     @Test
@@ -207,7 +226,7 @@ class MaintenanceStatusTest {
             entry("s-2", LocalDate.of(2025, 6, 1), 31_000),
         )
 
-        assertEquals(48_000, currentOdometer(entries))
+        assertEquals(48_000, currentOdometer(null, entries))
     }
 
     private fun entry(id: String, date: LocalDate, odometer: Int) = ServiceLogEntry(

@@ -5,17 +5,25 @@ data class VehicleFormFields(
     val make: String = "",
     val model: String = "",
     val engine: String = "",
+    val mileage: String = "",
 )
 
-enum class VehicleFieldError { REQUIRED, YEAR_NOT_A_NUMBER, YEAR_OUT_OF_RANGE }
+enum class VehicleFieldError {
+    REQUIRED,
+    YEAR_NOT_A_NUMBER,
+    YEAR_OUT_OF_RANGE,
+    MILEAGE_NOT_A_NUMBER,
+}
 
 data class VehicleFormErrors(
     val year: VehicleFieldError? = null,
     val make: VehicleFieldError? = null,
     val model: VehicleFieldError? = null,
     val engine: VehicleFieldError? = null,
+    val mileage: VehicleFieldError? = null,
 ) {
-    val hasAny: Boolean get() = year != null || make != null || model != null || engine != null
+    val hasAny: Boolean
+        get() = listOf(year, make, model, engine, mileage).any { it != null }
 }
 
 sealed interface VehicleFormValidation {
@@ -33,6 +41,7 @@ object VehicleFormValidator {
         val engine = fields.engine.trim()
         val yearText = fields.year.trim()
         val year = yearText.toIntOrNull()
+        val mileage = parseMileage(fields.mileage)
 
         val errors = VehicleFormErrors(
             year = when {
@@ -44,12 +53,15 @@ object VehicleFormValidator {
             make = VehicleFieldError.REQUIRED.takeIf { make.isEmpty() },
             model = VehicleFieldError.REQUIRED.takeIf { model.isEmpty() },
             engine = VehicleFieldError.REQUIRED.takeIf { engine.isEmpty() },
+            mileage = VehicleFieldError.MILEAGE_NOT_A_NUMBER
+                .takeIf { mileage == MileageInput.Invalid },
         )
 
         return if (errors.hasAny || year == null) {
             VehicleFormValidation.Invalid(errors)
         } else {
-            VehicleFormValidation.Valid(VehicleDraft(year, make, model, engine))
+            val recordedMileage = (mileage as? MileageInput.Miles)?.value
+            VehicleFormValidation.Valid(VehicleDraft(year, make, model, engine, recordedMileage))
         }
     }
 }

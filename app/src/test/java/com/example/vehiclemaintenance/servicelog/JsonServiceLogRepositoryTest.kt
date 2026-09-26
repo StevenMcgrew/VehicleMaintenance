@@ -8,6 +8,7 @@ import com.example.vehiclemaintenance.data.storeJson
 import com.example.vehiclemaintenance.maintenance.Interval
 import com.example.vehiclemaintenance.maintenance.IntervalUnit
 import com.example.vehiclemaintenance.maintenance.MaintenanceItem
+import com.example.vehiclemaintenance.vehicles.Vehicle
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -184,6 +185,53 @@ class JsonServiceLogRepositoryTest {
         assertNull(entry.maintenanceItemId)
         assertEquals(listOf("s-1"), store.serviceLogEntries.map { it.id })
         assertEquals(listOf(item), store.maintenanceItems)
+    }
+
+    private fun vehicle(recordedMileage: Int?) = Vehicle(
+        id = "v-1",
+        year = 2014,
+        make = "Toyota",
+        model = "Tacoma",
+        engine = "4.0L V6",
+        recordedMileage = recordedMileage,
+    )
+
+    private fun mileageAfterLogging(
+        recordedMileage: Int?,
+        odometer: Int,
+        existing: List<ServiceLogEntry> = emptyList(),
+    ): Int? = runBlocking {
+        seed(
+            MaintenanceStore(
+                vehicles = listOf(vehicle(recordedMileage)),
+                maintenanceItems = listOf(item),
+                serviceLogEntries = existing,
+            ),
+        )
+        val holder = holder()
+        val repository = repository(holder, "s-new")
+        holder.load()
+        repository.add(draft.copy(odometer = odometer))
+        onDisk().vehicles.single().recordedMileage
+    }
+
+    @Test
+    fun `a higher logged reading raises the vehicle's recorded mileage`() {
+        assertEquals(48000, mileageAfterLogging(recordedMileage = 45000, odometer = 48000))
+        assertEquals(48000, mileageAfterLogging(recordedMileage = null, odometer = 48000))
+    }
+
+    @Test
+    fun `a lower or equal logged reading leaves the recorded mileage alone`() {
+        assertEquals(50000, mileageAfterLogging(recordedMileage = 50000, odometer = 48000))
+        assertEquals(48000, mileageAfterLogging(recordedMileage = 48000, odometer = 48000))
+    }
+
+    @Test
+    fun `without a recorded mileage, a reading below the log does not set one`() {
+        val existing = listOf(entry("s-1").copy(odometer = 50000))
+
+        assertNull(mileageAfterLogging(recordedMileage = null, odometer = 48000, existing))
     }
 
     @Test

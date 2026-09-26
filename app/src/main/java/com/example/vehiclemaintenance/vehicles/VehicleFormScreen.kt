@@ -62,7 +62,10 @@ fun VehicleFormScreen(
         onMakeChange = viewModel::onMakeChange,
         onModelChange = viewModel::onModelChange,
         onEngineChange = viewModel::onEngineChange,
+        onMileageChange = viewModel::onMileageChange,
         onSave = viewModel::save,
+        onConfirmLowerMileage = viewModel::confirmLowerMileage,
+        onDismissLowerMileage = viewModel::dismissLowerMileageWarning,
         onCancel = onDone,
         onSaveErrorShown = viewModel::dismissSaveError,
         modifier = modifier,
@@ -77,7 +80,10 @@ fun VehicleFormContent(
     onMakeChange: (String) -> Unit,
     onModelChange: (String) -> Unit,
     onEngineChange: (String) -> Unit,
+    onMileageChange: (String) -> Unit,
     onSave: () -> Unit,
+    onConfirmLowerMileage: () -> Unit,
+    onDismissLowerMileage: () -> Unit,
     onCancel: () -> Unit,
     onSaveErrorShown: () -> Unit,
     modifier: Modifier = Modifier,
@@ -181,10 +187,27 @@ fun VehicleFormContent(
                     onValueChange = onEngineChange,
                     label = stringResource(R.string.vehicle_engine),
                     error = uiState.errors.engine?.message(uiState.minYear, uiState.maxYear),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                )
+                VehicleField(
+                    value = uiState.fields.mileage,
+                    onValueChange = onMileageChange,
+                    label = stringResource(R.string.vehicle_mileage),
+                    error = uiState.errors.mileage?.message(uiState.minYear, uiState.maxYear),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done,
+                    ),
                 )
             }
         }
+    }
+
+    uiState.lowerMileageWarning?.let { warning ->
+        LowerMileageWarningDialog(
+            warning = warning,
+            onConfirm = onConfirmLowerMileage,
+            onDismiss = onDismissLowerMileage,
+        )
     }
 }
 
@@ -219,6 +242,7 @@ private fun VehicleFieldError.message(minYear: Int, maxYear: Int): String = when
     VehicleFieldError.YEAR_NOT_A_NUMBER -> stringResource(R.string.error_year_not_a_number)
     VehicleFieldError.YEAR_OUT_OF_RANGE ->
         stringResource(R.string.error_year_out_of_range, minYear, maxYear)
+    VehicleFieldError.MILEAGE_NOT_A_NUMBER -> stringResource(R.string.error_non_negative_number)
 }
 
 @Preview(showBackground = true)
@@ -234,13 +258,17 @@ private fun VehicleFormPreview() {
                     make = "Toyota",
                     model = "Tacoma",
                     engine = "4.0L V6",
+                    mileage = "45000",
                 ),
             ),
             onYearChange = {},
             onMakeChange = {},
             onModelChange = {},
             onEngineChange = {},
+            onMileageChange = {},
             onSave = {},
+            onConfirmLowerMileage = {},
+            onDismissLowerMileage = {},
             onCancel = {},
             onSaveErrorShown = {},
         )
@@ -260,14 +288,18 @@ private fun VehicleFormErrorsPreview() {
                     make = VehicleFieldError.REQUIRED,
                     model = VehicleFieldError.REQUIRED,
                     engine = VehicleFieldError.REQUIRED,
+                    mileage = VehicleFieldError.MILEAGE_NOT_A_NUMBER,
                 ),
-                fields = VehicleFormFields(year = "1800"),
+                fields = VehicleFormFields(year = "1800", mileage = "-5"),
             ),
             onYearChange = {},
             onMakeChange = {},
             onModelChange = {},
             onEngineChange = {},
+            onMileageChange = {},
             onSave = {},
+            onConfirmLowerMileage = {},
+            onDismissLowerMileage = {},
             onCancel = {},
             onSaveErrorShown = {},
         )

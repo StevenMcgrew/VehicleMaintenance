@@ -18,6 +18,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -33,6 +34,7 @@ import com.example.vehiclemaintenance.vehicles.JsonVehicleRepository
 import com.example.vehiclemaintenance.vehicles.Vehicle
 import com.example.vehiclemaintenance.vehicles.VehicleRepository
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -79,8 +81,15 @@ class VehicleDetailScreenTest {
         serviceLog = JsonServiceLogRepository(holder)
     }
 
-    private fun seedStore() {
-        storeFile.writeText(storeJson.encodeToString(MaintenanceStore(vehicles = listOf(vehicle))))
+    private fun seedStore(
+        seeded: Vehicle = vehicle,
+        maintenanceItems: List<MaintenanceItem> = emptyList(),
+    ) {
+        storeFile.writeText(
+            storeJson.encodeToString(
+                MaintenanceStore(vehicles = listOf(seeded), maintenanceItems = maintenanceItems),
+            ),
+        )
     }
 
     @After
@@ -270,6 +279,73 @@ class VehicleDetailScreenTest {
             }
         }
     }
+
+    @Test
+    fun updatingTheMileageShowsItUnderTheActions() {
+        setContent()
+        waitForText(string(R.string.last_recorded_mileage_none))
+
+        composeRule.onNodeWithText(string(R.string.update_mileage)).performClick()
+        composeRule.onNode(hasSetTextAction() and hasAnyAncestor(isDialog()))
+            .performTextInput("45000")
+        composeRule.onNodeWithText(string(R.string.save)).performClick()
+
+        waitForText(mileageText(45_000))
+        val stored = storeJson.decodeFromString<MaintenanceStore>(storeFile.readText())
+        assertEquals(45_000, stored.vehicles.single().recordedMileage)
+    }
+
+    @Test
+    fun aLowerMileageIsSavedOnlyAfterTheWarningIsAccepted() {
+        seedStore(seeded = vehicle.copy(recordedMileage = 45_000))
+        setContent()
+        waitForText(mileageText(45_000))
+
+        composeRule.onNodeWithText(string(R.string.update_mileage)).performClick()
+        val field = composeRule.onNode(hasSetTextAction() and hasAnyAncestor(isDialog()))
+        field.performTextClearance()
+        field.performTextInput("44000")
+        composeRule.onNodeWithText(string(R.string.save)).performClick()
+
+        waitForText(string(R.string.lower_mileage_title))
+        composeRule.onNodeWithText(string(R.string.cancel)).performClick()
+        // Cancel returns to the entry with the text intact, and nothing is saved.
+        composeRule.onNodeWithText("44000").assertIsDisplayed()
+        composeRule.onNodeWithText(mileageText(45_000)).assertIsDisplayed()
+
+        composeRule.onNodeWithText(string(R.string.save)).performClick()
+        waitForText(string(R.string.lower_mileage_title))
+        composeRule.onNodeWithText(string(R.string.ok)).performClick()
+
+        waitForText(mileageText(44_000))
+        val stored = storeJson.decodeFromString<MaintenanceStore>(storeFile.readText())
+        assertEquals(44_000, stored.vehicles.single().recordedMileage)
+    }
+
+    @Test
+    fun aManualReadingPastTheDuePointRaisesTheOverdueCallout() {
+        seedStore(
+            seeded = vehicle.copy(recordedMileage = 45_000),
+            maintenanceItems = listOf(overdueRow().item),
+        )
+        setContent()
+        waitForText(mileageText(45_000))
+
+        composeRule.onNodeWithText(string(R.string.update_mileage)).performClick()
+        val field = composeRule.onNode(hasSetTextAction() and hasAnyAncestor(isDialog()))
+        field.performTextClearance()
+        field.performTextInput("48000")
+        composeRule.onNodeWithText(string(R.string.save)).performClick()
+
+        composeRule.waitUntil(TIMEOUT_MS) {
+            composeRule.onAllNodes(hasText("Oil change") and hasAnyAncestor(isDialog()))
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+    }
+
+    private fun mileageText(miles: Int): String =
+        context.getString(R.string.last_recorded_mileage, formatMileage(miles))
 
     @Test
     fun theActionRowOffersOnlyHistoryAndLogRepair() {

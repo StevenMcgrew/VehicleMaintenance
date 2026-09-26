@@ -30,6 +30,29 @@ class MaintenanceStoreSerializationTest {
     }
 
     @Test
+    fun `a recorded mileage round trips`() {
+        val store = MaintenanceStore(vehicles = listOf(fullVehicle.copy(recordedMileage = 45000)))
+
+        val decoded = storeJson.decodeFromString<MaintenanceStore>(storeJson.encodeToString(store))
+
+        assertEquals(45000, decoded.vehicles.single().recordedMileage)
+    }
+
+    @Test
+    fun `a vehicle from before mileage was tracked decodes with no recorded mileage`() {
+        val json = """
+            {"schemaVersion":1,"vehicles":[
+              {"id":"v-1","year":2014,"make":"Toyota","model":"Tacoma","engine":"4.0L V6"}
+            ],"maintenanceItems":[],"serviceLogEntries":[]}
+        """.trimIndent()
+
+        val decoded = storeJson.decodeFromString<MaintenanceStore>(json)
+
+        assertEquals(fullVehicle, decoded.vehicles.single())
+        assertFalse(storeJson.encodeToString(decoded).contains("recordedMileage"))
+    }
+
+    @Test
     fun `schema version is always written as the current version`() {
         val encoded = storeJson.encodeToString(MaintenanceStore())
 

@@ -32,6 +32,26 @@ class VehicleFormValidatorTest {
     }
 
     @Test
+    fun `a blank mileage is allowed and stores nothing`() {
+        assertEquals(null, draftOf(validFields.copy(mileage = "  ")).recordedMileage)
+    }
+
+    @Test
+    fun `a mileage is trimmed into the draft`() {
+        assertEquals(45000, draftOf(validFields.copy(mileage = " 45000 ")).recordedMileage)
+    }
+
+    @Test
+    fun `a mileage that is not a whole number of zero or more is rejected`() {
+        listOf("abc", "-5", "12.5").forEach { text ->
+            assertEquals(
+                VehicleFieldError.MILEAGE_NOT_A_NUMBER,
+                errorsOf(validFields.copy(mileage = text)).mileage,
+            )
+        }
+    }
+
+    @Test
     fun `a blank make is required`() {
         assertEquals(VehicleFieldError.REQUIRED, errorsOf(validFields.copy(make = "   ")).make)
     }

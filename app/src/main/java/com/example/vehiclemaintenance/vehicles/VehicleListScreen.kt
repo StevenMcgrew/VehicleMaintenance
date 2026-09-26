@@ -46,6 +46,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vehiclemaintenance.R
+import com.example.vehiclemaintenance.maintenance.lastRecordedMileageText
 import com.example.vehiclemaintenance.ui.ExtraSmallButton
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 
@@ -204,6 +205,7 @@ private fun VehicleListBody(
             items(uiState.vehicles, key = { it.id }) { vehicle ->
                 VehicleRow(
                     vehicle = vehicle,
+                    lastRecordedMileage = uiState.lastRecordedMileage[vehicle.id],
                     onOpen = { onOpenVehicle(vehicle.id) },
                     onEdit = { onEditVehicle(vehicle.id) },
                     onDelete = { onDeleteVehicle(vehicle.id) },
@@ -217,6 +219,7 @@ private fun VehicleListBody(
 @Composable
 private fun VehicleRow(
     vehicle: Vehicle,
+    lastRecordedMileage: Int?,
     onOpen: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
@@ -228,11 +231,21 @@ private fun VehicleRow(
     ListItem(
         modifier = modifier.clickable(onClick = onOpen),
         headlineContent = {
-            Text(text = label, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                text = stringResource(
+                    R.string.vehicle_summary_with_engine,
+                    vehicle.year,
+                    vehicle.make,
+                    vehicle.model,
+                    vehicle.engine,
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         },
         supportingContent = {
             Text(
-                text = vehicle.engine,
+                text = lastRecordedMileageText(lastRecordedMileage),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -315,6 +328,7 @@ private fun VehicleListPreview() {
                     Vehicle("1", 2014, "Toyota", "Tacoma", "4.0L V6"),
                     Vehicle("2", 2020, "Honda", "Civic", "2.0L I4"),
                 ),
+                lastRecordedMileage = mapOf("1" to 45_000),
             ),
             onAddVehicle = {},
             onOpenVehicle = {},

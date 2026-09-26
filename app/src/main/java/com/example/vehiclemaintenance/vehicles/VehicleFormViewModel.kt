@@ -7,6 +7,9 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.vehiclemaintenance.VehicleMaintenanceApplication
 import com.example.vehiclemaintenance.data.StoreResult
+import com.example.vehiclemaintenance.maintenance.currentOdometer
+import com.example.vehiclemaintenance.maintenance.highestKnownMileage
+import com.example.vehiclemaintenance.servicelog.ServiceLogRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,10 +28,12 @@ data class VehicleFormUiState(
     val vehicleNotFound: Boolean = false,
     val minYear: Int = VehicleFormValidator.MIN_YEAR,
     val maxYear: Int = VehicleFormValidator.MIN_YEAR,
+    val lowerMileageWarning: LowerMileageWarning? = null,
 )
 
 class VehicleFormViewModel(
     private val repository: VehicleRepository,
+    private val serviceLog: ServiceLogRepository,
     private val vehicleId: String?,
     private val currentYear: Int = LocalDate.now().year,
 ) : ViewModel() {
@@ -39,6 +44,7 @@ class VehicleFormViewModel(
     val uiState: StateFlow<VehicleFormUiState> = _uiState.asStateFlow()
 
     private var showErrors = false
+    private var draftAwaitingConfirmation: VehicleDraft? = null
 
     init {
         viewModelScope.launch {
@@ -55,7 +61,11 @@ class VehicleFormViewModel(
                 if (existing == null) {
                     it.copy(isLoading = false, vehicleNotFound = true)
                 } else {
-                    it.copy(isLoading = false, fields = existing.toFormFields())
+                    val mileage = currentOdometer(
+                        existing.recordedMileage,
+                        serviceLog.entriesFor(existing.id).value,
+                    )
+                    it.copy(isLoading = false, fields = existing.toFormFields(mileage))
                 }
             }
         }
@@ -69,6 +79,8 @@ class VehicleFormViewModel(
 
     fun onEngineChange(value: String) = updateFields { it.copy(engine = value) }
 
+    fun onMileageChange(value: String) = updateFields { it.copy(mileage = value) }
+
     fun save() {
         val fields = _uiState.value.fields
         when (val validation = VehicleFormValidator.validate(fields, currentYear)) {
@@ -79,21 +91,66 @@ class VehicleFormViewModel(
 
             is VehicleFormValidation.Valid -> {
                 showErrors = false
-                _uiState.update { it.copy(errors = VehicleFormErrors(), isSaving = true, saveFailed = false) }
-                viewModelScope.launch {
-                    val result = if (vehicleId == null) {
-                        repository.add(validation.draft)
-                    } else {
-                        repository.update(validation.draft.toVehicle(vehicleId))
-                    }
+                val warning = lowerMileageWarningFor(validation.draft)
+                if (warning == null) {
+                    persist(validation.draft)
+                } else {
+                    draftAwaitingConfirmation = validation.draft
                     _uiState.update {
-                        it.copy(
-                            isSaving = false,
-                            savedSuccessfully = result is StoreResult.Success,
-                            saveFailed = result is StoreResult.Failure,
-                        )
+                        it.copy(errors = VehicleFormErrors(), lowerMileageWarning = warning)
                     }
                 }
+            }
+        }
+    }
+
+    fun confirmLowerMileage() {
+        val draft = draftAwaitingConfirmation ?: return
+        draftAwaitingConfirmation = null
+        persist(draft)
+    }
+
+    fun dismissLowerMileageWarning() {
+        draftAwaitingConfirmation = null
+        _uiState.update { it.copy(lowerMileageWarning = null) }
+    }
+
+    private fun lowerMileageWarningFor(draft: VehicleDraft): LowerMileageWarning? {
+        val miles = draft.recordedMileage ?: return null
+        val id = vehicleId ?: return null
+        val existing = repository.vehicles.value.firstOrNull { it.id == id }
+        val highest = highestKnownMileage(
+            existing?.recordedMileage,
+            serviceLog.entriesFor(id).value,
+        )
+        return if (highest != null && needsLowerMileageWarning(miles, highest)) {
+            LowerMileageWarning(entered = miles, highestKnown = highest)
+        } else {
+            null
+        }
+    }
+
+    private fun persist(draft: VehicleDraft) {
+        _uiState.update {
+            it.copy(
+                errors = VehicleFormErrors(),
+                isSaving = true,
+                saveFailed = false,
+                lowerMileageWarning = null,
+            )
+        }
+        viewModelScope.launch {
+            val result = if (vehicleId == null) {
+                repository.add(draft)
+            } else {
+                repository.update(draft.toVehicle(vehicleId))
+            }
+            _uiState.update {
+                it.copy(
+                    isSaving = false,
+                    savedSuccessfully = result is StoreResult.Success,
+                    saveFailed = result is StoreResult.Failure,
+                )
             }
         }
     }
@@ -122,17 +179,22 @@ class VehicleFormViewModel(
             initializer {
                 val application = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]
                         as VehicleMaintenanceApplication
-                VehicleFormViewModel(application.container.vehicleRepository, vehicleId)
+                VehicleFormViewModel(
+                    application.container.vehicleRepository,
+                    application.container.serviceLogRepository,
+                    vehicleId,
+                )
             }
         }
     }
 }
 
-private fun Vehicle.toFormFields() = VehicleFormFields(
+private fun Vehicle.toFormFields(mileage: Int?) = VehicleFormFields(
     year = year.toString(),
     make = make,
     model = model,
     engine = engine,
+    mileage = mileage?.toString().orEmpty(),
 )
 
 private fun VehicleDraft.toVehicle(id: String) = Vehicle(
@@ -141,4 +203,5 @@ private fun VehicleDraft.toVehicle(id: String) = Vehicle(
     make = make,
     model = model,
     engine = engine,
+    recordedMileage = recordedMileage,
 )

@@ -13,6 +13,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -21,6 +22,9 @@ import com.example.vehiclemaintenance.data.JsonFileStore
 import com.example.vehiclemaintenance.data.MaintenanceStore
 import com.example.vehiclemaintenance.data.MaintenanceStoreHolder
 import com.example.vehiclemaintenance.data.storeJson
+import com.example.vehiclemaintenance.maintenance.formatMileage
+import com.example.vehiclemaintenance.servicelog.JsonServiceLogRepository
+import com.example.vehiclemaintenance.servicelog.ServiceLogRepository
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -44,11 +48,14 @@ class VehicleListScreenTest {
 
     private lateinit var storeFile: File
     private lateinit var repository: VehicleRepository
+    private lateinit var serviceLog: ServiceLogRepository
 
     @Before
     fun setUp() {
         storeFile = File(context.cacheDir, "vehicle-list-test-${System.nanoTime()}.json")
-        repository = JsonVehicleRepository(MaintenanceStoreHolder(JsonFileStore(storeFile)))
+        val holder = MaintenanceStoreHolder(JsonFileStore(storeFile))
+        repository = JsonVehicleRepository(holder)
+        serviceLog = JsonServiceLogRepository(holder)
     }
 
     @After
@@ -68,9 +75,50 @@ class VehicleListScreenTest {
 
     @Test
     fun addedVehicleAppearsInTheList() {
-        val summary = addTacoma()
+        addTacoma()
 
-        composeRule.onNodeWithText(summary).assertIsDisplayed()
+        composeRule.onNodeWithText(headline).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.last_recorded_mileage_none)).assertIsDisplayed()
+    }
+
+    @Test
+    fun aMileageEnteredOnTheFormShowsUnderTheVehicle() {
+        addTacoma(mileage = "45000")
+
+        composeRule.onNodeWithText(mileageText(45_000)).assertIsDisplayed()
+        val stored = storeJson.decodeFromString<MaintenanceStore>(storeFile.readText())
+        assertEquals(45_000, stored.vehicles.single().recordedMileage)
+    }
+
+    @Test
+    fun editingToALowerMileageSavesOnlyAfterTheWarningIsAccepted() {
+        val summary = addTacoma(mileage = "45000")
+        composeRule
+            .onNodeWithContentDescription(context.getString(R.string.edit_vehicle_action, summary))
+            .performClick()
+        waitForContentDescription(R.string.save)
+
+        val mileageField = composeRule.onAllNodes(hasSetTextAction())[4]
+        mileageField.performTextClearance()
+        mileageField.performTextInput("44000")
+        composeRule.onNodeWithContentDescription(string(R.string.save)).performClick()
+
+        waitForText(R.string.lower_mileage_title)
+        composeRule.onNodeWithText(string(R.string.cancel)).performClick()
+        composeRule.onNodeWithText(string(R.string.lower_mileage_title)).assertDoesNotExist()
+        val unchanged = storeJson.decodeFromString<MaintenanceStore>(storeFile.readText())
+        assertEquals(45_000, unchanged.vehicles.single().recordedMileage)
+
+        composeRule.onNodeWithContentDescription(string(R.string.save)).performClick()
+        waitForText(R.string.lower_mileage_title)
+        composeRule.onNodeWithText(string(R.string.ok)).performClick()
+
+        val lowered = mileageText(44_000)
+        composeRule.waitUntil(TIMEOUT_MS) {
+            composeRule.onAllNodesWithText(lowered).fetchSemanticsNodes().isNotEmpty()
+        }
+        val stored = storeJson.decodeFromString<MaintenanceStore>(storeFile.readText())
+        assertEquals(44_000, stored.vehicles.single().recordedMileage)
     }
 
     @Test
@@ -110,28 +158,43 @@ class VehicleListScreenTest {
         assertEquals(1, backupOpened)
     }
 
-    /** Adds a vehicle through the real form and returns its list label once the row shows. */
-    private fun addTacoma(onEditVehicle: (String) -> Unit = {}): String {
+    private val headline: String
+        get() = context.getString(
+            R.string.vehicle_summary_with_engine,
+            2014,
+            "Toyota",
+            "Tacoma",
+            "4.0L V6",
+        )
+
+    private fun mileageText(miles: Int): String =
+        context.getString(R.string.last_recorded_mileage, formatMileage(miles))
+
+    /**
+     * Adds a vehicle through the real form and returns the label its row actions are named with,
+     * once the row shows.
+     */
+    private fun addTacoma(onEditVehicle: (String) -> Unit = {}, mileage: String? = null): String {
         setContent(onEditVehicle = onEditVehicle)
         waitForText(R.string.vehicles_empty_title)
 
         composeRule.onNodeWithText(string(R.string.add_vehicle)).performClick()
         waitForContentDescription(R.string.save)
 
-        // Field order on the form: year, make, model, engine.
+        // Field order on the form: year, make, model, engine, mileage.
         val fields = composeRule.onAllNodes(hasSetTextAction())
         fields[0].performTextInput("2014")
         fields[1].performTextInput("Toyota")
         fields[2].performTextInput("Tacoma")
         fields[3].performTextInput("4.0L V6")
+        mileage?.let { fields[4].performTextInput(it) }
 
         composeRule.onNodeWithContentDescription(string(R.string.save)).performClick()
 
-        val summary = context.getString(R.string.vehicle_summary, 2014, "Toyota", "Tacoma")
         composeRule.waitUntil(TIMEOUT_MS) {
-            composeRule.onAllNodesWithText(summary).fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithText(headline).fetchSemanticsNodes().isNotEmpty()
         }
-        return summary
+        return context.getString(R.string.vehicle_summary, 2014, "Toyota", "Tacoma")
     }
 
     private fun setContent(
@@ -148,19 +211,29 @@ class VehicleListScreenTest {
     @Composable
     private fun Harness(onOpenBackup: () -> Unit, onEditVehicle: (String) -> Unit) {
         var showForm by remember { mutableStateOf(false) }
+        var editingId by remember { mutableStateOf<String?>(null) }
         if (showForm) {
-            val formViewModel = remember { VehicleFormViewModel(repository, null) }
+            val formViewModel = remember(editingId) {
+                VehicleFormViewModel(repository, serviceLog, editingId)
+            }
             VehicleFormScreen(
-                vehicleId = null,
+                vehicleId = editingId,
                 onDone = { showForm = false },
                 viewModel = formViewModel,
             )
         } else {
-            val listViewModel = remember { VehicleListViewModel(repository) }
+            val listViewModel = remember { VehicleListViewModel(repository, serviceLog) }
             VehicleListScreen(
-                onAddVehicle = { showForm = true },
+                onAddVehicle = {
+                    editingId = null
+                    showForm = true
+                },
                 onOpenVehicle = {},
-                onEditVehicle = onEditVehicle,
+                onEditVehicle = {
+                    onEditVehicle(it)
+                    editingId = it
+                    showForm = true
+                },
                 onOpenBackup = onOpenBackup,
                 viewModel = listViewModel,
             )

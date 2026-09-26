@@ -13,6 +13,7 @@ data class VehicleDraft(
     val make: String,
     val model: String,
     val engine: String,
+    val recordedMileage: Int? = null,
 )
 
 interface VehicleRepository {
@@ -23,6 +24,8 @@ interface VehicleRepository {
     suspend fun add(draft: VehicleDraft): StoreResult<Vehicle>
 
     suspend fun update(vehicle: Vehicle): StoreResult<Unit>
+
+    suspend fun updateMileage(vehicleId: String, miles: Int): StoreResult<Unit>
 
     suspend fun delete(vehicleId: String): StoreResult<Unit>
 }
@@ -43,6 +46,7 @@ class JsonVehicleRepository(
             make = draft.make,
             model = draft.model,
             engine = draft.engine,
+            recordedMileage = draft.recordedMileage,
         )
         StoreUpdate.Write(store.copy(vehicles = store.vehicles + vehicle), vehicle)
     }
@@ -55,6 +59,18 @@ class JsonVehicleRepository(
             StoreUpdate.Write(store.copy(vehicles = updated), Unit)
         }
     }
+
+    override suspend fun updateMileage(vehicleId: String, miles: Int): StoreResult<Unit> =
+        holder.update { store ->
+            if (store.vehicles.none { it.id == vehicleId }) {
+                StoreUpdate.Reject(IllegalArgumentException("No vehicle with id $vehicleId"))
+            } else {
+                val updated = store.vehicles.map {
+                    if (it.id == vehicleId) it.copy(recordedMileage = miles) else it
+                }
+                StoreUpdate.Write(store.copy(vehicles = updated), Unit)
+            }
+        }
 
     override suspend fun delete(vehicleId: String): StoreResult<Unit> = holder.update { store ->
         StoreUpdate.Write(

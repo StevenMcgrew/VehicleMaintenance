@@ -54,6 +54,8 @@ the device unless the user explicitly exports it.
 **Vehicle**
 
 - id, year, make, model, engine
+- recorded mileage (optional) - the last odometer reading the user entered, or
+  a higher one from logged service
 
 **Maintenance item** (belongs to a vehicle)
 
@@ -98,10 +100,13 @@ weeks from that first reminder until the service is logged. Logging the service
 resets the clock and cancels the repeats.
 
 **Mileage is opportunistic.** The app cannot read an odometer, so mileage is
-captured only when the user logs work. At that moment the new reading is checked
-against every maintenance item for that vehicle, and anything overdue by mileage
-is surfaced immediately. There is no background mileage tracking and no
-projection of future mileage.
+captured when the user logs work, enters a current mileage on the vehicle form,
+or taps Update beside the last recorded mileage on the vehicle detail screen. A
+new reading is checked against every maintenance item for that vehicle, and
+anything overdue by mileage is surfaced immediately. A reading lower than one
+recorded before is allowed, to correct a mistake, but only after the user
+accepts a warning. Logged service only ever raises the recorded mileage. There
+is no background mileage tracking and no projection of future mileage.
 
 **Seeding a new item.** Creating a maintenance item asks for last done date and
 mileage so the clocks start correctly. It can be skipped, in which case the
