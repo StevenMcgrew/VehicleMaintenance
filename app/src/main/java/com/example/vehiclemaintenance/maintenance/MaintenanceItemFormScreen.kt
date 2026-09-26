@@ -3,21 +3,22 @@ package com.example.vehiclemaintenance.maintenance
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.input.TextFieldLineLimits
-import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -31,13 +32,15 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldLabelPosition
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
@@ -49,23 +52,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vehiclemaintenance.R
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
-import kotlinx.coroutines.flow.drop
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -243,66 +249,23 @@ fun MaintenanceItemFormContent(
                 TextButton(onClick = onCancel) { Text(stringResource(R.string.back)) }
             }
 
-            else -> Column(
+            else -> ItemFormTable(
+                fields = uiState.fields,
+                errors = uiState.errors,
+                onNameChange = onNameChange,
+                onMileageIntervalChange = onMileageIntervalChange,
+                onRecurrenceValueChange = onRecurrenceValueChange,
+                onRecurrenceUnitChange = onRecurrenceUnitChange,
+                onReminderValueChange = onReminderValueChange,
+                onReminderUnitChange = onReminderUnitChange,
+                onLastDoneDateChange = onLastDoneDateChange,
+                onLastDoneMileageChange = onLastDoneMileageChange,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                ItemTextField(
-                    value = uiState.fields.name,
-                    onValueChange = onNameChange,
-                    label = stringResource(R.string.item_name),
-                    placeholder = stringResource(R.string.item_name_placeholder),
-                    error = uiState.errors.name?.message(),
-                )
-                ItemTextField(
-                    value = uiState.fields.mileageInterval,
-                    onValueChange = onMileageIntervalChange,
-                    label = stringResource(R.string.item_mileage_interval),
-                    placeholder = stringResource(R.string.item_mileage_interval_placeholder),
-                    error = uiState.errors.mileageInterval?.message(),
-                    numeric = true,
-                )
-                IntervalFields(
-                    label = stringResource(R.string.item_recurrence_value),
-                    placeholder = stringResource(R.string.item_recurrence_value_placeholder),
-                    value = uiState.fields.recurrenceValue,
-                    onValueChange = onRecurrenceValueChange,
-                    unit = uiState.fields.recurrenceUnit,
-                    onUnitChange = onRecurrenceUnitChange,
-                    valueError = uiState.errors.recurrenceValue?.message(),
-                    unitError = uiState.errors.recurrenceUnit?.message(),
-                    allowNoUnit = true,
-                )
-                IntervalFields(
-                    label = stringResource(R.string.item_reminder_value),
-                    placeholder = stringResource(R.string.item_reminder_value_placeholder),
-                    value = uiState.fields.reminderValue,
-                    onValueChange = onReminderValueChange,
-                    unit = uiState.fields.reminderUnit,
-                    onUnitChange = onReminderUnitChange,
-                    valueError = uiState.errors.reminderValue?.message(),
-                    unitError = uiState.errors.reminderUnit?.message(),
-                    allowNoUnit = false,
-                )
-                LastDoneDateField(
-                    date = uiState.fields.lastDoneDate,
-                    onDateChange = onLastDoneDateChange,
-                    error = uiState.errors.lastDoneDate?.message(),
-                )
-                ItemTextField(
-                    value = uiState.fields.lastDoneMileage,
-                    onValueChange = onLastDoneMileageChange,
-                    label = stringResource(R.string.item_last_done_mileage),
-                    placeholder = stringResource(R.string.item_last_done_mileage_placeholder),
-                    error = uiState.errors.lastDoneMileage?.message(),
-                    numeric = true,
-                    imeAction = ImeAction.Done,
-                )
-            }
+            )
         }
     }
 
@@ -319,23 +282,210 @@ fun MaintenanceItemFormContent(
 }
 
 @Composable
+private fun ItemFormTable(
+    fields: MaintenanceItemFormFields,
+    errors: MaintenanceItemFormErrors,
+    onNameChange: (String) -> Unit,
+    onMileageIntervalChange: (String) -> Unit,
+    onRecurrenceValueChange: (String) -> Unit,
+    onRecurrenceUnitChange: (IntervalUnit?) -> Unit,
+    onReminderValueChange: (String) -> Unit,
+    onReminderUnitChange: (IntervalUnit?) -> Unit,
+    onLastDoneDateChange: (LocalDate?) -> Unit,
+    onLastDoneMileageChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val service = stringResource(R.string.item_name)
+    val dueEvery = stringResource(R.string.item_due_every)
+    val remindEvery = stringResource(R.string.item_reminder_value)
+    val lastDoneDate = stringResource(R.string.item_last_done_date)
+    val lastDoneMileage = stringResource(R.string.item_last_done_mileage)
+    val miles = stringResource(R.string.item_miles)
+    var choosingDate by remember { mutableStateOf(false) }
+
+    FormTable(
+        modifier = modifier,
+        labels = {
+            listOf(service, dueEvery, dueEvery, remindEvery, lastDoneDate, lastDoneMileage)
+                .forEach { CellText(it) }
+        },
+        inputs = {
+            ItemTextField(
+                value = fields.name,
+                onValueChange = onNameChange,
+                description = service,
+                error = errors.name?.message(),
+                placeholder = stringResource(R.string.item_name_placeholder),
+                numeric = false,
+                modifier = Modifier.layoutId(SpansExtraColumn),
+            )
+            ItemTextField(
+                value = fields.mileageInterval,
+                onValueChange = onMileageIntervalChange,
+                description = dueEvery,
+                error = errors.mileageInterval?.message(),
+            )
+            ItemTextField(
+                value = fields.recurrenceValue,
+                onValueChange = onRecurrenceValueChange,
+                description = dueEvery,
+                error = errors.recurrenceValue?.message(),
+            )
+            ItemTextField(
+                value = fields.reminderValue,
+                onValueChange = onReminderValueChange,
+                description = remindEvery,
+                error = errors.reminderValue?.message(),
+            )
+            ChooseDateButton(
+                onClick = { choosingDate = true },
+                error = errors.lastDoneDate?.message(),
+            )
+            ItemTextField(
+                value = fields.lastDoneMileage,
+                onValueChange = onLastDoneMileageChange,
+                description = lastDoneMileage,
+                error = errors.lastDoneMileage?.message(),
+                imeAction = ImeAction.Done,
+            )
+        },
+        extras = {
+            Spacer(Modifier)
+            CellText(miles)
+            UnitDropdown(
+                unit = fields.recurrenceUnit,
+                onUnitChange = onRecurrenceUnitChange,
+                description = stringResource(R.string.item_unit_description, dueEvery),
+                error = errors.recurrenceUnit?.message(),
+                allowNoUnit = true,
+            )
+            UnitDropdown(
+                unit = fields.reminderUnit,
+                onUnitChange = onReminderUnitChange,
+                description = stringResource(R.string.item_unit_description, remindEvery),
+                error = errors.reminderUnit?.message(),
+                allowNoUnit = false,
+            )
+            CellText(
+                fields.lastDoneDate?.let { formatShortDate(it) }
+                    ?: stringResource(R.string.item_date_not_set),
+            )
+            CellText(miles)
+        },
+    )
+
+    if (choosingDate) {
+        LastDoneDatePicker(
+            date = fields.lastDoneDate,
+            onDateChange = onLastDoneDateChange,
+            onDismiss = { choosingDate = false },
+        )
+    }
+}
+
+/** Marks the input whose cell also takes over the row's third column. */
+private object SpansExtraColumn
+
+/**
+ * A borderless label, input, extra grid. Each slot emits exactly one child per row, in row
+ * order, so the columns line up without a table widget.
+ */
+@Composable
+private fun FormTable(
+    labels: @Composable () -> Unit,
+    inputs: @Composable () -> Unit,
+    extras: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Layout(
+        contents = listOf(labels, inputs, extras),
+        modifier = modifier,
+    ) { (labelCells, inputCells, extraCells), constraints ->
+        val width = constraints.maxWidth
+        val columnGap = TABLE_COLUMN_GAP.roundToPx()
+        val rowGap = TABLE_ROW_GAP.roundToPx()
+
+        val labelPlaceables = labelCells.map {
+            it.measure(Constraints(maxWidth = (width * MAX_LABEL_WIDTH_FRACTION).toInt()))
+        }
+        val extraPlaceables = extraCells.map {
+            it.measure(Constraints(maxWidth = (width * MAX_EXTRA_WIDTH_FRACTION).toInt()))
+        }
+        val labelWidth = labelPlaceables.maxOf { it.width }
+        val extraWidth = extraPlaceables.maxOf { it.width }
+        val inputWidth = (width - labelWidth - extraWidth - 2 * columnGap).coerceAtLeast(0)
+        val inputPlaceables = inputCells.map {
+            val spans = it.layoutId == SpansExtraColumn
+            it.measure(
+                Constraints(maxWidth = if (spans) inputWidth + columnGap + extraWidth else inputWidth),
+            )
+        }
+
+        val rowHeights = labelPlaceables.indices.map { row ->
+            maxOf(
+                labelPlaceables[row].height,
+                inputPlaceables[row].height,
+                extraPlaceables[row].height,
+            )
+        }
+        val height = rowHeights.sum() + rowGap * (rowHeights.size - 1).coerceAtLeast(0)
+
+        layout(width, constraints.constrainHeight(height)) {
+            var y = 0
+            rowHeights.forEachIndexed { row, rowHeight ->
+                labelPlaceables[row].place(0, y)
+                inputPlaceables[row].place(labelWidth + columnGap, y)
+                extraPlaceables[row].place(width - extraWidth, y)
+                y += rowHeight + rowGap
+            }
+        }
+    }
+}
+
+private val TABLE_COLUMN_GAP = 12.dp
+private val TABLE_ROW_GAP = 12.dp
+private const val MAX_LABEL_WIDTH_FRACTION = 0.3f
+private const val MAX_EXTRA_WIDTH_FRACTION = 0.4f
+private val UNIT_FIELD_WIDTH = 132.dp
+
+/** Cells are top aligned, so single line content is centered against a text field's height. */
+@Composable
+private fun Cell(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Box(
+        modifier = modifier.heightIn(min = OutlinedTextFieldDefaults.MinHeight),
+        contentAlignment = Alignment.CenterStart,
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun CellText(text: String, modifier: Modifier = Modifier) {
+    Cell(modifier) {
+        Text(text, style = MaterialTheme.typography.bodyLarge)
+    }
+}
+
+@Composable
 private fun ItemTextField(
     value: String,
     onValueChange: (String) -> Unit,
-    label: String,
-    placeholder: String,
+    description: String,
     error: String?,
     modifier: Modifier = Modifier,
-    numeric: Boolean = false,
+    placeholder: String? = null,
+    numeric: Boolean = true,
     imeAction: ImeAction = ImeAction.Next,
 ) {
     OutlinedTextField(
-        state = rememberEditedFieldState(value, onValueChange),
-        labelPosition = MINIMIZED_LABEL,
-        label = { Text(label) },
-        placeholder = { Text(placeholder) },
+        value = value,
+        onValueChange = onValueChange,
+        placeholder = placeholder?.let { { Text(it) } },
         isError = error != null,
-        lineLimits = TextFieldLineLimits.SingleLine,
+        singleLine = true,
         keyboardOptions = KeyboardOptions(
             keyboardType = if (numeric) KeyboardType.Number else KeyboardType.Text,
             imeAction = imeAction,
@@ -343,178 +493,132 @@ private fun ItemTextField(
         supportingText = error?.let { { Text(it) } },
         modifier = modifier
             .fillMaxWidth()
-            .then(if (error != null) Modifier.semantics { error(error) } else Modifier),
+            .describedAs(description, error),
     )
 }
 
-/** Pinning a label into the outline needs the [TextFieldState] overload, so bridge to it. */
-@Composable
-private fun rememberEditedFieldState(
-    value: String,
-    onValueChange: (String) -> Unit,
-): TextFieldState {
-    val state = rememberTextFieldState(value)
-    val currentOnValueChange by rememberUpdatedState(onValueChange)
-    LaunchedEffect(state) {
-        snapshotFlow { state.text.toString() }.drop(1).collect(currentOnValueChange)
-    }
-    return state
+/** The row label sits in its own cell, so the input carries it for screen readers. */
+private fun Modifier.describedAs(description: String, error: String?) = semantics {
+    contentDescription = description
+    if (error != null) error(error)
 }
-
-@Composable
-private fun rememberShownFieldState(shown: String): TextFieldState {
-    val state = rememberTextFieldState(shown)
-    LaunchedEffect(shown) { state.setTextAndPlaceCursorAtEnd(shown) }
-    return state
-}
-
-private val MINIMIZED_LABEL = TextFieldLabelPosition.Attached(alwaysMinimize = true)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun IntervalFields(
-    label: String,
-    placeholder: String,
-    value: String,
-    onValueChange: (String) -> Unit,
+private fun UnitDropdown(
     unit: IntervalUnit?,
     onUnitChange: (IntervalUnit?) -> Unit,
-    valueError: String?,
-    unitError: String?,
+    description: String,
+    error: String?,
     allowNoUnit: Boolean,
     modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val unitFieldLabel = stringResource(R.string.item_unit)
-    val unitPlaceholder = stringResource(R.string.item_unit_placeholder)
-    val selected = unit?.let { unitLabel(it) }.orEmpty()
+    val options = if (allowNoUnit) listOf(null) + IntervalUnit.entries else IntervalUnit.entries
 
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+        modifier = modifier,
     ) {
         OutlinedTextField(
-            state = rememberEditedFieldState(value, onValueChange),
-            labelPosition = MINIMIZED_LABEL,
-            label = { Text(label) },
-            placeholder = { Text(placeholder) },
-            isError = valueError != null,
-            lineLimits = TextFieldLineLimits.SingleLine,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Next,
-            ),
-            supportingText = valueError?.let { { Text(it) } },
+            value = unitText(unit),
+            onValueChange = {},
+            readOnly = true,
+            singleLine = true,
+            isError = error != null,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            supportingText = error?.let { { Text(it) } },
             modifier = Modifier
-                .fillMaxWidth()
-                .then(
-                    if (valueError != null) Modifier.semantics { error(valueError) } else Modifier,
-                ),
+                .menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable)
+                .width(UNIT_FIELD_WIDTH)
+                .describedAs(description, error),
         )
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = it },
-        ) {
-            OutlinedTextField(
-                state = rememberShownFieldState(selected),
-                readOnly = true,
-                labelPosition = MINIMIZED_LABEL,
-                label = { Text(unitFieldLabel) },
-                placeholder = { Text(unitPlaceholder) },
-                isError = unitError != null,
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                supportingText = unitError?.let { { Text(it) } },
-                modifier = Modifier
-                    .menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable)
-                    .fillMaxWidth()
-                    .then(
-                        if (unitError != null) Modifier.semantics { error(unitError) } else Modifier,
-                    ),
-            )
-            ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                if (allowNoUnit) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.item_date_not_set)) },
-                        onClick = {
-                            onUnitChange(null)
-                            expanded = false
-                        },
-                    )
-                }
-                IntervalUnit.entries.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(unitLabel(option)) },
-                        onClick = {
-                            onUnitChange(option)
-                            expanded = false
-                        },
-                    )
-                }
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(unitText(option)) },
+                    onClick = {
+                        onUnitChange(option)
+                        expanded = false
+                    },
+                )
             }
+        }
+    }
+}
+
+@Composable
+private fun unitText(unit: IntervalUnit?): String =
+    unit?.let { unitLabel(it) } ?: stringResource(R.string.item_date_not_set)
+
+@Composable
+private fun ChooseDateButton(
+    onClick: () -> Unit,
+    error: String?,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier) {
+        Cell {
+            OutlinedButton(
+                onClick = onClick,
+                modifier = if (error != null) Modifier.semantics { error(error) } else Modifier,
+            ) {
+                Text(stringResource(R.string.item_choose_date))
+            }
+        }
+        if (error != null) {
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp),
+            )
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun LastDoneDateField(
+private fun LastDoneDatePicker(
     date: LocalDate?,
     onDateChange: (LocalDate?) -> Unit,
-    error: String?,
-    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit,
 ) {
-    var showPicker by remember { mutableStateOf(false) }
-    val label = stringResource(R.string.item_last_done_date)
-    val notSet = stringResource(R.string.item_date_not_set)
-    val shown = date?.toString().orEmpty()
-
-    Column(modifier = modifier.fillMaxWidth()) {
-        OutlinedTextField(
-            state = rememberShownFieldState(shown),
-            readOnly = true,
-            labelPosition = MINIMIZED_LABEL,
-            label = { Text(label) },
-            placeholder = { Text(notSet) },
-            isError = error != null,
-            supportingText = error?.let { { Text(it) } },
-            modifier = Modifier
-                .fillMaxWidth()
-                .then(if (error != null) Modifier.semantics { error(error) } else Modifier),
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextButton(onClick = { showPicker = true }) { Text(label) }
-            if (date != null) {
-                TextButton(onClick = { onDateChange(null) }) {
-                    Text(stringResource(R.string.item_clear_date))
-                }
+    val state = rememberDatePickerState(
+        initialSelectedDateMillis = date?.toEpochDay()?.times(MILLIS_PER_DAY),
+    )
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onDateChange(state.selectedDateMillis?.toLocalDate())
+                    onDismiss()
+                },
+            ) {
+                Text(stringResource(R.string.item_confirm_date))
             }
-        }
-    }
-
-    if (showPicker) {
-        val state = rememberDatePickerState(
-            initialSelectedDateMillis = date?.toEpochDay()?.times(MILLIS_PER_DAY),
-        )
-        DatePickerDialog(
-            onDismissRequest = { showPicker = false },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onDateChange(state.selectedDateMillis?.toLocalDate())
-                        showPicker = false
-                    },
-                ) {
-                    Text(stringResource(R.string.item_confirm_date))
+        },
+        dismissButton = {
+            Row {
+                if (date != null) {
+                    TextButton(
+                        onClick = {
+                            onDateChange(null)
+                            onDismiss()
+                        },
+                    ) {
+                        Text(stringResource(R.string.item_clear_date))
+                    }
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { showPicker = false }) {
+                TextButton(onClick = onDismiss) {
                     Text(stringResource(R.string.cancel))
                 }
-            },
-        ) {
-            DatePicker(state = state)
-        }
+            }
+        },
+    ) {
+        DatePicker(state = state)
     }
 }
 
@@ -530,13 +634,13 @@ private fun ItemFieldError.message(): String = stringResource(
         ItemFieldError.REQUIRED -> R.string.error_required
         ItemFieldError.NOT_A_POSITIVE_NUMBER -> R.string.error_positive_number
         ItemFieldError.NOT_A_NON_NEGATIVE_NUMBER -> R.string.error_non_negative_number
-        ItemFieldError.VALUE_REQUIRED -> R.string.error_value_required
         ItemFieldError.UNIT_REQUIRED -> R.string.error_unit_required
         ItemFieldError.DATE_IN_FUTURE -> R.string.error_date_in_future
     },
 )
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, widthDp = 360)
+@Preview(showBackground = true, widthDp = 360, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun MaintenanceItemFormPreview() {
     VehicleMaintenanceTheme {
@@ -578,8 +682,10 @@ private fun MaintenanceItemFormErrorsPreview() {
         MaintenanceItemFormContent(
             uiState = MaintenanceItemFormUiState(
                 isLoading = false,
+                fields = MaintenanceItemFormFields(recurrenceValue = "6", recurrenceUnit = null),
                 errors = MaintenanceItemFormErrors(
                     name = ItemFieldError.REQUIRED,
+                    recurrenceUnit = ItemFieldError.UNIT_REQUIRED,
                     reminderValue = ItemFieldError.REQUIRED,
                 ),
             ),

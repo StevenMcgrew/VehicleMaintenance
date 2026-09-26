@@ -6,7 +6,7 @@ data class MaintenanceItemFormFields(
     val name: String = "",
     val mileageInterval: String = "",
     val recurrenceValue: String = "",
-    val recurrenceUnit: IntervalUnit? = null,
+    val recurrenceUnit: IntervalUnit? = IntervalUnit.MONTHS,
     val reminderValue: String = "",
     val reminderUnit: IntervalUnit? = IntervalUnit.MONTHS,
     val lastDoneDate: LocalDate? = null,
@@ -17,7 +17,6 @@ enum class ItemFieldError {
     REQUIRED,
     NOT_A_POSITIVE_NUMBER,
     NOT_A_NON_NEGATIVE_NUMBER,
-    VALUE_REQUIRED,
     UNIT_REQUIRED,
     DATE_IN_FUTURE,
 }
@@ -63,17 +62,13 @@ object MaintenanceItemFormValidator {
         val reminderValue = fields.reminderValue.trim()
         val lastDoneMileage = fields.lastDoneMileage.trim()
 
-        // Recurrence is all or nothing: both parts empty means the user does not want one.
-        val wantsRecurrence = recurrenceValue.isNotEmpty() || fields.recurrenceUnit != null
+        // The unit always shows a choice, so an empty value alone means the user wants no recurrence.
+        val wantsRecurrence = recurrenceValue.isNotEmpty()
 
         val errors = MaintenanceItemFormErrors(
             name = ItemFieldError.REQUIRED.takeIf { name.isEmpty() },
             mileageInterval = positiveError(mileage, required = false),
-            recurrenceValue = when {
-                !wantsRecurrence -> null
-                recurrenceValue.isEmpty() -> ItemFieldError.VALUE_REQUIRED
-                else -> positiveError(recurrenceValue, required = true)
-            },
+            recurrenceValue = positiveError(recurrenceValue, required = false),
             recurrenceUnit = ItemFieldError.UNIT_REQUIRED
                 .takeIf { wantsRecurrence && fields.recurrenceUnit == null },
             reminderValue = positiveError(reminderValue, required = true),

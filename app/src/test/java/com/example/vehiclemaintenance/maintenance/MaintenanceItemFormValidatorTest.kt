@@ -110,11 +110,10 @@ class MaintenanceItemFormValidatorTest {
     }
 
     @Test
-    fun `a recurrence unit without a value is rejected`() {
-        val errors = errorsOf(validFields.copy(recurrenceValue = ""))
+    fun `an empty recurrence value with a unit is accepted as absent`() {
+        val draft = draftOf(validFields.copy(recurrenceValue = "", recurrenceUnit = IntervalUnit.MONTHS))
 
-        assertEquals(ItemFieldError.VALUE_REQUIRED, errors.recurrenceValue)
-        assertNull(errors.recurrenceUnit)
+        assertNull(draft.recurrence)
     }
 
     @Test
