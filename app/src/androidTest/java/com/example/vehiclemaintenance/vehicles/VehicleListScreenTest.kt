@@ -100,12 +100,12 @@ class VehicleListScreenTest {
     }
 
     @Test
-    fun exportAndImportIconOpensBackup() {
+    fun backupDataButtonOpensBackup() {
         var backupOpened = 0
         setContent(onOpenBackup = { backupOpened++ })
         waitForText(R.string.vehicles_empty_title)
 
-        composeRule.onNodeWithContentDescription(string(R.string.backup_action)).performClick()
+        composeRule.onNodeWithText(string(R.string.backup_action)).performClick()
 
         assertEquals(1, backupOpened)
     }

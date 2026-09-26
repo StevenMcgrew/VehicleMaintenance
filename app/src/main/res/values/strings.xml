@@ -70,7 +70,7 @@
     <string name="item_last_done_mileage_placeholder">42000</string>
 
     <string name="log_service_title">Log service</string>
-    <string name="log_repair">Log repair</string>
+    <string name="log_repair">Log additional repairs</string>
     <string name="log_repair_title">Log repair</string>
     <string name="log_description">What was done</string>
     <string name="log_date">Date</string>
@@ -154,7 +154,7 @@
     <string name="interval_short_weeks" tools:ignore="PluralsCandidate">%1$d wk</string>
     <string name="interval_short_months" tools:ignore="PluralsCandidate">%1$d mo</string>
     <string name="interval_short_years" tools:ignore="PluralsCandidate">%1$d yr</string>
-    <string name="backup_action">Export and import</string>
+    <string name="backup_action">Backup data</string>
     <string name="backup_title">Export and import</string>
     <string name="backup_export_explanation">Export writes everything tracked in this app to a file you choose. Keep it somewhere safe; it is the only copy outside this device.</string>
     <string name="backup_export">Export to a file</string>

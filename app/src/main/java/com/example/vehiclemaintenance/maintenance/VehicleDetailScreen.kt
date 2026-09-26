@@ -1,22 +1,17 @@
 package com.example.vehiclemaintenance.maintenance
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -24,8 +19,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,6 +49,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vehiclemaintenance.R
+import com.example.vehiclemaintenance.ui.ExtraSmallButton
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 import com.example.vehiclemaintenance.vehicles.Vehicle
 import java.time.LocalDate
@@ -143,15 +137,6 @@ fun VehicleDetailContent(
                 },
             )
         },
-        floatingActionButton = {
-            if (!uiState.loadFailed && !uiState.vehicleNotFound && vehicle != null) {
-                ExtendedFloatingActionButton(onClick = onAddItem) {
-                    Icon(Icons.Filled.Add, contentDescription = null)
-                    Spacer(Modifier.width(12.dp))
-                    Text(stringResource(R.string.add_maintenance_item))
-                }
-            }
-        },
     ) { innerPadding ->
         when {
             uiState.isLoading -> CenteredColumn(Modifier.padding(innerPadding)) {
@@ -176,9 +161,10 @@ fun VehicleDetailContent(
 
             else -> Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
                 VehicleActionsRow(
+                    onAddItem = onAddItem,
                     onViewHistory = onViewHistory,
                     onLogRepair = onLogRepair,
-                            )
+                )
                 HorizontalDivider()
                 if (uiState.rows.isEmpty()) {
                     CenteredColumn {
@@ -269,38 +255,28 @@ private fun NewlyOverdueDialog(
     )
 }
 
-/** Scrolls sideways so a large font scale cannot clip an action off the screen. */
+/** Wraps onto a second line so a large font scale cannot clip an action off the screen. */
 @Composable
 private fun VehicleActionsRow(
+    onAddItem: () -> Unit,
     onViewHistory: () -> Unit,
     onLogRepair: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
+    FlowRow(
         modifier = modifier
             .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
             .padding(horizontal = HORIZONTAL_PADDING, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        ExtraSmallButton(
+            text = stringResource(R.string.add_maintenance_item),
+            onClick = onAddItem,
+            icon = Icons.Filled.Add,
+        )
         ExtraSmallButton(stringResource(R.string.service_history), onViewHistory)
         ExtraSmallButton(stringResource(R.string.log_repair), onLogRepair)
-    }
-}
-
-/**
- * The Material 3 Expressive extra-small button (32dp, fully round), built by hand because the
- * material3 version on the Compose BOM does not ship the Expressive size tokens yet. The button
- * still pads its touch target out to the 48dp minimum.
- */
-@Composable
-private fun ExtraSmallButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    FilledTonalButton(
-        onClick = onClick,
-        modifier = modifier.height(32.dp),
-        contentPadding = PaddingValues(horizontal = 12.dp),
-    ) {
-        Text(text = text, style = MaterialTheme.typography.labelLarge, maxLines = 1)
     }
 }
 
