@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vehiclemaintenance.R
 import com.example.vehiclemaintenance.ui.ExtraSmallButton
+import com.example.vehiclemaintenance.ui.theme.LocalStatusColors
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 import com.example.vehiclemaintenance.vehicles.Vehicle
 import java.time.LocalDate
@@ -503,10 +504,10 @@ private fun RowScope.StatusCell(status: MaintenanceStatus) {
         modifier = Modifier.weight(STATUS_WEIGHT),
         style = MaterialTheme.typography.bodyMedium,
         color = when (status) {
-            MaintenanceStatus.OVERDUE -> MaterialTheme.colorScheme.error
-            MaintenanceStatus.DUE -> MaterialTheme.colorScheme.tertiary
-            MaintenanceStatus.OK, MaintenanceStatus.NONE ->
-                MaterialTheme.colorScheme.onSurfaceVariant
+            MaintenanceStatus.OVERDUE -> LocalStatusColors.current.overdue
+            MaintenanceStatus.DUE -> LocalStatusColors.current.due
+            MaintenanceStatus.OK -> LocalStatusColors.current.ok
+            MaintenanceStatus.NONE -> MaterialTheme.colorScheme.onSurfaceVariant
         },
         textAlign = TextAlign.End,
         maxLines = 1,
