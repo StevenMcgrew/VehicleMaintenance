@@ -48,6 +48,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vehiclemaintenance.R
 import com.example.vehiclemaintenance.maintenance.lastRecordedMileageText
 import com.example.vehiclemaintenance.ui.ExtraSmallButton
+import com.example.vehiclemaintenance.ui.brandButtonColors
+import com.example.vehiclemaintenance.ui.brandIconButtonColors
+import com.example.vehiclemaintenance.ui.brandTextButtonColors
+import com.example.vehiclemaintenance.ui.theme.LocalBrandColors
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 
 @Composable
@@ -186,7 +190,9 @@ private fun VehicleListBody(
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
             )
-            Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+            Button(onClick = onRetry, colors = brandButtonColors()) {
+                Text(stringResource(R.string.retry))
+            }
         }
 
         uiState.vehicles.isEmpty() -> CenteredColumn(modifier) {
@@ -239,6 +245,7 @@ private fun VehicleRow(
                     vehicle.model,
                     vehicle.engine,
                 ),
+                color = LocalBrandColors.current.primary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -252,10 +259,10 @@ private fun VehicleRow(
         },
         trailingContent = {
             Row {
-                IconButton(onClick = onEdit) {
+                IconButton(onClick = onEdit, colors = brandIconButtonColors()) {
                     Icon(Icons.Filled.Edit, contentDescription = editLabel)
                 }
-                IconButton(onClick = onDelete) {
+                IconButton(onClick = onDelete, colors = brandIconButtonColors()) {
                     Icon(Icons.Filled.Delete, contentDescription = deleteLabel)
                 }
             }
@@ -271,13 +278,18 @@ private fun DeleteVehicleDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = LocalBrandColors.current.popupContainer,
         title = { Text(stringResource(R.string.delete_vehicle_title, vehicleLabel)) },
         text = { Text(stringResource(R.string.delete_vehicle_message)) },
         confirmButton = {
-            TextButton(onClick = onConfirm) { Text(stringResource(R.string.delete)) }
+            TextButton(onClick = onConfirm, colors = brandTextButtonColors()) {
+                Text(stringResource(R.string.delete))
+            }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+            TextButton(onClick = onDismiss, colors = brandTextButtonColors()) {
+                Text(stringResource(R.string.cancel))
+            }
         },
     )
 }

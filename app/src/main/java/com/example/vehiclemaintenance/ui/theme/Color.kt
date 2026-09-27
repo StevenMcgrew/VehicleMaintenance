@@ -2,11 +2,16 @@ package com.example.vehiclemaintenance.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val PrimaryColor_RoundedButton = Color(0xFF0062CC)
+val PrimaryColorLightMode = Color(0xFF007AFF)
 
-val PrimaryColor_TextButtonAndIconButton = Color(0xFF33A2FF)
+val PrimaryColorDarkMode = Color(0xFF0A84FF)
 
-// Tonal palettes on the hue of PrimaryColor_RoundedButton. The number is the Material 3 tone:
+// Background for dialogs, bottom sheets, and menus: a white and a neutral near-black.
+val PopupColorLightMode = Color.White
+
+val PopupColorDarkMode = Color(0xFF1C1C1E)
+
+// Material tonal palettes on a blue hue. The number is the Material 3 tone:
 // 10 is darkest, 90 is lightest.
 val Blue10 = Color(0xFF001A40)
 val Blue20 = Color(0xFF012F67)

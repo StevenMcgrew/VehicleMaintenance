@@ -108,6 +108,7 @@ fun VehicleMaintenanceTheme(
 
     CompositionLocalProvider(
         LocalStatusColors provides if (darkTheme) DarkStatusColors else LightStatusColors,
+        LocalBrandColors provides if (darkTheme) DarkBrandColors else LightBrandColors,
     ) {
         MaterialTheme(
             colorScheme = colorScheme,

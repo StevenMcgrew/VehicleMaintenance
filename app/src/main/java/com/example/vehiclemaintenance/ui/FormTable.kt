@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +33,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.dp
 import com.example.vehiclemaintenance.R
+import com.example.vehiclemaintenance.ui.theme.LocalBrandColors
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -165,6 +167,8 @@ fun ChooseDateButton(
             OutlinedButton(
                 onClick = onClick,
                 modifier = if (error != null) Modifier.semantics { error(error) } else Modifier,
+                colors = brandOutlinedButtonColors(),
+                border = brandOutlinedButtonBorder(enabled = true),
             ) {
                 Text(stringResource(R.string.choose_date))
             }
@@ -192,14 +196,18 @@ fun FormDatePickerDialog(
     val state = rememberDatePickerState(
         initialSelectedDateMillis = date?.toEpochDay()?.times(MILLIS_PER_DAY),
     )
+    // The dialog and the calendar inside it each draw a background, so both take the popup color.
+    val colors = DatePickerDefaults.colors(containerColor = LocalBrandColors.current.popupContainer)
     DatePickerDialog(
         onDismissRequest = onDismiss,
+        colors = colors,
         confirmButton = {
             TextButton(
                 onClick = {
                     onDateChange(state.selectedDateMillis?.toLocalDate())
                     onDismiss()
                 },
+                colors = brandTextButtonColors(),
             ) {
                 Text(stringResource(R.string.ok))
             }
@@ -212,17 +220,18 @@ fun FormDatePickerDialog(
                             onClear()
                             onDismiss()
                         },
+                        colors = brandTextButtonColors(),
                     ) {
                         Text(stringResource(R.string.clear_date))
                     }
                 }
-                TextButton(onClick = onDismiss) {
+                TextButton(onClick = onDismiss, colors = brandTextButtonColors()) {
                     Text(stringResource(R.string.cancel))
                 }
             }
         },
     ) {
-        DatePicker(state = state)
+        DatePicker(state = state, colors = colors)
     }
 }
 

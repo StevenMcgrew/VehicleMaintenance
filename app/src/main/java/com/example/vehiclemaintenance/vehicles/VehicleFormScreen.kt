@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vehiclemaintenance.R
+import com.example.vehiclemaintenance.ui.brandIconButtonColors
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 
 @Composable
@@ -111,7 +112,7 @@ fun VehicleFormContent(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onCancel) {
+                    IconButton(onClick = onCancel, colors = brandIconButtonColors()) {
                         Icon(
                             Icons.Filled.Close,
                             contentDescription = stringResource(R.string.cancel),
@@ -124,6 +125,7 @@ fun VehicleFormContent(
                         enabled = !uiState.isLoading &&
                             !uiState.isSaving &&
                             !uiState.vehicleNotFound,
+                        colors = brandIconButtonColors(),
                     ) {
                         Icon(
                             painterResource(R.drawable.ic_save),

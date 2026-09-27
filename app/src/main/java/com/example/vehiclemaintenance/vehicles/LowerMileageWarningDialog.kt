@@ -9,6 +9,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.vehiclemaintenance.R
 import com.example.vehiclemaintenance.maintenance.formatMileage
+import com.example.vehiclemaintenance.ui.brandTextButtonColors
+import com.example.vehiclemaintenance.ui.theme.LocalBrandColors
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 
 /** A reading waiting on the owner's OK because it is below one recorded before. */
@@ -23,6 +25,7 @@ fun LowerMileageWarningDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = LocalBrandColors.current.popupContainer,
         modifier = modifier,
         title = { Text(stringResource(R.string.lower_mileage_title)) },
         text = {
@@ -35,10 +38,14 @@ fun LowerMileageWarningDialog(
             )
         },
         confirmButton = {
-            TextButton(onClick = onConfirm) { Text(stringResource(R.string.ok)) }
+            TextButton(onClick = onConfirm, colors = brandTextButtonColors()) {
+                Text(stringResource(R.string.ok))
+            }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+            TextButton(onClick = onDismiss, colors = brandTextButtonColors()) {
+                Text(stringResource(R.string.cancel))
+            }
         },
     )
 }

@@ -37,6 +37,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vehiclemaintenance.R
 import com.example.vehiclemaintenance.data.MaintenanceStore
+import com.example.vehiclemaintenance.ui.brandButtonColors
+import com.example.vehiclemaintenance.ui.brandIconButtonColors
+import com.example.vehiclemaintenance.ui.brandOutlinedButtonBorder
+import com.example.vehiclemaintenance.ui.brandOutlinedButtonColors
+import com.example.vehiclemaintenance.ui.brandTextButtonColors
+import com.example.vehiclemaintenance.ui.theme.LocalBrandColors
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 
 @Composable
@@ -107,7 +113,7 @@ fun BackupContent(
             TopAppBar(
                 title = { Text(stringResource(R.string.backup_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = onBack, colors = brandIconButtonColors()) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back),
@@ -133,6 +139,7 @@ fun BackupContent(
                 onClick = onExport,
                 enabled = !uiState.isBusy,
                 modifier = Modifier.fillMaxWidth(),
+                colors = brandButtonColors(),
             ) {
                 Text(stringResource(R.string.backup_export))
             }
@@ -144,6 +151,8 @@ fun BackupContent(
                 onClick = onImport,
                 enabled = !uiState.isBusy,
                 modifier = Modifier.fillMaxWidth(),
+                colors = brandOutlinedButtonColors(),
+                border = brandOutlinedButtonBorder(enabled = !uiState.isBusy),
             ) {
                 Text(stringResource(R.string.backup_import))
             }
@@ -171,6 +180,7 @@ private fun ConfirmImportDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = LocalBrandColors.current.popupContainer,
         title = { Text(stringResource(R.string.import_confirm_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -179,12 +189,14 @@ private fun ConfirmImportDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onConfirm) {
+            TextButton(onClick = onConfirm, colors = brandTextButtonColors()) {
                 Text(stringResource(R.string.import_confirm_action))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+            TextButton(onClick = onDismiss, colors = brandTextButtonColors()) {
+                Text(stringResource(R.string.cancel))
+            }
         },
     )
 }

@@ -43,6 +43,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vehiclemaintenance.R
 import com.example.vehiclemaintenance.maintenance.formatMediumDate
 import com.example.vehiclemaintenance.maintenance.formatMileage
+import com.example.vehiclemaintenance.ui.brandIconButtonColors
+import com.example.vehiclemaintenance.ui.brandTextButtonColors
+import com.example.vehiclemaintenance.ui.theme.LocalBrandColors
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 import com.example.vehiclemaintenance.vehicles.Vehicle
 import java.time.LocalDate
@@ -87,7 +90,7 @@ fun ServiceHistoryContent(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = onBack, colors = brandIconButtonColors()) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back),
@@ -167,7 +170,10 @@ private fun CostSummary(history: ServiceHistory, modifier: Modifier = Modifier) 
                     ?: stringResource(R.string.value_not_set),
                 style = MaterialTheme.typography.bodyLarge,
                 labelAction = {
-                    IconButton(onClick = { showingAverageInfo = true }) {
+                    IconButton(
+                        onClick = { showingAverageInfo = true },
+                        colors = brandIconButtonColors(),
+                    ) {
                         Icon(
                             Icons.Outlined.Info,
                             contentDescription = stringResource(R.string.cost_average_info),
@@ -186,11 +192,14 @@ private fun CostSummary(history: ServiceHistory, modifier: Modifier = Modifier) 
 private fun AverageInfoDialog(onDismiss: () -> Unit, modifier: Modifier = Modifier) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = LocalBrandColors.current.popupContainer,
         modifier = modifier,
         title = { Text(stringResource(R.string.cost_average_per_year)) },
         text = { Text(stringResource(R.string.cost_average_info_body)) },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.ok)) }
+            TextButton(onClick = onDismiss, colors = brandTextButtonColors()) {
+                Text(stringResource(R.string.ok))
+            }
         },
     )
 }

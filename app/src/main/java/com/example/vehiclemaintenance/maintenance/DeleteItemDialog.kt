@@ -6,6 +6,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.example.vehiclemaintenance.R
+import com.example.vehiclemaintenance.ui.brandTextButtonColors
+import com.example.vehiclemaintenance.ui.theme.LocalBrandColors
 
 @Composable
 fun DeleteItemDialog(
@@ -15,13 +17,18 @@ fun DeleteItemDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = LocalBrandColors.current.popupContainer,
         title = { Text(stringResource(R.string.delete_item_title, itemName)) },
         text = { Text(stringResource(R.string.delete_item_message)) },
         confirmButton = {
-            TextButton(onClick = onConfirm) { Text(stringResource(R.string.delete)) }
+            TextButton(onClick = onConfirm, colors = brandTextButtonColors()) {
+                Text(stringResource(R.string.delete))
+            }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+            TextButton(onClick = onDismiss, colors = brandTextButtonColors()) {
+                Text(stringResource(R.string.cancel))
+            }
         },
     )
 }

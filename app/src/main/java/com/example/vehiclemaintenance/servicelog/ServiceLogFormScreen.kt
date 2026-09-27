@@ -43,6 +43,7 @@ import com.example.vehiclemaintenance.ui.FormCellText
 import com.example.vehiclemaintenance.ui.FormDatePickerDialog
 import com.example.vehiclemaintenance.ui.FormTable
 import com.example.vehiclemaintenance.ui.FormTextField
+import com.example.vehiclemaintenance.ui.brandIconButtonColors
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 import com.example.vehiclemaintenance.ui.spansExtraColumn
 import java.time.LocalDate
@@ -122,7 +123,7 @@ fun ServiceLogFormContent(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onCancel) {
+                    IconButton(onClick = onCancel, colors = brandIconButtonColors()) {
                         Icon(
                             Icons.Filled.Close,
                             contentDescription = stringResource(R.string.cancel),
@@ -130,7 +131,11 @@ fun ServiceLogFormContent(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onSave, enabled = actionsEnabled) {
+                    IconButton(
+                        onClick = onSave,
+                        enabled = actionsEnabled,
+                        colors = brandIconButtonColors(),
+                    ) {
                         Icon(
                             painterResource(R.drawable.ic_save),
                             contentDescription = stringResource(R.string.save),

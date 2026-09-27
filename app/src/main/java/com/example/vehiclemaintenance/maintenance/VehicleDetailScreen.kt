@@ -50,6 +50,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vehiclemaintenance.R
 import com.example.vehiclemaintenance.ui.ExtraSmallButton
+import com.example.vehiclemaintenance.ui.brandIconButtonColors
+import com.example.vehiclemaintenance.ui.brandTextButtonColors
+import com.example.vehiclemaintenance.ui.theme.LocalBrandColors
 import com.example.vehiclemaintenance.ui.theme.LocalStatusColors
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 import com.example.vehiclemaintenance.vehicles.Vehicle
@@ -146,7 +149,7 @@ fun VehicleDetailContent(
             TopAppBar(
                 title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = onBack, colors = brandIconButtonColors()) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back),
@@ -265,6 +268,7 @@ private fun NewlyOverdueDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = LocalBrandColors.current.popupContainer,
         modifier = modifier,
         title = {
             Text(
@@ -277,7 +281,9 @@ private fun NewlyOverdueDialog(
         },
         text = { Text(itemNames.joinToString(separator = "\n")) },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.ok)) }
+            TextButton(onClick = onDismiss, colors = brandTextButtonColors()) {
+                Text(stringResource(R.string.ok))
+            }
         },
     )
 }
@@ -322,6 +328,9 @@ private fun MaintenanceItemActionsSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(),
         modifier = modifier,
+        containerColor = LocalBrandColors.current.popupContainer,
+        // Material cannot infer text on a color outside its scheme, and would fall back to black.
+        contentColor = MaterialTheme.colorScheme.onSurface,
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
             Text(
@@ -395,6 +404,7 @@ private fun SheetAction(text: String, onClick: () -> Unit) {
             .heightIn(min = 48.dp)
             .padding(horizontal = HORIZONTAL_PADDING, vertical = 14.dp),
         style = MaterialTheme.typography.bodyLarge,
+        color = LocalBrandColors.current.primary,
     )
 }
 
@@ -464,6 +474,7 @@ private fun MaintenanceTableRow(
             Text(
                 text = row.item.name,
                 style = MaterialTheme.typography.bodyMedium,
+                color = LocalBrandColors.current.primary,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )

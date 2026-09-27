@@ -26,6 +26,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -58,8 +59,10 @@ import com.example.vehiclemaintenance.ui.FormCellText
 import com.example.vehiclemaintenance.ui.FormDatePickerDialog
 import com.example.vehiclemaintenance.ui.FormTable
 import com.example.vehiclemaintenance.ui.FormTextField
+import com.example.vehiclemaintenance.ui.brandIconButtonColors
 import com.example.vehiclemaintenance.ui.describedAs
 import com.example.vehiclemaintenance.ui.spansExtraColumn
+import com.example.vehiclemaintenance.ui.theme.LocalBrandColors
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 import java.time.LocalDate
 
@@ -189,7 +192,7 @@ fun MaintenanceItemFormContent(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onCancel) {
+                    IconButton(onClick = onCancel, colors = brandIconButtonColors()) {
                         Icon(
                             Icons.Filled.Close,
                             contentDescription = stringResource(R.string.cancel),
@@ -201,6 +204,7 @@ fun MaintenanceItemFormContent(
                         IconButton(
                             onClick = { confirmingDeletion = true },
                             enabled = actionsEnabled,
+                            colors = brandIconButtonColors(),
                         ) {
                             Icon(
                                 Icons.Filled.Delete,
@@ -208,7 +212,11 @@ fun MaintenanceItemFormContent(
                             )
                         }
                     }
-                    IconButton(onClick = onSave, enabled = actionsEnabled) {
+                    IconButton(
+                        onClick = onSave,
+                        enabled = actionsEnabled,
+                        colors = brandIconButtonColors(),
+                    ) {
                         Icon(
                             painterResource(R.drawable.ic_save),
                             contentDescription = stringResource(R.string.save),
@@ -401,13 +409,22 @@ private fun UnitDropdown(
             singleLine = true,
             isError = error != null,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            // Only the arrow takes the brand color; an error still turns it red.
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTrailingIconColor = LocalBrandColors.current.primary,
+                unfocusedTrailingIconColor = LocalBrandColors.current.primary,
+            ),
             supportingText = error?.let { { Text(it) } },
             modifier = Modifier
                 .menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable)
                 .width(UNIT_FIELD_WIDTH)
                 .describedAs(description, error),
         )
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            containerColor = LocalBrandColors.current.popupContainer,
+        ) {
             options.forEach { option ->
                 DropdownMenuItem(
                     text = { Text(unitText(option)) },

@@ -5,12 +5,16 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
 import com.example.vehiclemaintenance.MainActivity
 import com.example.vehiclemaintenance.VEHICLE_DEEP_LINK_PREFIX
 import com.example.vehiclemaintenance.R
+import com.example.vehiclemaintenance.ui.theme.PrimaryColorDarkMode
+import com.example.vehiclemaintenance.ui.theme.PrimaryColorLightMode
 
 private const val CHANNEL_ID = "service_reminders"
 
@@ -51,6 +55,7 @@ class ReminderNotifier(private val context: Context) {
         )
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setColor(accentColor())
             .setContentTitle(title)
             .setContentText(summary)
             // No big content title: the expanded form keeps the vehicle as its title, which is
@@ -66,6 +71,20 @@ class ReminderNotifier(private val context: Context) {
     }
 
     fun cancel(vehicleId: String) = manager.cancel(notificationId(vehicleId))
+
+    /**
+     * Picked when the reminder posts, from a worker with no Compose theme, so a notification
+     * already in the shade keeps its color if the device later switches light or dark mode.
+     */
+    private fun accentColor(): Int {
+        val nightMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        val primary = if (nightMode == Configuration.UI_MODE_NIGHT_YES) {
+            PrimaryColorDarkMode
+        } else {
+            PrimaryColorLightMode
+        }
+        return primary.toArgb()
+    }
 
     private fun openVehicleIntent(vehicleId: String): PendingIntent {
         val intent = Intent(

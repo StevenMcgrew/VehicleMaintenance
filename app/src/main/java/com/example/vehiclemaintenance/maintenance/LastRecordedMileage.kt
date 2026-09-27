@@ -21,6 +21,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.vehiclemaintenance.R
+import com.example.vehiclemaintenance.ui.brandTextButtonColors
+import com.example.vehiclemaintenance.ui.theme.LocalBrandColors
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 import com.example.vehiclemaintenance.vehicles.LowerMileageWarningDialog
 import com.example.vehiclemaintenance.vehicles.VehicleFieldError
@@ -52,7 +54,9 @@ fun LastRecordedMileageRow(
             text = lastRecordedMileageText(mileage),
             style = MaterialTheme.typography.bodyMedium,
         )
-        TextButton(onClick = onUpdate) { Text(stringResource(R.string.update_mileage)) }
+        TextButton(onClick = onUpdate, colors = brandTextButtonColors()) {
+            Text(stringResource(R.string.update_mileage))
+        }
     }
 }
 
@@ -82,6 +86,7 @@ fun UpdateMileageDialog(
     val error = editor.error?.let { mileageErrorText(it) }
     AlertDialog(
         onDismissRequest = actions.onCancel,
+        containerColor = LocalBrandColors.current.popupContainer,
         modifier = modifier,
         title = { Text(stringResource(R.string.update_mileage_title)) },
         text = {
@@ -103,12 +108,18 @@ fun UpdateMileageDialog(
             )
         },
         confirmButton = {
-            TextButton(onClick = actions.onSubmit, enabled = !editor.isSaving) {
+            TextButton(
+                onClick = actions.onSubmit,
+                enabled = !editor.isSaving,
+                colors = brandTextButtonColors(),
+            ) {
                 Text(stringResource(R.string.save))
             }
         },
         dismissButton = {
-            TextButton(onClick = actions.onCancel) { Text(stringResource(R.string.cancel)) }
+            TextButton(onClick = actions.onCancel, colors = brandTextButtonColors()) {
+                Text(stringResource(R.string.cancel))
+            }
         },
     )
 }
