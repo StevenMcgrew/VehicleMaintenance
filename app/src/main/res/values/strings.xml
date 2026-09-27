@@ -53,7 +53,7 @@
     <string name="add_maintenance_item">Add item</string>
     <string name="edit_maintenance_item">Edit item</string>
 
-    <string name="item_action_log_service">Log a completed service</string>
+    <string name="item_action_log_service">Log item as completed</string>
     <string name="delete_maintenance_item">Delete item</string>
     <string name="item_actions_title">%1$s</string>
 

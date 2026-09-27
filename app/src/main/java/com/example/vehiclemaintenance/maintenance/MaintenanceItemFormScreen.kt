@@ -45,7 +45,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -60,6 +59,7 @@ import com.example.vehiclemaintenance.ui.FormDatePickerDialog
 import com.example.vehiclemaintenance.ui.FormTable
 import com.example.vehiclemaintenance.ui.FormTextField
 import com.example.vehiclemaintenance.ui.brandIconButtonColors
+import com.example.vehiclemaintenance.ui.brandTextButtonColors
 import com.example.vehiclemaintenance.ui.describedAs
 import com.example.vehiclemaintenance.ui.spansExtraColumn
 import com.example.vehiclemaintenance.ui.theme.LocalBrandColors
@@ -212,15 +212,12 @@ fun MaintenanceItemFormContent(
                             )
                         }
                     }
-                    IconButton(
+                    TextButton(
                         onClick = onSave,
                         enabled = actionsEnabled,
-                        colors = brandIconButtonColors(),
+                        colors = brandTextButtonColors(),
                     ) {
-                        Icon(
-                            painterResource(R.drawable.ic_save),
-                            contentDescription = stringResource(R.string.save),
-                        )
+                        Text(stringResource(R.string.save))
                     }
                 },
             )

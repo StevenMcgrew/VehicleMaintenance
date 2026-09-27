@@ -41,6 +41,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -356,7 +357,11 @@ private fun ItemStatusDetail(status: MaintenanceItemStatus, modifier: Modifier =
             .padding(horizontal = HORIZONTAL_PADDING)
             .padding(bottom = 12.dp),
     ) {
-        DetailLine(stringResource(R.string.detail_status), statusLabel(status.status))
+        DetailLine(
+            label = stringResource(R.string.detail_status),
+            value = statusLabel(status.status),
+            valueColor = statusColor(status.status),
+        )
         DetailLine(
             label = stringResource(R.string.detail_next_reminder),
             value = status.nextReminderDate?.let { formatMediumDate(it) },
@@ -377,7 +382,12 @@ private fun ItemStatusDetail(status: MaintenanceItemStatus, modifier: Modifier =
 }
 
 @Composable
-private fun DetailLine(label: String, value: String?, modifier: Modifier = Modifier) {
+private fun DetailLine(
+    label: String,
+    value: String?,
+    modifier: Modifier = Modifier,
+    valueColor: Color = Color.Unspecified,
+) {
     Row(
         modifier = modifier.fillMaxWidth().padding(vertical = 3.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -390,6 +400,7 @@ private fun DetailLine(label: String, value: String?, modifier: Modifier = Modif
         Text(
             text = value ?: stringResource(R.string.value_not_set),
             style = MaterialTheme.typography.bodyMedium,
+            color = valueColor,
         )
     }
 }
@@ -514,16 +525,20 @@ private fun RowScope.StatusCell(status: MaintenanceStatus) {
         text = statusLabel(status),
         modifier = Modifier.weight(STATUS_WEIGHT),
         style = MaterialTheme.typography.bodyMedium,
-        color = when (status) {
-            MaintenanceStatus.OVERDUE -> LocalStatusColors.current.overdue
-            MaintenanceStatus.DUE -> LocalStatusColors.current.due
-            MaintenanceStatus.OK -> LocalStatusColors.current.ok
-            MaintenanceStatus.NONE -> MaterialTheme.colorScheme.onSurfaceVariant
-        },
+        color = statusColor(status),
         textAlign = TextAlign.End,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
     )
+}
+
+/** Shared by the table and the item sheet so the two always agree. */
+@Composable
+private fun statusColor(status: MaintenanceStatus): Color = when (status) {
+    MaintenanceStatus.OVERDUE -> LocalStatusColors.current.overdue
+    MaintenanceStatus.DUE -> LocalStatusColors.current.due
+    MaintenanceStatus.OK -> LocalStatusColors.current.ok
+    MaintenanceStatus.NONE -> MaterialTheme.colorScheme.onSurfaceVariant
 }
 
 @Composable

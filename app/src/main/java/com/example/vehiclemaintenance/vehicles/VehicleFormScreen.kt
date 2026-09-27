@@ -27,7 +27,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
@@ -39,6 +38,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vehiclemaintenance.R
 import com.example.vehiclemaintenance.ui.brandIconButtonColors
+import com.example.vehiclemaintenance.ui.brandTextButtonColors
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 
 @Composable
@@ -120,17 +120,14 @@ fun VehicleFormContent(
                     }
                 },
                 actions = {
-                    IconButton(
+                    TextButton(
                         onClick = onSave,
                         enabled = !uiState.isLoading &&
                             !uiState.isSaving &&
                             !uiState.vehicleNotFound,
-                        colors = brandIconButtonColors(),
+                        colors = brandTextButtonColors(),
                     ) {
-                        Icon(
-                            painterResource(R.drawable.ic_save),
-                            contentDescription = stringResource(R.string.save),
-                        )
+                        Text(stringResource(R.string.save))
                     }
                 },
             )

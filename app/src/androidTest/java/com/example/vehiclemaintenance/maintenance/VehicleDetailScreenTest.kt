@@ -13,7 +13,6 @@ import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -128,7 +127,7 @@ class VehicleDetailScreenTest {
         waitForText(string(R.string.maintenance_empty_title))
 
         composeRule.onNodeWithText(string(R.string.add_maintenance_item)).performClick()
-        waitForContentDescription(string(R.string.save))
+        waitForText(string(R.string.save))
 
         // Editable field order: name, mileage interval, recurrence value, reminder value,
         // last done mileage. The unit dropdowns and the date field are read only.
@@ -136,7 +135,7 @@ class VehicleDetailScreenTest {
         fields[0].performTextInput("Oil change")
         fields[3].performTextInput("5")
 
-        composeRule.onNodeWithContentDescription(string(R.string.save)).performClick()
+        composeRule.onNodeWithText(string(R.string.save)).performClick()
 
         waitForText("Oil change")
         composeRule.onNodeWithText("Oil change").assertIsDisplayed()
@@ -148,11 +147,11 @@ class VehicleDetailScreenTest {
         waitForText(string(R.string.maintenance_empty_title))
 
         composeRule.onNodeWithText(string(R.string.add_maintenance_item)).performClick()
-        waitForContentDescription(string(R.string.save))
+        waitForText(string(R.string.save))
         val fields = composeRule.onAllNodes(hasSetTextAction())
         fields[0].performTextInput("Oil change")
         fields[3].performTextInput("5")
-        composeRule.onNodeWithContentDescription(string(R.string.save)).performClick()
+        composeRule.onNodeWithText(string(R.string.save)).performClick()
         waitForText("Oil change")
 
         val onDisk = storeJson.decodeFromString<MaintenanceStore>(storeFile.readText())
@@ -374,7 +373,7 @@ class VehicleDetailScreenTest {
 
         openItemActions()
         composeRule.onNodeWithText(string(R.string.edit_maintenance_item)).performClick()
-        waitForContentDescription(string(R.string.save))
+        waitForText(string(R.string.save))
 
         composeRule.onNodeWithContentDescription(string(R.string.delete)).performClick()
         waitForText(context.getString(R.string.delete_item_title, "Oil change"))
@@ -432,11 +431,11 @@ class VehicleDetailScreenTest {
         waitForText(string(R.string.maintenance_empty_title))
 
         composeRule.onNodeWithText(string(R.string.add_maintenance_item)).performClick()
-        waitForContentDescription(string(R.string.save))
+        waitForText(string(R.string.save))
         val fields = composeRule.onAllNodes(hasSetTextAction())
         fields[0].performTextInput("Oil change")
         fields[3].performTextInput("5")
-        composeRule.onNodeWithContentDescription(string(R.string.save)).performClick()
+        composeRule.onNodeWithText(string(R.string.save)).performClick()
 
         waitForText("Oil change")
     }
@@ -491,14 +490,6 @@ class VehicleDetailScreenTest {
     private fun waitForText(text: String) {
         composeRule.waitUntil(TIMEOUT_MS) {
             composeRule.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
-        }
-    }
-
-    private fun waitForContentDescription(description: String) {
-        composeRule.waitUntil(TIMEOUT_MS) {
-            composeRule.onAllNodesWithContentDescription(description)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
         }
     }
 

@@ -8,7 +8,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -96,12 +95,12 @@ class VehicleListScreenTest {
         composeRule
             .onNodeWithContentDescription(context.getString(R.string.edit_vehicle_action, summary))
             .performClick()
-        waitForContentDescription(R.string.save)
+        waitForText(R.string.save)
 
         val mileageField = composeRule.onAllNodes(hasSetTextAction())[4]
         mileageField.performTextClearance()
         mileageField.performTextInput("44000")
-        composeRule.onNodeWithContentDescription(string(R.string.save)).performClick()
+        composeRule.onNodeWithText(string(R.string.save)).performClick()
 
         waitForText(R.string.lower_mileage_title)
         composeRule.onNodeWithText(string(R.string.cancel)).performClick()
@@ -109,7 +108,7 @@ class VehicleListScreenTest {
         val unchanged = storeJson.decodeFromString<MaintenanceStore>(storeFile.readText())
         assertEquals(45_000, unchanged.vehicles.single().recordedMileage)
 
-        composeRule.onNodeWithContentDescription(string(R.string.save)).performClick()
+        composeRule.onNodeWithText(string(R.string.save)).performClick()
         waitForText(R.string.lower_mileage_title)
         composeRule.onNodeWithText(string(R.string.ok)).performClick()
 
@@ -179,7 +178,7 @@ class VehicleListScreenTest {
         waitForText(R.string.vehicles_empty_title)
 
         composeRule.onNodeWithText(string(R.string.add_vehicle)).performClick()
-        waitForContentDescription(R.string.save)
+        waitForText(R.string.save)
 
         // Field order on the form: year, make, model, engine, mileage.
         val fields = composeRule.onAllNodes(hasSetTextAction())
@@ -189,7 +188,7 @@ class VehicleListScreenTest {
         fields[3].performTextInput("4.0L V6")
         mileage?.let { fields[4].performTextInput(it) }
 
-        composeRule.onNodeWithContentDescription(string(R.string.save)).performClick()
+        composeRule.onNodeWithText(string(R.string.save)).performClick()
 
         composeRule.waitUntil(TIMEOUT_MS) {
             composeRule.onAllNodesWithText(headline).fetchSemanticsNodes().isNotEmpty()
@@ -246,15 +245,6 @@ class VehicleListScreenTest {
         val text = string(id)
         composeRule.waitUntil(TIMEOUT_MS) {
             composeRule.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
-        }
-    }
-
-    private fun waitForContentDescription(id: Int) {
-        val description = string(id)
-        composeRule.waitUntil(TIMEOUT_MS) {
-            composeRule.onAllNodesWithContentDescription(description)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
         }
     }
 
