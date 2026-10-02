@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only the shared service history PDFs are exposed, never the store or anything else in cache. -->
+<paths>
+    <cache-path
+        name="reports"
+        path="reports/" />
+</paths>

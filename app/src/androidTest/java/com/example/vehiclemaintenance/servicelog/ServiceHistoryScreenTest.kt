@@ -207,6 +207,28 @@ class ServiceHistoryScreenTest {
         composeRule.onNodeWithText(string(R.string.history_empty_body)).assertIsDisplayed()
     }
 
+    @Test
+    fun thePdfButtonOffersSavePrintAndShare() {
+        seedTwoYears()
+        setContent()
+
+        waitForText(string(R.string.pdf_button))
+        composeRule.onNodeWithText(string(R.string.pdf_button)).performClick()
+
+        listOf(R.string.pdf_save, R.string.pdf_print, R.string.pdf_share).forEach {
+            composeRule.onNodeWithText(string(it)).assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun aVehicleWithNothingLoggedHasNoPdfButton() {
+        seed(emptyList())
+        setContent()
+
+        waitForText(string(R.string.history_empty_title))
+        composeRule.onNodeWithText(string(R.string.pdf_button)).assertDoesNotExist()
+    }
+
     private fun entry(
         id: String,
         description: String,
@@ -229,7 +251,7 @@ class ServiceHistoryScreenTest {
         composeRule.setContent {
             VehicleMaintenanceTheme {
                 val historyViewModel = remember {
-                    ServiceHistoryViewModel(vehicles, serviceLog, "v-1")
+                    ServiceHistoryViewModel(vehicles, serviceLog, HistoryPdfFiles(context), "v-1")
                 }
                 ServiceHistoryScreen(
                     vehicleId = "v-1",

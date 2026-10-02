@@ -1,6 +1,9 @@
 package com.example.vehiclemaintenance.servicelog
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,24 +18,31 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -61,11 +71,28 @@ fun ServiceHistoryScreen(
     ),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    val saveLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument(PDF_MIME_TYPE),
+    ) { uri -> uri?.let(viewModel::savePdf) }
+
+    LaunchedEffect(uiState.readyPdf) {
+        val ready = uiState.readyPdf ?: return@LaunchedEffect
+        when (ready.action) {
+            PdfAction.PRINT -> printHistoryPdf(context, ready.file)
+            PdfAction.SHARE -> shareHistoryPdf(context, ready.file)
+        }
+        viewModel.onPdfHandled()
+    }
 
     ServiceHistoryContent(
         uiState = uiState,
         onRetry = viewModel::refresh,
         onBack = onBack,
+        onSavePdf = { viewModel.pdfFileName()?.let(saveLauncher::launch) },
+        onPrintPdf = { viewModel.preparePdf(PdfAction.PRINT) },
+        onSharePdf = { viewModel.preparePdf(PdfAction.SHARE) },
+        onPdfErrorShown = viewModel::dismissPdfError,
         modifier = modifier,
     )
 }
@@ -77,9 +104,28 @@ fun ServiceHistoryContent(
     onRetry: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    onSavePdf: () -> Unit = {},
+    onPrintPdf: () -> Unit = {},
+    onSharePdf: () -> Unit = {},
+    onPdfErrorShown: () -> Unit = {},
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val pdfFailedMessage = stringResource(R.string.pdf_failed)
+
+    LaunchedEffect(uiState.pdfFailed) {
+        if (uiState.pdfFailed) {
+            snackbarHostState.showSnackbar(pdfFailedMessage)
+            onPdfErrorShown()
+        }
+    }
+
+    // Only a loaded history with something in it has anything to put on paper.
+    val canMakePdf = !uiState.isLoading && !uiState.loadFailed && uiState.vehicle != null &&
+        uiState.history.years.isNotEmpty()
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -94,6 +140,16 @@ fun ServiceHistoryContent(
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back),
+                        )
+                    }
+                },
+                actions = {
+                    if (canMakePdf) {
+                        PdfMenu(
+                            enabled = !uiState.isWritingPdf,
+                            onSave = onSavePdf,
+                            onPrint = onPrintPdf,
+                            onShare = onSharePdf,
                         )
                     }
                 },
@@ -139,6 +195,44 @@ fun ServiceHistoryContent(
                     HorizontalDivider()
                 }
                 uiState.history.years.forEach { yearSection(it) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PdfMenu(
+    enabled: Boolean,
+    onSave: () -> Unit,
+    onPrint: () -> Unit,
+    onShare: () -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        TextButton(
+            onClick = { expanded = true },
+            enabled = enabled,
+            colors = brandTextButtonColors(),
+        ) {
+            Text(stringResource(R.string.pdf_button))
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            containerColor = LocalBrandColors.current.popupContainer,
+        ) {
+            listOf(
+                R.string.pdf_save to onSave,
+                R.string.pdf_print to onPrint,
+                R.string.pdf_share to onShare,
+            ).forEach { (label, action) ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(label)) },
+                    onClick = {
+                        expanded = false
+                        action()
+                    },
+                )
             }
         }
     }
