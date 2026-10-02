@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
@@ -17,8 +20,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldLabelPosition
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
@@ -150,6 +158,47 @@ fun FormTextField(
     )
 }
 
+/**
+ * A text field whose label always sits in the outline, so a placeholder can show beneath it
+ * while the field is still empty. Only the state based text field offers that label position.
+ */
+@Composable
+fun OutlineLabelTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    error: String?,
+    modifier: Modifier = Modifier,
+    placeholder: String? = null,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    imeAction: ImeAction = ImeAction.Next,
+) {
+    val state = rememberTextFieldState(value)
+    val currentValue by rememberUpdatedState(value)
+    val currentOnValueChange by rememberUpdatedState(onValueChange)
+    LaunchedEffect(value) {
+        if (state.text.toString() != value) state.setTextAndPlaceCursorAtEnd(value)
+    }
+    LaunchedEffect(state) {
+        snapshotFlow { state.text.toString() }.collect {
+            if (it != currentValue) currentOnValueChange(it)
+        }
+    }
+    OutlinedTextField(
+        state = state,
+        labelPosition = TextFieldLabelPosition.Attached(alwaysMinimize = true),
+        label = { Text(label) },
+        placeholder = placeholder?.let { { Text(it) } },
+        isError = error != null,
+        lineLimits = TextFieldLineLimits.SingleLine,
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
+        supportingText = error?.let { { Text(it) } },
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics { if (error != null) error(error) },
+    )
+}
+
 /** The row label sits in its own cell, so the input carries it for screen readers. */
 fun Modifier.describedAs(description: String, error: String?): Modifier = semantics {
     contentDescription = description
@@ -161,6 +210,7 @@ fun ChooseDateButton(
     onClick: () -> Unit,
     error: String?,
     modifier: Modifier = Modifier,
+    text: String = stringResource(R.string.choose_date),
 ) {
     Column(modifier) {
         FormCell {
@@ -170,7 +220,7 @@ fun ChooseDateButton(
                 colors = brandOutlinedButtonColors(),
                 border = brandOutlinedButtonBorder(enabled = true),
             ) {
-                Text(stringResource(R.string.choose_date))
+                Text(text)
             }
         }
         if (error != null) {

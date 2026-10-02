@@ -72,7 +72,7 @@
     <string name="item_last_done_mileage">Mileage last done</string>
     <string name="item_date_not_set">Not set</string>
 
-    <string name="item_name_placeholder">ex: Oil change</string>
+    <string name="item_name_placeholder">ex: Oil Change</string>
 
     <string name="log_service_title">Log service</string>
     <string name="log_repair">Log additional repairs</string>

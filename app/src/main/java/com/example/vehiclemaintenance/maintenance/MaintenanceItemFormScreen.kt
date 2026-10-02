@@ -8,8 +8,9 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -56,12 +57,10 @@ import com.example.vehiclemaintenance.R
 import com.example.vehiclemaintenance.ui.ChooseDateButton
 import com.example.vehiclemaintenance.ui.FormCellText
 import com.example.vehiclemaintenance.ui.FormDatePickerDialog
-import com.example.vehiclemaintenance.ui.FormTable
-import com.example.vehiclemaintenance.ui.FormTextField
+import com.example.vehiclemaintenance.ui.OutlineLabelTextField
 import com.example.vehiclemaintenance.ui.brandIconButtonColors
 import com.example.vehiclemaintenance.ui.brandTextButtonColors
 import com.example.vehiclemaintenance.ui.describedAs
-import com.example.vehiclemaintenance.ui.spansExtraColumn
 import com.example.vehiclemaintenance.ui.theme.LocalBrandColors
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 import java.time.LocalDate
@@ -287,87 +286,102 @@ private fun ItemFormTable(
     onLastDoneMileageChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val service = stringResource(R.string.item_name)
     val dueEvery = stringResource(R.string.item_due_every)
     val remindEvery = stringResource(R.string.item_reminder_value)
-    val lastDoneDate = stringResource(R.string.item_last_done_date)
     val lastDoneMileage = stringResource(R.string.item_last_done_mileage)
     val miles = stringResource(R.string.item_miles)
     var choosingDate by remember { mutableStateOf(false) }
 
-    FormTable(
-        modifier = modifier,
-        labels = {
-            listOf(service, dueEvery, dueEvery, remindEvery, lastDoneDate, lastDoneMileage)
-                .forEach { FormCellText(it) }
-        },
-        inputs = {
-            FormTextField(
-                value = fields.name,
-                onValueChange = onNameChange,
-                description = service,
-                error = errors.name?.message(),
-                placeholder = stringResource(R.string.item_name_placeholder),
-                modifier = Modifier.spansExtraColumn(),
-            )
-            FormTextField(
-                value = fields.mileageInterval,
-                onValueChange = onMileageIntervalChange,
-                description = dueEvery,
-                error = errors.mileageInterval?.message(),
-                keyboardType = KeyboardType.Number,
-            )
-            FormTextField(
-                value = fields.recurrenceValue,
-                onValueChange = onRecurrenceValueChange,
-                description = dueEvery,
-                error = errors.recurrenceValue?.message(),
-                keyboardType = KeyboardType.Number,
-            )
-            FormTextField(
-                value = fields.reminderValue,
-                onValueChange = onReminderValueChange,
-                description = remindEvery,
-                error = errors.reminderValue?.message(),
-                keyboardType = KeyboardType.Number,
-            )
-            ChooseDateButton(
-                onClick = { choosingDate = true },
-                error = errors.lastDoneDate?.message(),
-            )
-            FormTextField(
-                value = fields.lastDoneMileage,
-                onValueChange = onLastDoneMileageChange,
-                description = lastDoneMileage,
-                error = errors.lastDoneMileage?.message(),
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done,
-            )
-        },
-        extras = {
-            Spacer(Modifier)
-            FormCellText(miles)
-            UnitDropdown(
-                unit = fields.recurrenceUnit,
-                onUnitChange = onRecurrenceUnitChange,
-                description = stringResource(R.string.item_unit_description, dueEvery),
-                error = errors.recurrenceUnit?.message(),
-                allowNoUnit = true,
-            )
-            UnitDropdown(
-                unit = fields.reminderUnit,
-                onUnitChange = onReminderUnitChange,
-                description = stringResource(R.string.item_unit_description, remindEvery),
-                error = errors.reminderUnit?.message(),
-                allowNoUnit = false,
-            )
-            FormCellText(
-                fields.lastDoneDate?.let { formatShortDate(it) }
-                    ?: stringResource(R.string.item_date_not_set),
-            )
-            FormCellText(miles)
-        },
-    )
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(TABLE_GAP)) {
+        OutlineLabelTextField(
+            value = fields.name,
+            onValueChange = onNameChange,
+            label = stringResource(R.string.item_name),
+            error = errors.name?.message(),
+            placeholder = stringResource(R.string.item_name_placeholder),
+        )
+        ItemFormRow(
+            first = {
+                OutlineLabelTextField(
+                    value = fields.mileageInterval,
+                    onValueChange = onMileageIntervalChange,
+                    label = dueEvery,
+                    error = errors.mileageInterval?.message(),
+                    keyboardType = KeyboardType.Number,
+                )
+            },
+            second = { FormCellText(miles) },
+        )
+        ItemFormRow(
+            first = {
+                OutlineLabelTextField(
+                    value = fields.recurrenceValue,
+                    onValueChange = onRecurrenceValueChange,
+                    label = dueEvery,
+                    error = errors.recurrenceValue?.message(),
+                    keyboardType = KeyboardType.Number,
+                )
+            },
+            second = {
+                UnitDropdown(
+                    unit = fields.recurrenceUnit,
+                    onUnitChange = onRecurrenceUnitChange,
+                    description = stringResource(R.string.item_unit_description, dueEvery),
+                    error = errors.recurrenceUnit?.message(),
+                    allowNoUnit = true,
+                )
+            },
+        )
+        ItemFormRow(
+            first = {
+                OutlineLabelTextField(
+                    value = fields.reminderValue,
+                    onValueChange = onReminderValueChange,
+                    label = remindEvery,
+                    error = errors.reminderValue?.message(),
+                    keyboardType = KeyboardType.Number,
+                )
+            },
+            second = {
+                UnitDropdown(
+                    unit = fields.reminderUnit,
+                    onUnitChange = onReminderUnitChange,
+                    description = stringResource(R.string.item_unit_description, remindEvery),
+                    error = errors.reminderUnit?.message(),
+                    allowNoUnit = false,
+                )
+            },
+        )
+        ItemFormRow(
+            first = {
+                ChooseDateButton(
+                    onClick = { choosingDate = true },
+                    error = errors.lastDoneDate?.message(),
+                    text = stringResource(R.string.item_last_done_date),
+                )
+            },
+            second = {
+                FormCellText(
+                    fields.lastDoneDate?.let { formatShortDate(it) }
+                        ?: stringResource(R.string.item_date_not_set),
+                )
+            },
+            firstHasOutlineLabel = false,
+        )
+        ItemFormRow(
+            first = {
+                OutlineLabelTextField(
+                    value = fields.lastDoneMileage,
+                    onValueChange = onLastDoneMileageChange,
+                    label = lastDoneMileage,
+                    error = errors.lastDoneMileage?.message(),
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done,
+                )
+            },
+            second = { FormCellText(miles) },
+        )
+    }
 
     if (choosingDate) {
         FormDatePickerDialog(
@@ -379,6 +393,26 @@ private fun ItemFormTable(
     }
 }
 
+/**
+ * A two column row: the input fills the first column and the second keeps a fixed width. When the
+ * first column is a labelled field, the second drops by the room its outline label takes above the
+ * border, so the two line up.
+ */
+@Composable
+private fun ItemFormRow(
+    first: @Composable () -> Unit,
+    second: @Composable () -> Unit,
+    firstHasOutlineLabel: Boolean = true,
+) {
+    val secondTop = if (firstHasOutlineLabel) OUTLINE_LABEL_OFFSET else 0.dp
+    Row(horizontalArrangement = Arrangement.spacedBy(TABLE_GAP)) {
+        Box(Modifier.weight(1f)) { first() }
+        Box(Modifier.width(UNIT_FIELD_WIDTH).padding(top = secondTop)) { second() }
+    }
+}
+
+private val TABLE_GAP = 12.dp
+private val OUTLINE_LABEL_OFFSET = 8.dp
 private val UNIT_FIELD_WIDTH = 132.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
