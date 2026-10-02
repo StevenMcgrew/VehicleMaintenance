@@ -3,7 +3,6 @@ package com.example.vehiclemaintenance.servicelog
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -40,12 +39,12 @@ import com.example.vehiclemaintenance.maintenance.formatShortDate
 import com.example.vehiclemaintenance.ui.ChooseDateButton
 import com.example.vehiclemaintenance.ui.FormCellText
 import com.example.vehiclemaintenance.ui.FormDatePickerDialog
-import com.example.vehiclemaintenance.ui.FormTable
-import com.example.vehiclemaintenance.ui.FormTextField
+import com.example.vehiclemaintenance.ui.FormRow
+import com.example.vehiclemaintenance.ui.FormRowGap
+import com.example.vehiclemaintenance.ui.OutlineLabelTextField
 import com.example.vehiclemaintenance.ui.brandIconButtonColors
 import com.example.vehiclemaintenance.ui.brandTextButtonColors
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
-import com.example.vehiclemaintenance.ui.spansExtraColumn
 import java.time.LocalDate
 
 @Composable
@@ -165,7 +164,7 @@ fun ServiceLogFormContent(
                 TextButton(onClick = onCancel) { Text(stringResource(R.string.back)) }
             }
 
-            else -> LogFormTable(
+            else -> LogForm(
                 fields = uiState.fields,
                 errors = uiState.errors,
                 isAdHocRepair = isAdHocRepair,
@@ -185,7 +184,7 @@ fun ServiceLogFormContent(
 }
 
 @Composable
-private fun LogFormTable(
+private fun LogForm(
     fields: ServiceLogFormFields,
     errors: ServiceLogFormErrors,
     isAdHocRepair: Boolean,
@@ -199,67 +198,73 @@ private fun LogFormTable(
     val description = stringResource(
         if (isAdHocRepair) R.string.log_repair_label else R.string.log_service_label,
     )
-    val date = stringResource(R.string.log_date)
-    val odometer = stringResource(R.string.log_odometer)
-    val cost = stringResource(R.string.log_cost)
-    val notes = stringResource(R.string.log_notes)
     val optional = stringResource(R.string.optional_marker)
     var choosingDate by remember { mutableStateOf(false) }
 
-    FormTable(
-        modifier = modifier,
-        labels = {
-            listOf(description, date, odometer, cost, notes).forEach { FormCellText(it) }
-        },
-        inputs = {
-            FormTextField(
-                value = fields.description,
-                onValueChange = onDescriptionChange,
-                description = description,
-                error = errors.description?.message(),
-                placeholder = stringResource(
-                    if (isAdHocRepair) R.string.log_repair_description_placeholder
-                    else R.string.log_description_placeholder,
-                ),
-                modifier = Modifier.spansExtraColumn(),
-            )
-            ChooseDateButton(
-                onClick = { choosingDate = true },
-                error = errors.date?.message(),
-            )
-            FormTextField(
-                value = fields.odometer,
-                onValueChange = onOdometerChange,
-                description = odometer,
-                error = errors.odometer?.message(),
-                keyboardType = KeyboardType.Number,
-            )
-            FormTextField(
-                value = fields.cost,
-                onValueChange = onCostChange,
-                description = cost,
-                error = errors.cost?.message(),
-                keyboardType = KeyboardType.Decimal,
-            )
-            FormTextField(
-                value = fields.notes,
-                onValueChange = onNotesChange,
-                description = notes,
-                error = null,
-                imeAction = ImeAction.Done,
-            )
-        },
-        extras = {
-            Spacer(Modifier)
-            FormCellText(
-                fields.date?.let { formatShortDate(it) }
-                    ?: stringResource(R.string.item_date_not_set),
-            )
-            FormCellText(stringResource(R.string.item_miles))
-            FormCellText(optional)
-            FormCellText(optional)
-        },
-    )
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(FormRowGap)) {
+        OutlineLabelTextField(
+            initialValue = fields.description,
+            onValueChange = onDescriptionChange,
+            label = description,
+            error = errors.description?.message(),
+            placeholder = stringResource(
+                if (isAdHocRepair) R.string.log_repair_description_placeholder
+                else R.string.log_description_placeholder,
+            ),
+        )
+        FormRow(
+            first = {
+                ChooseDateButton(
+                    onClick = { choosingDate = true },
+                    error = errors.date?.message(),
+                    text = stringResource(R.string.log_date),
+                )
+            },
+            second = {
+                FormCellText(
+                    fields.date?.let { formatShortDate(it) }
+                        ?: stringResource(R.string.item_date_not_set),
+                )
+            },
+            firstHasOutlineLabel = false,
+        )
+        FormRow(
+            first = {
+                OutlineLabelTextField(
+                    initialValue = fields.odometer,
+                    onValueChange = onOdometerChange,
+                    label = stringResource(R.string.log_odometer),
+                    error = errors.odometer?.message(),
+                    keyboardType = KeyboardType.Number,
+                )
+            },
+            second = { FormCellText(stringResource(R.string.item_miles)) },
+        )
+        FormRow(
+            first = {
+                OutlineLabelTextField(
+                    initialValue = fields.cost,
+                    onValueChange = onCostChange,
+                    label = stringResource(R.string.log_cost),
+                    error = errors.cost?.message(),
+                    keyboardType = KeyboardType.Decimal,
+                )
+            },
+            second = { FormCellText(optional) },
+        )
+        FormRow(
+            first = {
+                OutlineLabelTextField(
+                    initialValue = fields.notes,
+                    onValueChange = onNotesChange,
+                    label = stringResource(R.string.log_notes),
+                    error = null,
+                    imeAction = ImeAction.Done,
+                )
+            },
+            second = { FormCellText(optional) },
+        )
+    }
 
     if (choosingDate) {
         FormDatePickerDialog(

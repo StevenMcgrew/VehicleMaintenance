@@ -8,9 +8,7 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -57,6 +55,9 @@ import com.example.vehiclemaintenance.R
 import com.example.vehiclemaintenance.ui.ChooseDateButton
 import com.example.vehiclemaintenance.ui.FormCellText
 import com.example.vehiclemaintenance.ui.FormDatePickerDialog
+import com.example.vehiclemaintenance.ui.FormRow
+import com.example.vehiclemaintenance.ui.FormRowGap
+import com.example.vehiclemaintenance.ui.FormSecondColumnWidth
 import com.example.vehiclemaintenance.ui.OutlineLabelTextField
 import com.example.vehiclemaintenance.ui.brandIconButtonColors
 import com.example.vehiclemaintenance.ui.brandTextButtonColors
@@ -240,7 +241,7 @@ fun MaintenanceItemFormContent(
                 TextButton(onClick = onCancel) { Text(stringResource(R.string.back)) }
             }
 
-            else -> ItemFormTable(
+            else -> ItemForm(
                 fields = uiState.fields,
                 errors = uiState.errors,
                 onNameChange = onNameChange,
@@ -273,7 +274,7 @@ fun MaintenanceItemFormContent(
 }
 
 @Composable
-private fun ItemFormTable(
+private fun ItemForm(
     fields: MaintenanceItemFormFields,
     errors: MaintenanceItemFormErrors,
     onNameChange: (String) -> Unit,
@@ -292,18 +293,18 @@ private fun ItemFormTable(
     val miles = stringResource(R.string.item_miles)
     var choosingDate by remember { mutableStateOf(false) }
 
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(TABLE_GAP)) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(FormRowGap)) {
         OutlineLabelTextField(
-            value = fields.name,
+            initialValue = fields.name,
             onValueChange = onNameChange,
             label = stringResource(R.string.item_name),
             error = errors.name?.message(),
             placeholder = stringResource(R.string.item_name_placeholder),
         )
-        ItemFormRow(
+        FormRow(
             first = {
                 OutlineLabelTextField(
-                    value = fields.mileageInterval,
+                    initialValue = fields.mileageInterval,
                     onValueChange = onMileageIntervalChange,
                     label = dueEvery,
                     error = errors.mileageInterval?.message(),
@@ -312,10 +313,10 @@ private fun ItemFormTable(
             },
             second = { FormCellText(miles) },
         )
-        ItemFormRow(
+        FormRow(
             first = {
                 OutlineLabelTextField(
-                    value = fields.recurrenceValue,
+                    initialValue = fields.recurrenceValue,
                     onValueChange = onRecurrenceValueChange,
                     label = dueEvery,
                     error = errors.recurrenceValue?.message(),
@@ -332,10 +333,10 @@ private fun ItemFormTable(
                 )
             },
         )
-        ItemFormRow(
+        FormRow(
             first = {
                 OutlineLabelTextField(
-                    value = fields.reminderValue,
+                    initialValue = fields.reminderValue,
                     onValueChange = onReminderValueChange,
                     label = remindEvery,
                     error = errors.reminderValue?.message(),
@@ -352,7 +353,7 @@ private fun ItemFormTable(
                 )
             },
         )
-        ItemFormRow(
+        FormRow(
             first = {
                 ChooseDateButton(
                     onClick = { choosingDate = true },
@@ -368,10 +369,10 @@ private fun ItemFormTable(
             },
             firstHasOutlineLabel = false,
         )
-        ItemFormRow(
+        FormRow(
             first = {
                 OutlineLabelTextField(
-                    value = fields.lastDoneMileage,
+                    initialValue = fields.lastDoneMileage,
                     onValueChange = onLastDoneMileageChange,
                     label = lastDoneMileage,
                     error = errors.lastDoneMileage?.message(),
@@ -392,28 +393,6 @@ private fun ItemFormTable(
         )
     }
 }
-
-/**
- * A two column row: the input fills the first column and the second keeps a fixed width. When the
- * first column is a labelled field, the second drops by the room its outline label takes above the
- * border, so the two line up.
- */
-@Composable
-private fun ItemFormRow(
-    first: @Composable () -> Unit,
-    second: @Composable () -> Unit,
-    firstHasOutlineLabel: Boolean = true,
-) {
-    val secondTop = if (firstHasOutlineLabel) OUTLINE_LABEL_OFFSET else 0.dp
-    Row(horizontalArrangement = Arrangement.spacedBy(TABLE_GAP)) {
-        Box(Modifier.weight(1f)) { first() }
-        Box(Modifier.width(UNIT_FIELD_WIDTH).padding(top = secondTop)) { second() }
-    }
-}
-
-private val TABLE_GAP = 12.dp
-private val OUTLINE_LABEL_OFFSET = 8.dp
-private val UNIT_FIELD_WIDTH = 132.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -448,7 +427,7 @@ private fun UnitDropdown(
             supportingText = error?.let { { Text(it) } },
             modifier = Modifier
                 .menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable)
-                .width(UNIT_FIELD_WIDTH)
+                .width(FormSecondColumnWidth)
                 .describedAs(description, error),
         )
         ExposedDropdownMenu(

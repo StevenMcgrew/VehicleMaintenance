@@ -1,15 +1,16 @@
 package com.example.vehiclemaintenance.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
@@ -29,88 +30,45 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.dp
 import com.example.vehiclemaintenance.R
 import com.example.vehiclemaintenance.ui.theme.LocalBrandColors
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
-
-private object SpansExtraColumn
-
-/** Lets a [FormTable] input take over its row's third column as well. */
-fun Modifier.spansExtraColumn(): Modifier = layoutId(SpansExtraColumn)
+import kotlinx.coroutines.flow.drop
 
 /**
- * A borderless label, input, extra grid. Each slot emits exactly one child per row, in row
- * order, so the columns line up without a table widget.
+ * A two column form row: [first] fills the remaining width and [second] keeps a fixed width, so
+ * the second column lines up on every row. When [first] is a labelled field, [second] drops by the
+ * room its outline label takes above the border, so the two line up.
  */
 @Composable
-fun FormTable(
-    labels: @Composable () -> Unit,
-    inputs: @Composable () -> Unit,
-    extras: @Composable () -> Unit,
-    modifier: Modifier = Modifier,
+fun FormRow(
+    first: @Composable () -> Unit,
+    second: @Composable () -> Unit,
+    firstHasOutlineLabel: Boolean = true,
 ) {
-    Layout(
-        contents = listOf(labels, inputs, extras),
-        modifier = modifier,
-    ) { (labelCells, inputCells, extraCells), constraints ->
-        val width = constraints.maxWidth
-        val columnGap = TABLE_COLUMN_GAP.roundToPx()
-        val rowGap = TABLE_ROW_GAP.roundToPx()
-
-        val labelPlaceables = labelCells.map {
-            it.measure(Constraints(maxWidth = (width * MAX_LABEL_WIDTH_FRACTION).toInt()))
-        }
-        val extraPlaceables = extraCells.map {
-            it.measure(Constraints(maxWidth = (width * MAX_EXTRA_WIDTH_FRACTION).toInt()))
-        }
-        val labelWidth = labelPlaceables.maxOf { it.width }
-        val extraWidth = extraPlaceables.maxOf { it.width }
-        val inputWidth = (width - labelWidth - extraWidth - 2 * columnGap).coerceAtLeast(0)
-        val inputPlaceables = inputCells.map {
-            val spans = it.layoutId == SpansExtraColumn
-            it.measure(
-                Constraints(maxWidth = if (spans) inputWidth + columnGap + extraWidth else inputWidth),
-            )
-        }
-
-        val rowHeights = labelPlaceables.indices.map { row ->
-            maxOf(
-                labelPlaceables[row].height,
-                inputPlaceables[row].height,
-                extraPlaceables[row].height,
-            )
-        }
-        val height = rowHeights.sum() + rowGap * (rowHeights.size - 1).coerceAtLeast(0)
-
-        layout(width, constraints.constrainHeight(height)) {
-            var y = 0
-            rowHeights.forEachIndexed { row, rowHeight ->
-                labelPlaceables[row].place(0, y)
-                inputPlaceables[row].place(labelWidth + columnGap, y)
-                extraPlaceables[row].place(width - extraWidth, y)
-                y += rowHeight + rowGap
-            }
-        }
+    val secondTop = if (firstHasOutlineLabel) OUTLINE_LABEL_OFFSET else 0.dp
+    Row(horizontalArrangement = Arrangement.spacedBy(FormRowGap)) {
+        Box(Modifier.weight(1f)) { first() }
+        Box(Modifier.width(FormSecondColumnWidth).padding(top = secondTop)) { second() }
     }
 }
 
-private val TABLE_COLUMN_GAP = 12.dp
-private val TABLE_ROW_GAP = 12.dp
-private const val MAX_LABEL_WIDTH_FRACTION = 0.3f
-private const val MAX_EXTRA_WIDTH_FRACTION = 0.4f
+/** The gap between form rows, and between a row's two columns. */
+val FormRowGap = 12.dp
+
+/** Wide enough for a unit dropdown, which is the widest second column cell. */
+val FormSecondColumnWidth = 132.dp
+
+private val OUTLINE_LABEL_OFFSET = 8.dp
 
 /** Cells are top aligned, so single line content is centered against a text field's height. */
 @Composable
@@ -133,38 +91,18 @@ fun FormCellText(text: String, modifier: Modifier = Modifier) {
     }
 }
 
-@Composable
-fun FormTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    description: String,
-    error: String?,
-    modifier: Modifier = Modifier,
-    placeholder: String? = null,
-    keyboardType: KeyboardType = KeyboardType.Text,
-    imeAction: ImeAction = ImeAction.Next,
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        placeholder = placeholder?.let { { Text(it) } },
-        isError = error != null,
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
-        supportingText = error?.let { { Text(it) } },
-        modifier = modifier
-            .fillMaxWidth()
-            .describedAs(description, error),
-    )
-}
-
 /**
  * A text field whose label always sits in the outline, so a placeholder can show beneath it
  * while the field is still empty. Only the state based text field offers that label position.
+ *
+ * The field owns its text: it starts from [initialValue] and reports every edit to
+ * [onValueChange], but never reads a later value back. Pushing the parent's value back in would
+ * race the keyboard, since that value trails the typing and would wipe out the newest characters.
+ * Forms show their fields only after loading, so the initial value is already the saved one.
  */
 @Composable
 fun OutlineLabelTextField(
-    value: String,
+    initialValue: String,
     onValueChange: (String) -> Unit,
     label: String,
     error: String?,
@@ -173,16 +111,10 @@ fun OutlineLabelTextField(
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.Next,
 ) {
-    val state = rememberTextFieldState(value)
-    val currentValue by rememberUpdatedState(value)
+    val state = rememberTextFieldState(initialValue)
     val currentOnValueChange by rememberUpdatedState(onValueChange)
-    LaunchedEffect(value) {
-        if (state.text.toString() != value) state.setTextAndPlaceCursorAtEnd(value)
-    }
     LaunchedEffect(state) {
-        snapshotFlow { state.text.toString() }.collect {
-            if (it != currentValue) currentOnValueChange(it)
-        }
+        snapshotFlow { state.text.toString() }.drop(1).collect { currentOnValueChange(it) }
     }
     OutlinedTextField(
         state = state,
@@ -199,7 +131,7 @@ fun OutlineLabelTextField(
     )
 }
 
-/** The row label sits in its own cell, so the input carries it for screen readers. */
+/** For an input with no visible label, carries its description to screen readers. */
 fun Modifier.describedAs(description: String, error: String?): Modifier = semantics {
     contentDescription = description
     if (error != null) error(error)
@@ -210,7 +142,7 @@ fun ChooseDateButton(
     onClick: () -> Unit,
     error: String?,
     modifier: Modifier = Modifier,
-    text: String = stringResource(R.string.choose_date),
+    text: String,
 ) {
     Column(modifier) {
         FormCell {

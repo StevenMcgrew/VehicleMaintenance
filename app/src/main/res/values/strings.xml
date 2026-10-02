@@ -79,7 +79,7 @@
     <string name="log_repair_title">Log repair</string>
     <string name="log_repair_label">Repair</string>
     <string name="log_service_label">Service</string>
-    <string name="log_date">Date</string>
+    <string name="log_date">Date of service</string>
     <string name="log_odometer">Odometer</string>
     <string name="log_cost">Cost $</string>
     <string name="log_notes">Notes</string>
@@ -133,7 +133,6 @@
     <string name="cost_year" tools:ignore="PluralsCandidate">%1$d</string>
 
     <string name="ok">OK</string>
-    <string name="choose_date">Choose</string>
     <string name="clear_date">Clear</string>
 
     <string name="notification_channel_name">Service reminders</string>
