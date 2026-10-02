@@ -12,6 +12,7 @@ import androidx.navigation.navDeepLink
 import com.example.vehiclemaintenance.backup.BackupScreen
 import com.example.vehiclemaintenance.maintenance.MaintenanceItemFormScreen
 import com.example.vehiclemaintenance.maintenance.VehicleDetailScreen
+import com.example.vehiclemaintenance.privacy.PrivacyScreen
 import com.example.vehiclemaintenance.servicelog.ServiceHistoryScreen
 import com.example.vehiclemaintenance.servicelog.ServiceLogFormScreen
 import com.example.vehiclemaintenance.vehicles.VehicleFormScreen
@@ -34,6 +35,7 @@ object Routes {
     const val LOG_REPAIR = "vehicles/{$VEHICLE_ID_ARG}/repairs/new"
     const val VEHICLE_HISTORY = "vehicles/{$VEHICLE_ID_ARG}/history"
     const val BACKUP = "backup"
+    const val PRIVACY = "privacy"
 
     fun editVehicle(vehicleId: String): String = "vehicles/$vehicleId/edit"
 
@@ -68,10 +70,14 @@ fun VehicleMaintenanceApp(
                 onOpenVehicle = { navController.navigate(Routes.vehicleDetail(it)) },
                 onEditVehicle = { navController.navigate(Routes.editVehicle(it)) },
                 onOpenBackup = { navController.navigate(Routes.BACKUP) },
+                onOpenPrivacy = { navController.navigate(Routes.PRIVACY) },
             )
         }
         composable(Routes.BACKUP) {
             BackupScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Routes.PRIVACY) {
+            PrivacyScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.NEW_VEHICLE) {
             VehicleFormScreen(

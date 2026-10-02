@@ -237,11 +237,16 @@ command from the project root using the wrapper.
 - Instrumented tests (needs a device or emulator): `./gradlew connectedDebugAndroidTest`
 - Android Lint: `./gradlew lintDebug`
 - Full build plus checks: `./gradlew build`
+- Release bundle for Play: `./gradlew bundleRelease` (signed only when
+  `keystore.properties` exists; see `play-store/release.md`)
 - Clean: `./gradlew clean`
 
 There is no dev server. To run the app, use Run in Android Studio, or
 `./gradlew installDebug` followed by
-`adb shell am start -n com.example.vehiclemaintenance/.MainActivity`.
+`adb shell am start -n com.stevenmcgrew.vehiclemaintenancetrackerapp.debug/com.example.vehiclemaintenance.MainActivity`.
+Debug builds use the `.debug` application ID suffix, so they install beside a
+release build. The Kotlin namespace and source packages stay
+`com.example.vehiclemaintenance`.
 
 Unit testing is already wired up: JUnit 4 for `app/src/test`, plus AndroidX
 Test, Espresso, and Compose UI test for `app/src/androidTest`. Only the

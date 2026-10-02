@@ -1,6 +1,6 @@
 # Vehicle Maintenance - Project Overview
 
-<!-- blueprint:source-hash 3fe9179ee0cc1d7e6728817a9c0aa246cb9181c2e95fe7e3e262fc3c0df6b526 -->
+<!-- blueprint:source-hash a876505abab193d360018ba54e9046c526d9496b8d86118160e98248bd4c6299 -->
 
 > An offline Android app that reminds a vehicle owner when service is due and
 > keeps a permanent, exportable record of what was done and what it cost.

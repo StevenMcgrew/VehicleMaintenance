@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 1,
+  "vehicles": [
+    {
+      "id": "sample-vehicle-rav4",
+      "year": 2018,
+      "make": "Toyota",
+      "model": "RAV4",
+      "engine": "2.5L I4",
+      "recordedMileage": 62400
+    },
+    {
+      "id": "sample-vehicle-f150",
+      "year": 2015,
+      "make": "Ford",
+      "model": "F-150",
+      "engine": "5.0L V8",
+      "recordedMileage": 118750
+    },
+    {
+      "id": "sample-vehicle-civic",
+      "year": 2021,
+      "make": "Honda",
+      "model": "Civic",
+      "engine": "2.0L I4",
+      "recordedMileage": 31200
+    }
+  ],
+  "maintenanceItems": [
+    {
+      "id": "sample-item-rav4-oil",
+      "vehicleId": "sample-vehicle-rav4",
+      "name": "Oil change",
+      "mileageInterval": 5000,
+      "recurrence": {
+        "value": 6,
+        "unit": "MONTHS"
+      },
+      "reminder": {
+        "value": 5,
+        "unit": "MONTHS"
+      },
+      "lastDoneDate": "2026-06-10",
+      "lastDoneMileage": 58900
+    },
+    {
+      "id": "sample-item-rav4-tires",
+      "vehicleId": "sample-vehicle-rav4",
+      "name": "Tire rotation",
+      "mileageInterval": 7500,
+      "recurrence": {
+        "value": 6,
+        "unit": "MONTHS"
+      },
+      "reminder": {
+        "value": 5,
+        "unit": "MONTHS"
+      },
+      "lastDoneDate": "2026-03-15",
+      "lastDoneMileage": 55000
+    },
+    {
+      "id": "sample-item-rav4-cabin",
+      "vehicleId": "sample-vehicle-rav4",
+      "name": "Cabin air filter",
+      "recurrence": {
+        "value": 1,
+        "unit": "YEARS"
+      },
+      "reminder": {
+        "value": 11,
+        "unit": "MONTHS"
+      },
+      "lastDoneDate": "2025-10-20",
+      "lastDoneMileage": 52000
+    },
+    {
+      "id": "sample-item-rav4-brake",
+      "vehicleId": "sample-vehicle-rav4",
+      "name": "Brake fluid",
+      "recurrence": {
+        "value": 2,
+        "unit": "YEARS"
+      },
+      "reminder": {
+        "value": 23,
+        "unit": "MONTHS"
+      },
+      "lastDoneDate": "2025-04-01",
+      "lastDoneMileage": 47800
+    },
+    {
+      "id": "sample-item-rav4-air",
+      "vehicleId": "sample-vehicle-rav4",
+      "name": "Engine air filter",
+      "mileageInterval": 30000,
+      "recurrence": {
+        "value": 1,
+        "unit": "YEARS"
+      },
+      "reminder": {
+        "value": 11,
+        "unit": "MONTHS"
+      },
+      "lastDoneDate": "2026-01-12",
+      "lastDoneMileage": 54300
+    },
+    {
+      "id": "sample-item-f150-oil",
+      "vehicleId": "sample-vehicle-f150",
+      "name": "Oil change",
+      "mileageInterval": 5000,
+      "recurrence": {
+        "value": 6,
+        "unit": "MONTHS"
+      },
+      "reminder": {
+        "value": 5,
+        "unit": "MONTHS"
+      },
+      "lastDoneDate": "2026-02-20",
+      "lastDoneMileage": 112900
+    },
+    {
+      "id": "sample-item-f150-trans",
+      "vehicleId": "sample-vehicle-f150",
+      "name": "Transmission fluid",
+      "mileageInterval": 60000,
+      "recurrence": {
+        "value": 2,
+        "unit": "YEARS"
+      },
+      "reminder": {
+        "value": 23,
+        "unit": "MONTHS"
+      },
+      "lastDoneDate": "2025-05-08",
+      "lastDoneMileage": 96000
+    },
+    {
+      "id": "sample-item-civic-oil",
+      "vehicleId": "sample-vehicle-civic",
+      "name": "Oil change",
+      "mileageInterval": 7500,
+      "recurrence": {
+        "value": 1,
+        "unit": "YEARS"
+      },
+      "reminder": {
+        "value": 11,
+        "unit": "MONTHS"
+      },
+      "lastDoneDate": "2026-05-02",
+      "lastDoneMileage": 28400
+    }
+  ],
+  "serviceLogEntries": [
+    {
+      "id": "sample-log-01",
+      "vehicleId": "sample-vehicle-rav4",
+      "description": "Brake fluid flush",
+      "date": "2025-04-01",
+      "odometer": 47800,
+      "maintenanceItemId": "sample-item-rav4-brake",
+      "cost": 12900
+    },
+    {
+      "id": "sample-log-02",
+      "vehicleId": "sample-vehicle-rav4",
+      "description": "Replaced rear wiper motor",
+      "date": "2025-07-19",
+      "odometer": 50150,
+      "cost": 18750,
+      "notes": "Shop quoted 2 hours, took 1.5"
+    },
+    {
+      "id": "sample-log-03",
+      "vehicleId": "sample-vehicle-rav4",
+      "description": "Cabin air filter",
+      "date": "2025-10-20",
+      "odometer": 52000,
+      "maintenanceItemId": "sample-item-rav4-cabin",
+      "cost": 2499,
+      "notes": "Did it myself"
+    },
+    {
+      "id": "sample-log-04",
+      "vehicleId": "sample-vehicle-rav4",
+      "description": "Oil and filter, 0W-20 synthetic",
+      "date": "2025-12-04",
+      "odometer": 53900,
+      "maintenanceItemId": "sample-item-rav4-oil",
+      "cost": 6899
+    },
+    {
+      "id": "sample-log-05",
+      "vehicleId": "sample-vehicle-rav4",
+      "description": "Engine air filter",
+      "date": "2026-01-12",
+      "odometer": 54300,
+      "maintenanceItemId": "sample-item-rav4-air",
+      "cost": 2199
+    },
+    {
+      "id": "sample-log-06",
+      "vehicleId": "sample-vehicle-rav4",
+      "description": "Tire rotation and balance",
+      "date": "2026-03-15",
+      "odometer": 55000,
+      "maintenanceItemId": "sample-item-rav4-tires",
+      "cost": 4000
+    },
+    {
+      "id": "sample-log-07",
+      "vehicleId": "sample-vehicle-rav4",
+      "description": "Two new front tires",
+      "date": "2026-03-15",
+      "odometer": 55000,
+      "cost": 32480
+    },
+    {
+      "id": "sample-log-08",
+      "vehicleId": "sample-vehicle-rav4",
+      "description": "Oil and filter, 0W-20 synthetic",
+      "date": "2026-06-10",
+      "odometer": 58900,
+      "maintenanceItemId": "sample-item-rav4-oil",
+      "cost": 7199
+    },
+    {
+      "id": "sample-log-09",
+      "vehicleId": "sample-vehicle-f150",
+      "description": "Transmission fluid and filter",
+      "date": "2025-05-08",
+      "odometer": 96000,
+      "maintenanceItemId": "sample-item-f150-trans",
+      "cost": 28900
+    },
+    {
+      "id": "sample-log-10",
+      "vehicleId": "sample-vehicle-f150",
+      "description": "Oil and filter",
+      "date": "2026-02-20",
+      "odometer": 112900,
+      "maintenanceItemId": "sample-item-f150-oil",
+      "cost": 8450
+    },
+    {
+      "id": "sample-log-11",
+      "vehicleId": "sample-vehicle-civic",
+      "description": "Oil and filter",
+      "date": "2026-05-02",
+      "odometer": 28400,
+      "maintenanceItemId": "sample-item-civic-oil",
+      "cost": 5999
+    }
+  ]
+}

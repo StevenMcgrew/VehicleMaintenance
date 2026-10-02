@@ -1,19 +1,12 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-   Sample data extraction rules file; uncomment and customize as necessary.
-   See https://developer.android.com/about/versions/12/backup-restore#xml-changes
-   for details.
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Backup and device transfer rules for Android 12 and higher.
+   A full backup is intentional: with no include or exclude rules, all app
+   data, including the vehicle-maintenance.json store, goes to the user's own
+   Google account backup and moves in a device-to-device transfer. The privacy
+   policy and the Data safety answers in play-store/ describe this; keep them
+   in step if this changes.
 -->
 <data-extraction-rules>
-    <cloud-backup>
-        <!-- TODO: Use <include> and <exclude> to control what is backed up.
-        <include .../>
-        <exclude .../>
-        -->
-    </cloud-backup>
-    <!--
-    <device-transfer>
-        <include .../>
-        <exclude .../>
-    </device-transfer>
-    -->
+    <cloud-backup />
 </data-extraction-rules>

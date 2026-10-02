@@ -1,13 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-   Sample backup rules file; uncomment and customize as necessary.
-   See https://developer.android.com/guide/topics/data/autobackup
-   for details.
-   Note: This file is ignored for devices older than API 31
-   See https://developer.android.com/about/versions/12/backup-restore
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Auto backup rules for Android 11 and lower.
+   A full backup is intentional: with no rules, all app data, including the
+   vehicle-maintenance.json store, is copied to the user's own Google account
+   backup so their history follows them to a new phone. The privacy policy and
+   the Data safety answers in play-store/ describe this; keep them in step if
+   this changes. Cache is never backed up, so shared PDFs are not included.
 -->
-<full-backup-content>
-    <!--
-   <include domain="sharedpref" path="."/>
-   <exclude domain="sharedpref" path="device.xml"/>
--->
-</full-backup-content>
+<full-backup-content />

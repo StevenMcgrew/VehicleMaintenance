@@ -24,3 +24,6 @@ local.properties
 *.aab
 *.keystore
 *.jks
+
+# Release signing secrets, see play-store/release.md
+keystore.properties

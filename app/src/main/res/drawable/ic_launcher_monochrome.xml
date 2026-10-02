@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A wrench laid across a car front. The gap around the wrench is cut out of the car's shape rather
-     than painted, so the same path also works as the themed (monochrome) icon. The store icon in
-     play-store/graphics/icon.svg uses this same path; change both together. -->
+<!-- The themed icon uses the foreground's shape; only its alpha matters, the launcher supplies the color. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"

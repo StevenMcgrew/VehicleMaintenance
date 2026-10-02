@@ -234,6 +234,7 @@ class VehicleListScreenTest {
                     showForm = true
                 },
                 onOpenBackup = onOpenBackup,
+                onOpenPrivacy = {},
                 viewModel = listViewModel,
             )
         }

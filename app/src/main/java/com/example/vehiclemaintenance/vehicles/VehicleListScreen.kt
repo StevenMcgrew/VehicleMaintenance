@@ -60,6 +60,7 @@ fun VehicleListScreen(
     onOpenVehicle: (String) -> Unit,
     onEditVehicle: (String) -> Unit,
     onOpenBackup: () -> Unit,
+    onOpenPrivacy: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: VehicleListViewModel = viewModel(factory = VehicleListViewModel.Factory),
 ) {
@@ -71,6 +72,7 @@ fun VehicleListScreen(
         onOpenVehicle = onOpenVehicle,
         onEditVehicle = onEditVehicle,
         onOpenBackup = onOpenBackup,
+        onOpenPrivacy = onOpenPrivacy,
         onDeleteVehicle = viewModel::deleteVehicle,
         onRetry = viewModel::refresh,
         onDeleteErrorShown = viewModel::dismissDeleteError,
@@ -86,6 +88,7 @@ fun VehicleListContent(
     onOpenVehicle: (String) -> Unit,
     onEditVehicle: (String) -> Unit,
     onOpenBackup: () -> Unit,
+    onOpenPrivacy: () -> Unit,
     onDeleteVehicle: (String) -> Unit,
     onRetry: () -> Unit,
     onDeleteErrorShown: () -> Unit,
@@ -116,6 +119,7 @@ fun VehicleListContent(
                 showAddVehicle = !uiState.loadFailed,
                 onAddVehicle = onAddVehicle,
                 onOpenBackup = onOpenBackup,
+                onOpenPrivacy = onOpenPrivacy,
             )
             HorizontalDivider()
             VehicleListBody(
@@ -143,13 +147,15 @@ fun VehicleListContent(
 
 /**
  * Backup stays available even when the list fails to load, because restoring a backup is a way
- * to recover. Wraps onto a second line so a large font scale cannot clip an action.
+ * to recover, and so does Privacy, because the policy must always be reachable. Wraps onto a
+ * second line so a large font scale cannot clip an action.
  */
 @Composable
 private fun VehicleListActionsRow(
     showAddVehicle: Boolean,
     onAddVehicle: () -> Unit,
     onOpenBackup: () -> Unit,
+    onOpenPrivacy: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     FlowRow(
@@ -167,6 +173,7 @@ private fun VehicleListActionsRow(
             )
         }
         ExtraSmallButton(stringResource(R.string.backup_action), onOpenBackup)
+        ExtraSmallButton(stringResource(R.string.privacy_action), onOpenPrivacy)
     }
 }
 
@@ -322,6 +329,7 @@ private fun VehicleListEmptyPreview() {
             onOpenVehicle = {},
             onEditVehicle = {},
             onOpenBackup = {},
+            onOpenPrivacy = {},
             onDeleteVehicle = {},
             onRetry = {},
             onDeleteErrorShown = {},
@@ -346,6 +354,7 @@ private fun VehicleListPreview() {
             onOpenVehicle = {},
             onEditVehicle = {},
             onOpenBackup = {},
+            onOpenPrivacy = {},
             onDeleteVehicle = {},
             onRetry = {},
             onDeleteErrorShown = {},

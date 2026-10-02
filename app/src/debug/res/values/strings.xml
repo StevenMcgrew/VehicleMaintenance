@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tells the debug build apart from a release build installed on the same device. -->
+    <string name="app_name">Vehicle Maintenance (debug)</string>
+</resources>

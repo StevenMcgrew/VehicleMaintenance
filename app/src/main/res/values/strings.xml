@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">VehicleMaintenance</string>
+    <string name="app_name">Vehicle Maintenance Tracker App</string>
 
     <string name="vehicles_title">Vehicles</string>
     <string name="vehicles_empty_title">No vehicles yet</string>
@@ -208,4 +208,28 @@
         <item quantity="one">1 service record</item>
         <item quantity="other">%1$d service records</item>
     </plurals>
+
+    <!-- The privacy policy. Keep every paragraph in step with play-store/privacy-policy.html. -->
+    <string name="privacy_action">Privacy</string>
+    <string name="privacy_title">Privacy policy</string>
+    <string name="privacy_effective">Effective October 2, 2026</string>
+    <string name="privacy_intro">This app keeps everything you enter on your device. This policy explains what it stores and where that information can go.</string>
+    <string name="privacy_stored_heading">What the app stores</string>
+    <string name="privacy_stored_body">The vehicles, maintenance items, service and repair records, costs, mileage, and notes you enter. They are kept only in the app\'s private storage on your device.</string>
+    <string name="privacy_collected_heading">What is collected</string>
+    <string name="privacy_collected_body">Nothing. The app has no account, no ads, no analytics, and no crash reporting. It does not request internet access, so it cannot send your information anywhere, and the developer never receives any of it.</string>
+    <string name="privacy_backup_heading">Android backup</string>
+    <string name="privacy_backup_body">If backup is turned on for your device, Android may copy the app\'s data to your Google account so it can be restored on a new phone. Google runs that backup, not the developer, and you can turn it off in your device\'s settings.</string>
+    <string name="privacy_files_heading">Files you export or share</string>
+    <string name="privacy_files_body">When you export a backup, or save, print, or share a service history PDF, the file goes only to the place or app you choose.</string>
+    <string name="privacy_reminders_heading">Reminders</string>
+    <string name="privacy_reminders_body">Service reminders are notifications created on your device. You can turn them off in your device\'s settings.</string>
+    <string name="privacy_deleting_heading">Deleting your information</string>
+    <string name="privacy_deleting_body">Deleting a vehicle removes it and everything logged for it. Uninstalling the app removes all of its data from your device. Files you exported and any Android backup are separate, and stay until you delete them.</string>
+    <string name="privacy_children_heading">Children</string>
+    <string name="privacy_children_body">The app is not directed at children and collects no information from anyone, including children.</string>
+    <string name="privacy_changes_heading">Changes to this policy</string>
+    <string name="privacy_changes_body">If this policy changes, the new version is posted in the app and at the same web address, with a new effective date.</string>
+    <string name="privacy_contact_heading">Contact</string>
+    <string name="privacy_contact_body">The developer\'s contact details are on the app\'s Google Play listing.</string>
 </resources>
