@@ -4,10 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -26,10 +30,15 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.error
@@ -127,8 +136,30 @@ fun OutlineLabelTextField(
         supportingText = error?.let { { Text(it) } },
         modifier = modifier
             .fillMaxWidth()
+            .then(rememberKeepAboveKeyboard(error))
             .semantics { if (error != null) error(error) },
     )
+}
+
+/**
+ * Keeps a whole text field, error text included, above the keyboard while it has focus. On its
+ * own a text field scrolls only its cursor line into view, which leaves the outline and any
+ * error under the keyboard. Asks again as the keyboard slides in and when an error appears.
+ */
+@Composable
+fun rememberKeepAboveKeyboard(error: String?): Modifier {
+    val requester = remember { BringIntoViewRequester() }
+    var focused by remember { mutableStateOf(false) }
+    // Read only while focused, so the other fields don't recompose as the keyboard animates.
+    val keyboardHeight = if (focused) WindowInsets.ime.getBottom(LocalDensity.current) else 0
+    LaunchedEffect(focused, keyboardHeight, error) {
+        if (focused) requester.bringIntoView()
+    }
+    return remember(requester) {
+        Modifier
+            .bringIntoViewRequester(requester)
+            .onFocusChanged { focused = it.isFocused }
+    }
 }
 
 /** For an input with no visible label, carries its description to screen readers. */
