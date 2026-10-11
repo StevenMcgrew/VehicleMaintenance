@@ -60,7 +60,7 @@ build signed with your real key, or the install fails with a signature mismatch.
 
 - [ ] Replace `[CONTACT EMAIL]` in `play-store/privacy-policy.html` (two places on
       one line)
-- [ ] Host that page at a public URL that will not move, such as GitHub Pages or
+- [ ] Host that page at a public URL (https://1drv.ms/u/c/3b62d5084c3f0f5b/IQBQbb-B66_xQrsji6E0GG31AYFMwubPUPhZsmLrcucOY_0?e=JsC8jK) that will not move, such as GitHub Pages or
       your own site, and open it in a browser to check it
 - [ ] Bump `versionCode` in `app/build.gradle.kts` for every later upload.
       `versionName` is what users see.
