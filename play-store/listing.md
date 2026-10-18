@@ -90,6 +90,12 @@ All files are in `play-store/graphics/`:
 | --- | --- | --- |
 | App icon | `icon-512.png` | 512 x 512 PNG |
 | Feature graphic | `feature-graphic.png` | 1024 x 500 PNG or JPEG, no alpha |
-| Phone screenshots | `screenshot-*.png` | 2 to 8 images, 1080 x 1920 here |
+| Phone screenshots | `screenshot-*.png` | 2 to 8 images, 1080 x 1920 here, no alpha |
 
 The screenshots show only the fictional data in `play-store/sample-data.json`.
+
+Each screenshot is a raw capture from `raw/` placed under a caption on the
+brand blue, using `screenshot-template.svg`. The captions live in
+`make-screenshots.sh`. To refresh them after a UI change, recapture the raw
+screens at `adb shell wm size 1080x1920` (then `wm size reset`), keep the same
+file names in `raw/`, and run `./play-store/graphics/make-screenshots.sh`.

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <!-- Filled in by make-screenshots.sh: __LINE1__, __LINE2__, and __IMAGE__ (a data URI). -->
+  <defs>
+    <clipPath id="screen">
+      <rect x="119" y="372" width="842" height="1497" rx="40"/>
+    </clipPath>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#00285A" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+  <rect width="1080" height="1920" fill="#007AFF"/>
+  <g fill="#FFFFFF" font-family="Noto Sans, Liberation Sans, sans-serif" font-size="72" font-weight="700" text-anchor="middle">
+    <text x="540" y="170">__LINE1__</text>
+    <text x="540" y="262">__LINE2__</text>
+  </g>
+  <rect x="119" y="372" width="842" height="1497" rx="40" fill="#FFFFFF" filter="url(#shadow)"/>
+  <image x="119" y="372" width="842" height="1497" clip-path="url(#screen)" preserveAspectRatio="xMidYMid slice" href="__IMAGE__"/>
+</svg>
