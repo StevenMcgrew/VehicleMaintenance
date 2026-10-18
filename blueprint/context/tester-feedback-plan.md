@@ -11,7 +11,7 @@ Every item is an enhancement. Each code change runs as its own `/fix` (or
 | --- | --- | --- | --- | --- |
 | 1 | Three-dot menu on the vehicle list with a System / Light / Dark theme switch; Backup data and Privacy move into it | 5) Dark mode | Code | Done (`fix/vehicle-list-menu-with-a-theme-choice`) |
 | 2 | Share app menu item, with a pre-written message and the Play link | 3) Share app | Code | Done (`fix/share-app-menu-item`) |
-| 3 | Rate app menu item, opening the Play listing | 4) In-app rating | Code | `/fix` |
+| 3 | Rate app menu item, opening the Play listing | 4) In-app rating | Code | Done (`fix/rate-app-menu-item`) |
 | 4 | Help menu item opening a Help screen: short how-to for items, reminders, mileage, backup | Additional: help | Code | `/fix` |
 | 5 | Rewrite the store listing for search keywords | 1) ASO | Store text | `/fix` (edits `play-store/listing.md` only) |
 | 6 | Annotated feature screenshots | 2) Screenshots | Store assets | `/fix` (after 1 to 4, so captures show the new menu) |

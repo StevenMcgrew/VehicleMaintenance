@@ -181,6 +181,8 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="share_app_action">Share app</string>
+    <string name="rate_app_action">Rate app</string>
+    <string name="rate_app_unavailable">No app found to open the Play Store</string>
     <string name="share_app_subject">Vehicle Maintenance Tracker</string>
     <!-- The text sent when someone shares the app; the argument is the Play Store link. -->
     <string name="share_app_message">I use Vehicle Maintenance Tracker to get service reminders and keep a log of every repair and what it cost. It\'s free, works offline, and needs no account: %1$s</string>

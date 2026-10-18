@@ -12,4 +12,12 @@ class PlayStoreListingTest {
             PLAY_STORE_LISTING_URL,
         )
     }
+
+    @Test
+    fun marketUriPointsAtTheReleasePackage() {
+        assertEquals(
+            "market://details?id=com.stevenmcgrew.vehiclemaintenancetrackerapp",
+            PLAY_STORE_MARKET_URI,
+        )
+    }
 }

@@ -28,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.vehiclemaintenance.R
+import com.example.vehiclemaintenance.playstore.openPlayStoreListing
 import com.example.vehiclemaintenance.playstore.shareApp
 import com.example.vehiclemaintenance.settings.ThemeMode
 import com.example.vehiclemaintenance.ui.brandIconButtonColors
@@ -71,6 +72,10 @@ fun VehicleListMenu(
                     expanded = false
                     shareApp(context)
                 },
+                onRateApp = {
+                    expanded = false
+                    openPlayStoreListing(context)
+                },
             )
         }
     }
@@ -83,6 +88,7 @@ private fun VehicleListMenuItems(
     onOpenBackup: () -> Unit,
     onOpenPrivacy: () -> Unit,
     onShareApp: () -> Unit,
+    onRateApp: () -> Unit,
 ) {
     ThemeChoice(
         themeMode = themeMode,
@@ -102,6 +108,11 @@ private fun VehicleListMenuItems(
     DropdownMenuItem(
         text = { Text(stringResource(R.string.share_app_action)) },
         onClick = onShareApp,
+        colors = brandMenuItemColors(),
+    )
+    DropdownMenuItem(
+        text = { Text(stringResource(R.string.rate_app_action)) },
+        onClick = onRateApp,
         colors = brandMenuItemColors(),
     )
 }
@@ -149,6 +160,7 @@ private fun VehicleListMenuItemsPreview() {
                     onOpenBackup = {},
                     onOpenPrivacy = {},
                     onShareApp = {},
+                    onRateApp = {},
                 )
             }
         }

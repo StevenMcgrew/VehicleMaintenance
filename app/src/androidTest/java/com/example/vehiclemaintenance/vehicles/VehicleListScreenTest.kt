@@ -185,6 +185,21 @@ class VehicleListScreenTest {
     }
 
     @Test
+    fun rateAppIsTheMenuItemAfterShareApp() {
+        setContent()
+        waitForText(R.string.vehicles_empty_title)
+
+        composeRule.onNodeWithContentDescription(string(R.string.more_options)).performClick()
+
+        val shareTop = composeRule.onNodeWithText(string(R.string.share_app_action))
+            .fetchSemanticsNode().boundsInRoot.top
+        val rateTop = composeRule.onNodeWithText(string(R.string.rate_app_action))
+            .assertIsDisplayed()
+            .fetchSemanticsNode().boundsInRoot.top
+        assertTrue(rateTop > shareTop)
+    }
+
+    @Test
     fun themeSegmentReportsTheChosenModeAndKeepsTheMenuOpen() {
         val chosen = mutableListOf<ThemeMode>()
         setContent(onThemeModeChange = { chosen += it })
