@@ -3,7 +3,6 @@ package com.example.vehiclemaintenance.vehicles
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -47,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vehiclemaintenance.R
 import com.example.vehiclemaintenance.maintenance.lastRecordedMileageText
+import com.example.vehiclemaintenance.settings.ThemeMode
 import com.example.vehiclemaintenance.ui.ExtraSmallButton
 import com.example.vehiclemaintenance.ui.brandButtonColors
 import com.example.vehiclemaintenance.ui.brandIconButtonColors
@@ -59,6 +59,8 @@ fun VehicleListScreen(
     onAddVehicle: () -> Unit,
     onOpenVehicle: (String) -> Unit,
     onEditVehicle: (String) -> Unit,
+    themeMode: ThemeMode,
+    onThemeModeChange: (ThemeMode) -> Unit,
     onOpenBackup: () -> Unit,
     onOpenPrivacy: () -> Unit,
     modifier: Modifier = Modifier,
@@ -71,6 +73,8 @@ fun VehicleListScreen(
         onAddVehicle = onAddVehicle,
         onOpenVehicle = onOpenVehicle,
         onEditVehicle = onEditVehicle,
+        themeMode = themeMode,
+        onThemeModeChange = onThemeModeChange,
         onOpenBackup = onOpenBackup,
         onOpenPrivacy = onOpenPrivacy,
         onDeleteVehicle = viewModel::deleteVehicle,
@@ -87,6 +91,8 @@ fun VehicleListContent(
     onAddVehicle: () -> Unit,
     onOpenVehicle: (String) -> Unit,
     onEditVehicle: (String) -> Unit,
+    themeMode: ThemeMode,
+    onThemeModeChange: (ThemeMode) -> Unit,
     onOpenBackup: () -> Unit,
     onOpenPrivacy: () -> Unit,
     onDeleteVehicle: (String) -> Unit,
@@ -110,18 +116,25 @@ fun VehicleListContent(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.vehicles_title)) },
+                actions = {
+                    VehicleListMenu(
+                        themeMode = themeMode,
+                        onThemeModeChange = onThemeModeChange,
+                        onOpenBackup = onOpenBackup,
+                        onOpenPrivacy = onOpenPrivacy,
+                    )
+                },
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-            VehicleListActionsRow(
-                showAddVehicle = !uiState.loadFailed,
-                onAddVehicle = onAddVehicle,
-                onOpenBackup = onOpenBackup,
-                onOpenPrivacy = onOpenPrivacy,
-            )
-            HorizontalDivider()
+            // Backup and Privacy sit in the top bar menu so they stay reachable when the list fails
+            // to load: restoring a backup is a way to recover, and the policy must always be reachable.
+            if (!uiState.loadFailed) {
+                VehicleListActionsRow(onAddVehicle = onAddVehicle)
+                HorizontalDivider()
+            }
             VehicleListBody(
                 uiState = uiState,
                 onOpenVehicle = onOpenVehicle,
@@ -145,35 +158,21 @@ fun VehicleListContent(
     }
 }
 
-/**
- * Backup stays available even when the list fails to load, because restoring a backup is a way
- * to recover, and so does Privacy, because the policy must always be reachable. Wraps onto a
- * second line so a large font scale cannot clip an action.
- */
 @Composable
 private fun VehicleListActionsRow(
-    showAddVehicle: Boolean,
     onAddVehicle: () -> Unit,
-    onOpenBackup: () -> Unit,
-    onOpenPrivacy: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    FlowRow(
+    Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        if (showAddVehicle) {
-            ExtraSmallButton(
-                text = stringResource(R.string.add_vehicle),
-                onClick = onAddVehicle,
-                icon = Icons.Filled.Add,
-            )
-        }
-        ExtraSmallButton(stringResource(R.string.backup_action), onOpenBackup)
-        ExtraSmallButton(stringResource(R.string.privacy_action), onOpenPrivacy)
+        ExtraSmallButton(
+            text = stringResource(R.string.add_vehicle),
+            onClick = onAddVehicle,
+            icon = Icons.Filled.Add,
+        )
     }
 }
 
@@ -328,6 +327,8 @@ private fun VehicleListEmptyPreview() {
             onAddVehicle = {},
             onOpenVehicle = {},
             onEditVehicle = {},
+            themeMode = ThemeMode.SYSTEM,
+            onThemeModeChange = {},
             onOpenBackup = {},
             onOpenPrivacy = {},
             onDeleteVehicle = {},
@@ -353,6 +354,8 @@ private fun VehicleListPreview() {
             onAddVehicle = {},
             onOpenVehicle = {},
             onEditVehicle = {},
+            themeMode = ThemeMode.SYSTEM,
+            onThemeModeChange = {},
             onOpenBackup = {},
             onOpenPrivacy = {},
             onDeleteVehicle = {},

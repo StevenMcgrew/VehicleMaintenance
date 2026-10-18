@@ -5,7 +5,12 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.MenuItemColors
+import androidx.compose.material3.SegmentedButtonColors
+import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.vehiclemaintenance.ui.theme.LocalBrandColors
 
@@ -40,3 +45,23 @@ fun brandOutlinedButtonBorder(enabled: Boolean): BorderStroke {
 fun brandIconButtonColors(): IconButtonColors = IconButtonDefaults.iconButtonColors(
     contentColor = LocalBrandColors.current.primary,
 )
+
+/** A menu item whose label is the brand primary, the app's cue for tappable text. */
+@Composable
+fun brandMenuItemColors(): MenuItemColors = MenuDefaults.itemColors(
+    textColor = LocalBrandColors.current.primary,
+)
+
+/** The selected segment is filled like a brand button; the others are outlined like one. */
+@Composable
+fun brandSegmentedButtonColors(): SegmentedButtonColors {
+    val brand = LocalBrandColors.current
+    return SegmentedButtonDefaults.colors(
+        activeContainerColor = brand.primary,
+        activeContentColor = brand.onPrimary,
+        activeBorderColor = brand.primary,
+        inactiveContainerColor = Color.Transparent,
+        inactiveContentColor = brand.primary,
+        inactiveBorderColor = brand.primary,
+    )
+}

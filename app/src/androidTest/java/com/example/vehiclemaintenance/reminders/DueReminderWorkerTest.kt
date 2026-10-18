@@ -74,7 +74,9 @@ class DueReminderWorkerTest {
                 ),
             ),
         )
-        val container = AppContainer(storeFile)
+        val container = AppContainer(storeFile) {
+            error("The due check never reads settings")
+        }
 
         val worker = TestListenableWorkerBuilder<DueReminderWorker>(application)
             .setWorkerFactory(

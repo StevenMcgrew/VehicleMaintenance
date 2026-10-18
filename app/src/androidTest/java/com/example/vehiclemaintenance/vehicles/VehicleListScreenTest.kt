@@ -24,6 +24,7 @@ import com.example.vehiclemaintenance.data.storeJson
 import com.example.vehiclemaintenance.maintenance.formatMileage
 import com.example.vehiclemaintenance.servicelog.JsonServiceLogRepository
 import com.example.vehiclemaintenance.servicelog.ServiceLogRepository
+import com.example.vehiclemaintenance.settings.ThemeMode
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -152,9 +153,32 @@ class VehicleListScreenTest {
         setContent(onOpenBackup = { backupOpened++ })
         waitForText(R.string.vehicles_empty_title)
 
+        composeRule.onNodeWithContentDescription(string(R.string.more_options)).performClick()
         composeRule.onNodeWithText(string(R.string.backup_action)).performClick()
 
         assertEquals(1, backupOpened)
+    }
+
+    @Test
+    fun backupDataIsInTheMenuNotTheActionsRow() {
+        setContent()
+        waitForText(R.string.vehicles_empty_title)
+
+        composeRule.onNodeWithText(string(R.string.backup_action)).assertDoesNotExist()
+        composeRule.onNodeWithText(string(R.string.privacy_action)).assertDoesNotExist()
+    }
+
+    @Test
+    fun themeSegmentReportsTheChosenModeAndKeepsTheMenuOpen() {
+        val chosen = mutableListOf<ThemeMode>()
+        setContent(onThemeModeChange = { chosen += it })
+        waitForText(R.string.vehicles_empty_title)
+
+        composeRule.onNodeWithContentDescription(string(R.string.more_options)).performClick()
+        composeRule.onNodeWithText(string(R.string.theme_dark)).performClick()
+
+        assertEquals(listOf(ThemeMode.DARK), chosen)
+        composeRule.onNodeWithText(string(R.string.theme_label)).assertIsDisplayed()
     }
 
     private val headline: String
@@ -199,16 +223,21 @@ class VehicleListScreenTest {
     private fun setContent(
         onOpenBackup: () -> Unit = {},
         onEditVehicle: (String) -> Unit = {},
+        onThemeModeChange: (ThemeMode) -> Unit = {},
     ) {
         composeRule.setContent {
             VehicleMaintenanceTheme {
-                Harness(onOpenBackup, onEditVehicle)
+                Harness(onOpenBackup, onEditVehicle, onThemeModeChange)
             }
         }
     }
 
     @Composable
-    private fun Harness(onOpenBackup: () -> Unit, onEditVehicle: (String) -> Unit) {
+    private fun Harness(
+        onOpenBackup: () -> Unit,
+        onEditVehicle: (String) -> Unit,
+        onThemeModeChange: (ThemeMode) -> Unit,
+    ) {
         var showForm by remember { mutableStateOf(false) }
         var editingId by remember { mutableStateOf<String?>(null) }
         if (showForm) {
@@ -233,6 +262,8 @@ class VehicleListScreenTest {
                     editingId = it
                     showForm = true
                 },
+                themeMode = ThemeMode.SYSTEM,
+                onThemeModeChange = onThemeModeChange,
                 onOpenBackup = onOpenBackup,
                 onOpenPrivacy = {},
                 viewModel = listViewModel,

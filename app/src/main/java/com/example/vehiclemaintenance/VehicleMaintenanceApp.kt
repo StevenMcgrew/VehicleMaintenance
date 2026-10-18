@@ -15,6 +15,7 @@ import com.example.vehiclemaintenance.maintenance.VehicleDetailScreen
 import com.example.vehiclemaintenance.privacy.PrivacyScreen
 import com.example.vehiclemaintenance.servicelog.ServiceHistoryScreen
 import com.example.vehiclemaintenance.servicelog.ServiceLogFormScreen
+import com.example.vehiclemaintenance.settings.ThemeMode
 import com.example.vehiclemaintenance.vehicles.VehicleFormScreen
 import com.example.vehiclemaintenance.vehicles.VehicleListScreen
 
@@ -56,6 +57,8 @@ object Routes {
 
 @Composable
 fun VehicleMaintenanceApp(
+    themeMode: ThemeMode,
+    onThemeModeChange: (ThemeMode) -> Unit,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
@@ -69,6 +72,8 @@ fun VehicleMaintenanceApp(
                 onAddVehicle = { navController.navigate(Routes.NEW_VEHICLE) },
                 onOpenVehicle = { navController.navigate(Routes.vehicleDetail(it)) },
                 onEditVehicle = { navController.navigate(Routes.editVehicle(it)) },
+                themeMode = themeMode,
+                onThemeModeChange = onThemeModeChange,
                 onOpenBackup = { navController.navigate(Routes.BACKUP) },
                 onOpenPrivacy = { navController.navigate(Routes.PRIVACY) },
             )

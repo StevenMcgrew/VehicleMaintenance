@@ -20,6 +20,7 @@ import com.example.vehiclemaintenance.R
 import com.example.vehiclemaintenance.data.JsonFileStore
 import com.example.vehiclemaintenance.data.MaintenanceStoreHolder
 import com.example.vehiclemaintenance.servicelog.JsonServiceLogRepository
+import com.example.vehiclemaintenance.settings.ThemeMode
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 import com.example.vehiclemaintenance.vehicles.JsonVehicleRepository
 import com.example.vehiclemaintenance.vehicles.VehicleListScreen
@@ -58,7 +59,7 @@ class PrivacyScreenTest {
         setContent()
         waitForText(R.string.vehicles_empty_title)
 
-        composeRule.onNodeWithText(string(R.string.privacy_action)).performClick()
+        openPrivacyFromTheMenu()
 
         composeRule.onNodeWithText(string(R.string.privacy_title)).assertIsDisplayed()
         composeRule.onNode(
@@ -76,7 +77,7 @@ class PrivacyScreenTest {
         setContent()
         waitForText(R.string.vehicles_load_error)
 
-        composeRule.onNodeWithText(string(R.string.privacy_action)).performClick()
+        openPrivacyFromTheMenu()
 
         composeRule.onNodeWithText(string(R.string.privacy_title)).assertIsDisplayed()
     }
@@ -104,11 +105,18 @@ class PrivacyScreenTest {
                 onAddVehicle = {},
                 onOpenVehicle = {},
                 onEditVehicle = {},
+                themeMode = ThemeMode.SYSTEM,
+                onThemeModeChange = {},
                 onOpenBackup = {},
                 onOpenPrivacy = { showPrivacy = true },
                 viewModel = listViewModel,
             )
         }
+    }
+
+    private fun openPrivacyFromTheMenu() {
+        composeRule.onNodeWithContentDescription(string(R.string.more_options)).performClick()
+        composeRule.onNodeWithText(string(R.string.privacy_action)).performClick()
     }
 
     private fun isHeading(): SemanticsMatcher = SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)
