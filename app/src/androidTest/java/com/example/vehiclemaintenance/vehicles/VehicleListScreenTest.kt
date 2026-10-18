@@ -28,6 +28,7 @@ import com.example.vehiclemaintenance.settings.ThemeMode
 import com.example.vehiclemaintenance.ui.theme.VehicleMaintenanceTheme
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -166,6 +167,21 @@ class VehicleListScreenTest {
 
         composeRule.onNodeWithText(string(R.string.backup_action)).assertDoesNotExist()
         composeRule.onNodeWithText(string(R.string.privacy_action)).assertDoesNotExist()
+    }
+
+    @Test
+    fun shareAppIsTheMenuItemAfterPrivacy() {
+        setContent()
+        waitForText(R.string.vehicles_empty_title)
+
+        composeRule.onNodeWithContentDescription(string(R.string.more_options)).performClick()
+
+        val privacyTop = composeRule.onNodeWithText(string(R.string.privacy_action))
+            .fetchSemanticsNode().boundsInRoot.top
+        val shareTop = composeRule.onNodeWithText(string(R.string.share_app_action))
+            .assertIsDisplayed()
+            .fetchSemanticsNode().boundsInRoot.top
+        assertTrue(shareTop > privacyTop)
     }
 
     @Test
