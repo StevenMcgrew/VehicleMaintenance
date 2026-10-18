@@ -13,7 +13,7 @@ Every item is an enhancement. Each code change runs as its own `/fix` (or
 | 2 | Share app menu item, with a pre-written message and the Play link | 3) Share app | Code | Done (`fix/share-app-menu-item`) |
 | 3 | Rate app menu item, opening the Play listing | 4) In-app rating | Code | Done (`fix/rate-app-menu-item`) |
 | 4 | Help menu item opening a Help screen: short how-to for items, reminders, mileage, backup | Additional: help | Code | Done (`fix/help-menu-item`) |
-| 5 | Rewrite the store listing for search keywords | 1) ASO | Store text | `/fix` (edits `play-store/listing.md` only) |
+| 5 | Rewrite the store listing for search keywords | 1) ASO | Store text | Done (`fix/store-listing-keywords`) |
 | 6 | Annotated feature screenshots | 2) Screenshots | Store assets | `/fix` (after 1 to 4, so captures show the new menu) |
 
 Menu order on the vehicle list (top right): Theme, Backup data, Privacy, Share

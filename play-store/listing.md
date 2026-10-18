@@ -1,7 +1,7 @@
 # Store listing
 
 Copy each block into **Grow users > Store presence > Main store listing** in the
-Play Console. Character counts were measured on 2026-10-02 against Play's limits.
+Play Console. Character counts were measured on 2026-10-18 against Play's limits.
 Recount after any edit.
 
 ## App name
@@ -16,31 +16,36 @@ Vehicle Maintenance Tracker
 
 ## Short description
 
-80 of 80 characters.
+79 of 80 characters.
 
 ```text
-Service reminders and a full maintenance log for your cars. Offline and private.
+Car maintenance log with oil change and service reminders. Offline and private.
 ```
 
 ## Full description
 
-1453 of 4000 characters. Play shows the bullet characters as written.
+1779 of 4000 characters. Play shows the bullet characters as written.
 
 ```text
-Know when your vehicle needs service, and keep a record of every job.
+Car maintenance made simple: get a service reminder when an oil change or tire rotation is due, and keep a maintenance log of every repair and what it cost.
 
-Vehicle Maintenance Tracker watches the services you care about, such as oil changes, tire rotations, filters, and fluids, and tells you when each one is due or overdue. Every service and repair you log becomes a permanent history, with the date, mileage, and what it cost.
+Vehicle Maintenance Tracker works for any car, truck, SUV, or motorcycle. Set up the services you care about, and the app tells you when each one is due or overdue. Every service and repair you log becomes a permanent service history, with the date, mileage, and cost.
 
 WHAT IT DOES
-• Tracks each vehicle you own, with year, make, model, engine, and current mileage
-• Lets you set each service by miles, by time, or both, such as every 5,000 miles or 6 months
-• Shows what is OK, due, or overdue at a glance, with the date and miles left
-• Sends a reminder when a service comes due, and repeats it every two weeks until you log it
-• Logs completed services and one-off repairs with date, odometer, cost, and notes
-• Keeps a service history for each vehicle, grouped by year, newest first
-• Adds up what each vehicle has cost, all time, by year, and as an average per year
-• Turns a vehicle's history into a PDF you can save, print, or share, which is handy when you sell
-• Exports everything to a file you choose, and imports it again on a new phone
+• Service reminders: a notification when a service comes due, repeated every two weeks until you log it
+• Oil change reminder and tire rotation tracking: set each service by miles, by time, or both, such as every 5,000 miles or 6 months
+• See what is OK, due, or overdue at a glance, with the next due date and miles left
+• Mileage log: update the odometer at any time, and every service is checked against the new reading
+• Auto repair log: record completed services and one-off repairs with date, odometer, cost, and notes
+• Car cost tracker: what each vehicle has cost, all time, by year, and as an average per year
+• A service history for each vehicle, grouped by year, newest first
+• Turn a vehicle's history into a PDF you can save, print, or share, which is handy when you sell
+• Export your records to a file you choose, and import them again on a new phone
+• Track as many vehicles as you own
+
+ALSO INCLUDED
+• Light, dark, or system theme
+• Built-in help that explains reminders, statuses, and mileage
 
 PRIVATE BY DESIGN
 • No account and no sign-in
@@ -52,13 +57,24 @@ Reminders still work if you never open the app, and the due list works on its ow
 Distances are in miles.
 ```
 
+### Keywords
+
+The copy above is written around these search phrases. Keep them in when
+editing, each used naturally and no more than three times per block, never as a
+bare list (Play treats that as keyword stuffing).
+
+- Primary: car maintenance, vehicle maintenance, service reminder, oil change
+  reminder, maintenance log, service history
+- Secondary: auto repair log, mileage log, car cost tracker, tire rotation, car,
+  truck, SUV, motorcycle
+
 ## Categorization and details
 
 | Field | Value |
 | --- | --- |
 | App or game | App |
 | Category | Auto & Vehicles |
-| Tags | Pick the closest matches the Console offers, such as car maintenance and vehicle |
+| Tags | Up to five from the Console list. Pick the closest to car maintenance, vehicle management, and car care that it offers |
 | Contains ads | No |
 | In-app purchases | No |
 | Price | Free |
