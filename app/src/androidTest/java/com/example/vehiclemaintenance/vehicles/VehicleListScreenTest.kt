@@ -200,6 +200,21 @@ class VehicleListScreenTest {
     }
 
     @Test
+    fun helpIsTheMenuItemAfterRateApp() {
+        setContent()
+        waitForText(R.string.vehicles_empty_title)
+
+        composeRule.onNodeWithContentDescription(string(R.string.more_options)).performClick()
+
+        val rateTop = composeRule.onNodeWithText(string(R.string.rate_app_action))
+            .fetchSemanticsNode().boundsInRoot.top
+        val helpTop = composeRule.onNodeWithText(string(R.string.help_action))
+            .assertIsDisplayed()
+            .fetchSemanticsNode().boundsInRoot.top
+        assertTrue(helpTop > rateTop)
+    }
+
+    @Test
     fun themeSegmentReportsTheChosenModeAndKeepsTheMenuOpen() {
         val chosen = mutableListOf<ThemeMode>()
         setContent(onThemeModeChange = { chosen += it })
@@ -297,6 +312,7 @@ class VehicleListScreenTest {
                 onThemeModeChange = onThemeModeChange,
                 onOpenBackup = onOpenBackup,
                 onOpenPrivacy = {},
+                onOpenHelp = {},
                 viewModel = listViewModel,
             )
         }

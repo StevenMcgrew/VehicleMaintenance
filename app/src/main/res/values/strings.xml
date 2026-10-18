@@ -244,4 +244,26 @@
     <string name="privacy_changes_body">If this policy changes, the new version is posted in the app and at the same web address, with a new effective date.</string>
     <string name="privacy_contact_heading">Contact</string>
     <string name="privacy_contact_body">The developer\'s contact details are on the app\'s Google Play listing.</string>
+
+    <!-- The help screen. Keep button and field names in step with their labels above. -->
+    <string name="help_action">Help</string>
+    <string name="help_title">Help</string>
+    <string name="help_getting_started_heading">Getting started</string>
+    <string name="help_getting_started_body">Tap Add vehicle on the Vehicles screen. Then tap a vehicle to open its maintenance list, and tap Add item for each service you want to track, such as an oil change or tire rotation.</string>
+    <string name="help_intervals_heading">Due every and Remind me every</string>
+    <string name="help_intervals_body">Due every is how often the service should be done, in miles, time, or both. It sets the status you see on screen. Remind me every is when you get a notification, counted from the date it was last done. A service tracked only by miles still needs a reminder time, so you are nudged to check it.</string>
+    <string name="help_last_done_heading">Date and mileage last done</string>
+    <string name="help_last_done_body">Enter these when you add an item if you know them. If you skip them, the clock starts today and the mileage check starts the first time you log the service.</string>
+    <string name="help_status_heading">OK, Due, and Overdue</string>
+    <string name="help_status_body">Due means the reminder time has arrived. Overdue means the due date has passed or the vehicle has reached the mileage it was due at. Miles left uses the vehicle\'s last recorded mileage.</string>
+    <string name="help_mileage_heading">Keeping mileage up to date</string>
+    <string name="help_mileage_body">The app cannot read your odometer. It learns the mileage when you log a service or repair, enter it on the vehicle form, or tap Update on the vehicle\'s screen. Every item is checked against the new reading right away.</string>
+    <string name="help_logging_heading">Logging work</string>
+    <string name="help_logging_body">Tap a service in the maintenance list and choose Log item as completed. This records the date, odometer, cost, and notes, and restarts that service\'s clock. For one-off work that is not a tracked item, use Log additional repairs.</string>
+    <string name="help_reminders_heading">Reminders</string>
+    <string name="help_reminders_body">The app checks once a day, even when it is closed. When a reminder comes due you get a notification, repeated every two weeks until you log the service. If notifications are off, the status on the vehicle screen still shows what is due.</string>
+    <string name="help_history_heading">Service history and costs</string>
+    <string name="help_history_body">Service history lists everything logged for a vehicle by year, with totals for all time, each year, and an average per year. The PDF button saves, prints, or shares it, which is handy when you sell the vehicle.</string>
+    <string name="help_backup_heading">Backing up your data</string>
+    <string name="help_backup_body">Your records live only on this phone. Use Backup data to export them to a file, and import that file on a new phone. Importing replaces everything currently in the app.</string>
 </resources>

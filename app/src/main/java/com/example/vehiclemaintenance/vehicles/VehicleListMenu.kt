@@ -44,6 +44,7 @@ fun VehicleListMenu(
     onThemeModeChange: (ThemeMode) -> Unit,
     onOpenBackup: () -> Unit,
     onOpenPrivacy: () -> Unit,
+    onOpenHelp: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
@@ -76,6 +77,10 @@ fun VehicleListMenu(
                     expanded = false
                     openPlayStoreListing(context)
                 },
+                onOpenHelp = {
+                    expanded = false
+                    onOpenHelp()
+                },
             )
         }
     }
@@ -89,6 +94,7 @@ private fun VehicleListMenuItems(
     onOpenPrivacy: () -> Unit,
     onShareApp: () -> Unit,
     onRateApp: () -> Unit,
+    onOpenHelp: () -> Unit,
 ) {
     ThemeChoice(
         themeMode = themeMode,
@@ -113,6 +119,11 @@ private fun VehicleListMenuItems(
     DropdownMenuItem(
         text = { Text(stringResource(R.string.rate_app_action)) },
         onClick = onRateApp,
+        colors = brandMenuItemColors(),
+    )
+    DropdownMenuItem(
+        text = { Text(stringResource(R.string.help_action)) },
+        onClick = onOpenHelp,
         colors = brandMenuItemColors(),
     )
 }
@@ -161,6 +172,7 @@ private fun VehicleListMenuItemsPreview() {
                     onOpenPrivacy = {},
                     onShareApp = {},
                     onRateApp = {},
+                    onOpenHelp = {},
                 )
             }
         }

@@ -109,6 +109,7 @@ class PrivacyScreenTest {
                 onThemeModeChange = {},
                 onOpenBackup = {},
                 onOpenPrivacy = { showPrivacy = true },
+                onOpenHelp = {},
                 viewModel = listViewModel,
             )
         }

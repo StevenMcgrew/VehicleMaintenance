@@ -63,6 +63,7 @@ fun VehicleListScreen(
     onThemeModeChange: (ThemeMode) -> Unit,
     onOpenBackup: () -> Unit,
     onOpenPrivacy: () -> Unit,
+    onOpenHelp: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: VehicleListViewModel = viewModel(factory = VehicleListViewModel.Factory),
 ) {
@@ -77,6 +78,7 @@ fun VehicleListScreen(
         onThemeModeChange = onThemeModeChange,
         onOpenBackup = onOpenBackup,
         onOpenPrivacy = onOpenPrivacy,
+        onOpenHelp = onOpenHelp,
         onDeleteVehicle = viewModel::deleteVehicle,
         onRetry = viewModel::refresh,
         onDeleteErrorShown = viewModel::dismissDeleteError,
@@ -95,6 +97,7 @@ fun VehicleListContent(
     onThemeModeChange: (ThemeMode) -> Unit,
     onOpenBackup: () -> Unit,
     onOpenPrivacy: () -> Unit,
+    onOpenHelp: () -> Unit,
     onDeleteVehicle: (String) -> Unit,
     onRetry: () -> Unit,
     onDeleteErrorShown: () -> Unit,
@@ -122,6 +125,7 @@ fun VehicleListContent(
                         onThemeModeChange = onThemeModeChange,
                         onOpenBackup = onOpenBackup,
                         onOpenPrivacy = onOpenPrivacy,
+                        onOpenHelp = onOpenHelp,
                     )
                 },
             )
@@ -331,6 +335,7 @@ private fun VehicleListEmptyPreview() {
             onThemeModeChange = {},
             onOpenBackup = {},
             onOpenPrivacy = {},
+            onOpenHelp = {},
             onDeleteVehicle = {},
             onRetry = {},
             onDeleteErrorShown = {},
@@ -358,6 +363,7 @@ private fun VehicleListPreview() {
             onThemeModeChange = {},
             onOpenBackup = {},
             onOpenPrivacy = {},
+            onOpenHelp = {},
             onDeleteVehicle = {},
             onRetry = {},
             onDeleteErrorShown = {},
