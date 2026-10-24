@@ -3,6 +3,7 @@ package com.example.vehiclemaintenance.servicelog
 import com.example.vehiclemaintenance.vehicles.Vehicle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
 import java.util.Locale
@@ -17,9 +18,11 @@ class HistoryReportTest {
         cost: Int?,
         notes: String? = null,
         description: String = "Oil change",
+        itemId: String? = null,
     ) = ServiceLogEntry(
         id = id,
         vehicleId = "v-1",
+        maintenanceItemId = itemId,
         description = description,
         date = LocalDate.parse(date),
         odometer = 48_000,
@@ -92,6 +95,30 @@ class HistoryReportTest {
 
         assertNull(report.years[0].rows.single { it.cost == null }.cost)
         assertEquals("$10.00", report.years[0].total)
+    }
+
+    @Test
+    fun `the breakdown carries formatted costs, percents, and drawing fractions`() {
+        val report = reportOf(
+            entry("a", "2026-09-05", cost = 7_500, itemId = "m-1"),
+            entry("b", "2025-09-05", cost = 7_500, itemId = "m-1"),
+            entry("c", "2026-06-12", cost = 5_000, description = "Replaced the alternator"),
+        )
+
+        assertEquals(
+            listOf(
+                ReportSlice(name = "Oil change", cost = "$150.00", percent = 75, fraction = 0.75f),
+                ReportSlice(name = null, cost = "$50.00", percent = 25, fraction = 0.25f),
+            ),
+            report.breakdown,
+        )
+    }
+
+    @Test
+    fun `an uncosted history has no breakdown`() {
+        val report = reportOf(entry("a", "2026-03-01", cost = null, itemId = "m-1"))
+
+        assertTrue(report.breakdown.isEmpty())
     }
 
     @Test

@@ -75,3 +75,9 @@ it to your project.
   vehicles
 - [ ] 12. **Cloud backup** - paid upgrade pairing photo storage with off-device
   backup
+
+## Tester feedback
+
+- [x] 13. **Cost breakdown chart** - pie chart of all-time spend at the top of
+  the service history screen and in the service history PDF: one slice per
+  tracked maintenance item, and one "Additional repairs" slice for ad-hoc work

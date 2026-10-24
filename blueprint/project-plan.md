@@ -45,6 +45,7 @@ account.
 - Receive notifications when a service is due, repeating until it is logged
 - See cost totals per vehicle on the service history screen: all time, per calendar year, and an average per year
 - Export and import all data as a JSON file
+- After v1 (tester feedback): a cost breakdown pie chart at the top of the service history screen and in its PDF
 
 ## 4. Data - What are we storing?
 
@@ -84,6 +85,7 @@ Nothing below is stored. All of it is computed from the fields above.
 - Due date = last done date plus recurrence interval, when recurrence is set
 - Mileage due = last done mileage plus mileage interval, when both are set
 - Cost totals = sums over service log entries
+- Cost breakdown = all-time cost per tracked maintenance item (entries linked to an item, grouped by name, ignoring case and extra spaces), plus one "Additional repairs" slice summing every ad-hoc repair; entries with no recorded cost are left out
 - Average per year = all-time cost ÷ months between the first and last logged entry × 12, shown only once entries span at least 30 days
 
 ### Rules that matter
@@ -156,7 +158,7 @@ beats visual ambition.
 
 - Vehicle list as the home screen
 - Vehicle detail showing its maintenance items as a table with due status
-- Service history per vehicle, grouped by year, combining the log with its cost totals
+- Service history per vehicle, grouped by year, combining the log with its cost totals, topped by a cost breakdown pie chart that the PDF repeats
 - Standard forms for adding and editing vehicles, items, and log entries
 
 Light and dark mode are both required, driven by Material 3 theming.

@@ -3,6 +3,7 @@ package com.example.vehiclemaintenance.servicelog
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.RectF
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import android.text.Layout
@@ -13,10 +14,14 @@ import android.text.TextPaint
 import android.text.TextUtils
 import android.text.style.AbsoluteSizeSpan
 import android.text.style.ForegroundColorSpan
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.withClip
 import androidx.core.graphics.withTranslation
 import com.example.vehiclemaintenance.R
+import com.example.vehiclemaintenance.ui.theme.LightChartColors
 import java.io.OutputStream
+import kotlin.math.cos
+import kotlin.math.sin
 
 /** The PDF's wording, read from string resources so it follows the app's language. */
 class HistoryPdfLabels(context: Context) {
@@ -31,12 +36,19 @@ class HistoryPdfLabels(context: Context) {
     val odometerColumn: String = resources.getString(R.string.pdf_column_odometer)
     val serviceColumn: String = resources.getString(R.string.pdf_column_service)
     val costColumn: String = resources.getString(R.string.pdf_column_cost)
+    val costBreakdown: String = resources.getString(R.string.cost_breakdown)
+    val additionalRepairs: String = resources.getString(R.string.cost_breakdown_additional_repairs)
 
     fun generated(date: String): String = resources.getString(R.string.pdf_generated, date)
     fun year(year: Int): String = resources.getString(R.string.cost_year, year)
     fun yearContinued(year: Int): String = resources.getString(R.string.pdf_year_continued, year)
     fun odometer(miles: String): String = resources.getString(R.string.pdf_odometer, miles)
     fun page(number: Int, count: Int): String = resources.getString(R.string.pdf_page, number, count)
+    fun percent(percent: Int): String = if (percent == 0) {
+        resources.getString(R.string.cost_breakdown_under_one_percent)
+    } else {
+        resources.getString(R.string.cost_breakdown_percent, percent)
+    }
 }
 
 /**
@@ -79,6 +91,7 @@ private class HistoryPdfLayout(
     fun pages(): List<List<DrawOperation>> {
         newPage()
         header()
+        breakdown()
         summary()
         report.years.forEach { year(it) }
         return pages
@@ -105,6 +118,56 @@ private class HistoryPdfLayout(
             place(layout.height + HEADER_LINE_GAP) { top -> drawLayout(layout, MARGIN, top) }
         }
         y += SECTION_GAP
+    }
+
+    /**
+     * The heading and the pie stay together with the first legend row. The rest of the legend
+     * flows row by row, so a vehicle with many tracked items runs onto the next page.
+     */
+    private fun breakdown() {
+        val slices = report.breakdown
+        if (slices.isEmpty()) return
+        val colors = sliceColors(
+            slices.map { it.name },
+            LightChartColors.slices.map { it.toArgb() },
+            LightChartColors.additionalRepairs.toArgb(),
+        )
+        val heading = textLayout(labels.costBreakdown, YEAR_PAINT, CONTENT_WIDTH)
+        val rows = slices.mapIndexed { index, slice -> LegendRow(slice, colors[index]) }
+        val pieBlockHeight = PIE_GAP + PIE_DIAMETER + PIE_GAP
+        if (heading.height + pieBlockHeight + rows.first().height > remaining) newPage()
+        place(heading.height.toFloat()) { top -> drawLayout(heading, MARGIN, top) }
+        place(pieBlockHeight) { top -> drawPie(slices, colors, top + PIE_GAP) }
+        rows.forEach { row ->
+            if (row.height > remaining) newPage()
+            place(row.height) { top -> row.draw(this, top) }
+        }
+        y += SECTION_GAP
+    }
+
+    /** One legend row: a swatch, the name up to two lines, the percent, and the amount. */
+    private inner class LegendRow(slice: ReportSlice, private val color: Int) {
+        private val name = textLayout(
+            slice.name ?: labels.additionalRepairs,
+            BODY_PAINT,
+            LEGEND_NAME_WIDTH,
+            maxLines = LEGEND_NAME_MAX_LINES,
+        )
+        private val percent = textLayout(
+            labels.percent(slice.percent), BODY_PAINT, LEGEND_PERCENT_WIDTH, Layout.Alignment.ALIGN_OPPOSITE,
+        )
+        private val cost = COST_COLUMN.layout(slice.cost, BODY_PAINT)
+
+        val height = maxOf(name.height, percent.height, cost.height) + 2 * LEGEND_ROW_PADDING
+
+        fun draw(canvas: Canvas, top: Float) {
+            val contentTop = top + LEGEND_ROW_PADDING
+            val firstLineMiddle = contentTop + name.getLineBottom(0) / 2f
+            canvas.drawCircle(MARGIN + SWATCH_SIZE / 2, firstLineMiddle, SWATCH_SIZE / 2, fillPaint(color))
+            canvas.drawLayout(name, MARGIN + LEGEND_NAME_X, contentTop)
+            canvas.drawLayout(percent, MARGIN + LEGEND_PERCENT_X, contentTop)
+            canvas.drawLayout(cost, MARGIN + COST_COLUMN.x, contentTop)
+        }
     }
 
     /** A vehicle with nothing costed says so rather than claiming it has been free to run. */
@@ -276,6 +339,37 @@ private fun serviceText(row: ReportRow): CharSequence {
     }
 }
 
+/** Slices run clockwise from 12 o'clock, split by thin white lines; a lone slice is a full circle. */
+private fun Canvas.drawPie(slices: List<ReportSlice>, colors: List<Int>, top: Float) {
+    val left = MARGIN + (CONTENT_WIDTH - PIE_DIAMETER) / 2
+    val bounds = RectF(left, top, left + PIE_DIAMETER, top + PIE_DIAMETER)
+    val sweeps = slices.map { 360f * it.fraction }
+    var start = PIE_START_ANGLE
+    sweeps.forEachIndexed { index, sweep ->
+        drawArc(bounds, start, sweep, true, fillPaint(colors[index]))
+        start += sweep
+    }
+    if (slices.size < 2) return
+    val radius = PIE_DIAMETER / 2
+    start = PIE_START_ANGLE
+    sweeps.forEach { sweep ->
+        val radians = Math.toRadians(start.toDouble())
+        drawLine(
+            bounds.centerX(),
+            bounds.centerY(),
+            bounds.centerX() + radius * cos(radians).toFloat(),
+            bounds.centerY() + radius * sin(radians).toFloat(),
+            PIE_SEPARATOR_PAINT,
+        )
+        start += sweep
+    }
+}
+
+private fun fillPaint(color: Int) = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    this.color = color
+    style = Paint.Style.FILL
+}
+
 private fun drawFooter(canvas: Canvas, vehicleName: String, pageLabel: String) {
     val pageWidth = FOOTER_PAINT.measureText(pageLabel)
     val nameWidth = CONTENT_WIDTH - pageWidth - FOOTER_GAP
@@ -298,9 +392,12 @@ private fun textLayout(
     paint: TextPaint,
     width: Float,
     alignment: Layout.Alignment = Layout.Alignment.ALIGN_NORMAL,
+    maxLines: Int = Int.MAX_VALUE,
 ): StaticLayout = StaticLayout.Builder.obtain(text, 0, text.length, paint, width.toInt())
     .setAlignment(alignment)
     .setIncludePad(false)
+    .setMaxLines(maxLines)
+    .setEllipsize(if (maxLines == Int.MAX_VALUE) null else TextUtils.TruncateAt.END)
     .build()
 
 private fun Canvas.drawLayout(layout: StaticLayout, x: Float, top: Float) {
@@ -335,6 +432,19 @@ private const val HEADING_GAP = 8f
 private const val RULE_GAP = 8f
 private const val SECTION_GAP = 18f
 
+// The cost breakdown: a centered pie, then legend rows of swatch, name, percent, and the amount
+// in the Cost column so it lines up with the table below.
+private const val PIE_DIAMETER = 140f
+private const val PIE_GAP = 10f
+private const val PIE_START_ANGLE = -90f
+private const val SWATCH_SIZE = 8f
+private const val LEGEND_NAME_X = 16f
+private const val LEGEND_PERCENT_X = 352f
+private const val LEGEND_PERCENT_WIDTH = 60f
+private const val LEGEND_NAME_WIDTH = LEGEND_PERCENT_X - LEGEND_NAME_X - 12f
+private const val LEGEND_NAME_MAX_LINES = 2
+private const val LEGEND_ROW_PADDING = 4f
+
 /** About three lines of body text: the least of a too-tall row worth starting on a page. */
 private const val MIN_SPLIT_HEIGHT = 40f
 
@@ -360,6 +470,10 @@ private val COLUMN_HEADER_PAINT = textPaint(9f, bold = true, color = GREY)
 private val BODY_PAINT = textPaint(10f)
 private val BODY_GREY_PAINT = textPaint(11f, color = GREY)
 private val FOOTER_PAINT = textPaint(8f, color = GREY)
+private val PIE_SEPARATOR_PAINT = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    color = 0xFFFFFFFF.toInt()
+    strokeWidth = 1f
+}
 private val RULE_PAINT = Paint(Paint.ANTI_ALIAS_FLAG).apply {
     color = RULE_GREY
     strokeWidth = 0.5f

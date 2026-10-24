@@ -1,6 +1,6 @@
 # Vehicle Maintenance - Project Overview
 
-<!-- blueprint:source-hash a876505abab193d360018ba54e9046c526d9496b8d86118160e98248bd4c6299 -->
+<!-- blueprint:source-hash 16d25e7052bcf553fc4d83238a39b258e9b438c80e3d5c1bb0b0a42fc0265f8f -->
 
 > An offline Android app that reminds a vehicle owner when service is due and
 > keeps a permanent, exportable record of what was done and what it cost.
@@ -45,6 +45,10 @@ Post-MVP, listed so the direction is visible but explicitly outside v1:
 
 11. **Receipt and vehicle photos** - images on log entries and vehicles.
 12. **Cloud backup** - paid upgrade pairing photo storage with off-device backup.
+
+Tester feedback, a v1.x update from the Play testing report:
+
+13. **Cost breakdown chart** - pie chart of all-time spend at the top of the service history screen and in its PDF: one slice per tracked maintenance item, one "Additional repairs" slice for ad-hoc work.
 
 ## Data model
 
@@ -120,6 +124,7 @@ Owns many MaintenanceItem and many ServiceLogEntry.
 - Due date = `lastDoneDate` + `recurrence`, when recurrence is set
 - Mileage due = `lastDoneMileage` + `mileageInterval`, when both are set
 - Cost totals = sums over `serviceLogEntries`
+- Cost breakdown = all-time cost per tracked item (entries with `maintenanceItemId` set, grouped by `description` ignoring case and extra spaces), plus one "Additional repairs" slice summing entries without it; entries with no `cost` are left out
 - Average per year = all-time cost ÷ months between the first and last logged entry × 12, shown only once entries span at least 30 days
 
 ### Behavioral rules
@@ -176,7 +181,7 @@ Screens:
 - **Add/edit vehicle** - form, including an optional current mileage
 - **Add/edit maintenance item** - form, including optional last-done seeding
 - **Log service** - completion or ad-hoc repair; captures date, odometer, cost
-- **Service history** - per-vehicle log grouped by year, combined with its cost totals
+- **Service history** - per-vehicle log grouped by year, combined with its cost totals and topped by a cost breakdown pie chart; the history PDF repeats the chart
 - **Export/import** - file out, file in
 
 > The overdue view must stand alone without notifications. On Android 13+ the

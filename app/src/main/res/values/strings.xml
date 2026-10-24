@@ -146,8 +146,14 @@
     <string name="cost_average_info">How the average is calculated</string>
     <!-- Keep the day count in step with MIN_AVERAGE_SPAN_DAYS in ServiceHistory.kt. -->
     <string name="cost_average_info_body">Your total spent, divided by the number of months between your first and last logged service, then multiplied by 12.\n\nServices logged without a cost still count toward that time span. The average appears once your logged services span at least 30 days.</string>
-    <!-- A calendar year in the cost breakdown, kept out of code so it is never concatenated. -->
+    <!-- A calendar year heading in the service history, kept out of code so it is never concatenated. -->
     <string name="cost_year" tools:ignore="PluralsCandidate">%1$d</string>
+    <string name="cost_breakdown">Cost breakdown</string>
+    <string name="cost_breakdown_chart">Pie chart of spending by service</string>
+    <!-- The one slice summing every ad-hoc repair, which has no maintenance item of its own. -->
+    <string name="cost_breakdown_additional_repairs">Additional repairs</string>
+    <string name="cost_breakdown_percent">%1$d%%</string>
+    <string name="cost_breakdown_under_one_percent" formatted="false">&lt;1%</string>
 
     <string name="ok">OK</string>
     <string name="clear_date">Clear</string>
@@ -263,7 +269,7 @@
     <string name="help_reminders_heading">Reminders</string>
     <string name="help_reminders_body">The app checks once a day, even when it is closed. When a reminder comes due you get a notification, repeated every two weeks until you log the service. If notifications are off, the status on the vehicle screen still shows what is due.</string>
     <string name="help_history_heading">Service history and costs</string>
-    <string name="help_history_body">Service history lists everything logged for a vehicle by year, with totals for all time, each year, and an average per year. The PDF button saves, prints, or shares it, which is handy when you sell the vehicle.</string>
+    <string name="help_history_body">Service history lists everything logged for a vehicle by year, with totals for all time, each year, and an average per year. A pie chart at the top shows what each maintenance item has cost, with ad-hoc repairs together in one slice. The PDF button saves, prints, or shares it, which is handy when you sell the vehicle.</string>
     <string name="help_backup_heading">Backing up your data</string>
     <string name="help_backup_body">Your records live only on this phone. Use Backup data to export them to a file, and import that file on a new phone. Importing replaces everything currently in the app.</string>
 </resources>

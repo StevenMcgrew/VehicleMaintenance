@@ -68,3 +68,16 @@ val Amber70 = Color(0xFFEE9803)
 
 val Green45 = Color(0xFF017C1F)
 val Green70 = Color(0xFF4DC258)
+
+// Pie chart slice tones: pastels after SchemeColor's "Light Colored Pie Chart" (the first four),
+// extended with four more in the same weight. Light enough to read as soft fills in either theme;
+// the legend beside the chart carries the names and amounts.
+val PastelIcyBlue = Color(0xFF9BBFE0)
+val PastelRoseGold = Color(0xFFE8A09A)
+val PastelGoldBlossom = Color(0xFFFBE29F)
+val PastelCelery = Color(0xFFC6D68F)
+val PastelLavender = Color(0xFFC3B1E1)
+val PastelSeafoam = Color(0xFF9FD8CB)
+val PastelPink = Color(0xFFF2B5D4)
+val PastelPeach = Color(0xFFF7C8A0)
+val PastelGrey = Color(0xFFC8CDD3)

@@ -1,5 +1,6 @@
 package com.example.vehiclemaintenance.servicelog
 
+import android.content.res.Configuration
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -190,6 +191,12 @@ fun ServiceHistoryContent(
             }
 
             else -> LazyColumn(modifier = Modifier.padding(innerPadding)) {
+                if (uiState.history.breakdown.isNotEmpty()) {
+                    item(key = "breakdown") {
+                        CostBreakdownChart(uiState.history.breakdown)
+                        HorizontalDivider()
+                    }
+                }
                 item(key = "summary") {
                     CostSummary(uiState.history)
                     HorizontalDivider()
@@ -394,7 +401,7 @@ private fun CenteredColumn(
     }
 }
 
-private val HORIZONTAL_PADDING = 16.dp
+internal val HORIZONTAL_PADDING = 16.dp
 
 private val previewVehicle = Vehicle("v-1", 2014, "Toyota", "Tacoma", "4.0L V6")
 
@@ -440,6 +447,22 @@ private val previewEntries = listOf(
 @Composable
 private fun ServiceHistoryPreview() {
     VehicleMaintenanceTheme {
+        ServiceHistoryContent(
+            uiState = ServiceHistoryUiState(
+                isLoading = false,
+                vehicle = previewVehicle,
+                history = serviceHistoryOf(previewEntries),
+            ),
+            onRetry = {},
+            onBack = {},
+        )
+    }
+}
+
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ServiceHistoryDarkPreview() {
+    VehicleMaintenanceTheme(darkTheme = true) {
         ServiceHistoryContent(
             uiState = ServiceHistoryUiState(
                 isLoading = false,

@@ -30,6 +30,8 @@ data class ServiceHistory(
     val averagePerYear: Long?,
     /** Newest year first. */
     val years: List<HistoryYear>,
+    /** Spend per tracked item plus Additional repairs; empty when nothing carries a cost. */
+    val breakdown: List<CostSlice> = emptyList(),
 )
 
 /**
@@ -60,7 +62,12 @@ fun serviceHistoryOf(entries: List<ServiceLogEntry>): ServiceHistory {
     } else {
         roundedHalfUp(allTime * DAYS_IN_FOUR_YEARS, 4 * spanDays)
     }
-    return ServiceHistory(allTime = allTime, averagePerYear = average, years = years)
+    return ServiceHistory(
+        allTime = allTime,
+        averagePerYear = average,
+        years = years,
+        breakdown = costBreakdownOf(entries),
+    )
 }
 
 private fun totalOf(entries: List<ServiceLogEntry>): Long? {

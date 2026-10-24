@@ -21,6 +21,18 @@ data class HistoryReport(
     val averagePerYear: String?,
     /** Newest year first. */
     val years: List<ReportYear>,
+    /** The cost breakdown chart's slices; empty when nothing is costed, which skips the chart. */
+    val breakdown: List<ReportSlice> = emptyList(),
+)
+
+data class ReportSlice(
+    /** Null for the Additional repairs slice; the PDF supplies the wording. */
+    val name: String?,
+    val cost: String,
+    /** Whole percent; 0 means under 1%. */
+    val percent: Int,
+    /** Share of the circle, 0 to 1, for drawing only. */
+    val fraction: Float,
 )
 
 data class ReportYear(
@@ -66,6 +78,17 @@ fun historyReportOf(
                 )
             },
         )
+    },
+    breakdown = history.breakdown.let { slices ->
+        val sum = slices.sumOf { it.total }.toFloat()
+        slices.map { slice ->
+            ReportSlice(
+                name = slice.name,
+                cost = formatCost(slice.total, locale),
+                percent = slice.percent,
+                fraction = slice.total / sum,
+            )
+        }
     },
 )
 

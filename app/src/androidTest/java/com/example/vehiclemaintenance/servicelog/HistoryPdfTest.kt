@@ -15,8 +15,8 @@ import java.util.Locale
 
 /**
  * Writes PDFs to temp files in the app's cache, never the store. Pass the instrumentation argument
- * `keepPdf=true` to keep the long history and the long note as `cache/history-pdf-*.pdf` for a
- * visual check.
+ * `keepPdf=true` to keep the long history, the long note, and the breakdown as
+ * `cache/history-pdf-*.pdf` for a visual check.
  */
 @RunWith(AndroidJUnit4::class)
 class HistoryPdfTest {
@@ -73,6 +73,50 @@ class HistoryPdfTest {
     private fun tempFile() = File(context.cacheDir, "history-pdf-test-${System.nanoTime()}.pdf")
         .also { written += it }
 
+    private fun trackedEntry(description: String, date: LocalDate, cost: Int?) = ServiceLogEntry(
+        id = "e-${nextId++}",
+        vehicleId = "v-1",
+        maintenanceItemId = "m-$description",
+        description = description,
+        date = date,
+        odometer = 30_000 + nextId * 1_500,
+        cost = cost,
+    )
+
+    @Test
+    fun aCostedBreakdownWithAFewSlicesFitsOnOnePage() {
+        val entries = listOf(
+            trackedEntry("Oil change", LocalDate.of(2026, 9, 5), 6_499),
+            trackedEntry("Oil change", LocalDate.of(2026, 3, 5), 6_499),
+            trackedEntry("Brake pads", LocalDate.of(2026, 6, 1), 21_000),
+            trackedEntry("Tire rotation", LocalDate.of(2026, 4, 1), 2_500),
+            entry(LocalDate.of(2026, 7, 12), cost = 78_250),
+        )
+        val report = reportOf(entries)
+
+        assertEquals(4, report.breakdown.size)
+        val pages = writeAndCheck(report, keptOrTempFile("history-pdf-breakdown.pdf"))
+
+        assertEquals(1, pages)
+    }
+
+    @Test
+    fun aLegendLongerThanThePageRunsOntoTheNext() {
+        val entries = (1..60).map { index ->
+            trackedEntry(
+                description = "Tracked service number $index",
+                date = LocalDate.of(2026, 1 + index % 12, 1 + index % 28),
+                cost = 1_000 + index * 100,
+            )
+        }
+        val report = reportOf(entries)
+
+        assertEquals(60, report.breakdown.size)
+        val pages = writeAndCheck(report)
+
+        assertTrue("expected the legend to continue, got $pages page(s)", pages >= 2)
+    }
+
     @Test
     fun aSingleEntryFitsOnOnePage() {
         val pages = writeAndCheck(reportOf(listOf(entry(LocalDate.of(2026, 9, 5), cost = 6_499))))
@@ -82,7 +126,10 @@ class HistoryPdfTest {
 
     @Test
     fun anUncostedHistoryStillWrites() {
-        val pages = writeAndCheck(reportOf(listOf(entry(LocalDate.of(2026, 9, 5), cost = null))))
+        val report = reportOf(listOf(entry(LocalDate.of(2026, 9, 5), cost = null)))
+
+        assertTrue(report.breakdown.isEmpty())
+        val pages = writeAndCheck(report)
 
         assertEquals(1, pages)
     }
