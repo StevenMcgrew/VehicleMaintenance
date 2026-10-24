@@ -11,7 +11,7 @@ template=$(<screenshot-template.svg)
 shots=(
   "1-vehicles.png|screenshot-1-vehicles.png|Every car, truck, and|motorcycle in one place"
   "2-due-status.png|screenshot-2-due-status.png|See what is due or|overdue at a glance"
-  "3-history.png|screenshot-3-history.png|Service history and|costs by year"
+  "3-history.png|screenshot-3-history.png|Service history and|a cost breakdown"
   "4-log-service.png|screenshot-4-log-service.png|Log every service|and repair"
   "5-theme-dark.png|screenshot-5-theme-dark.png|Light or dark,|your choice"
 )
